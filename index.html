@@ -1409,15 +1409,388 @@ renderFilterBar(); renderMarkers(); renderTopStats(); updateRoute(); renderNeigh
 if (state.leads.length === 0) showInfo('Tap "📍 Neighborhoods" to load homes. Tap a pin to knock.');
 </script>
 
-<!-- AI SALES ASSISTANT UPGRADE FOR NYC SOLAR D2D CRM -->
 <style>
-  ...all the patch CSS...
+.ai-card{margin-top:10px;border:1px solid var(--border);border-radius:10px;background:linear-gradient(180deg,#161b22,#0d1117);overflow:hidden}
+.ai-card summary{font-size:13px;color:var(--text);padding:12px 14px;cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.ai-card summary::-webkit-details-marker{display:none}
+.ai-card summary:after{content:'▼';font-size:10px;color:var(--muted)}
+.ai-card[open] summary:after{transform:rotate(180deg)}
+.ai-inner{padding:0 14px 14px}
+.ai-score-row{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:center;margin-bottom:12px}
+.ai-score-badge{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;border:2px solid var(--border);background:var(--bg)}
+.ai-a{color:#fff;background:#238636;border-color:#3fb950}
+.ai-b{color:#fff;background:#1f6feb;border-color:#58a6ff}
+.ai-c{color:#fff;background:#d29922;border-color:#f2cc60}
+.ai-d{color:#fff;background:#da3633;border-color:#f85149}
+.ai-score-text{font-size:12px;color:var(--muted);line-height:1.35}
+.ai-score-text b{color:var(--text)}
+.ai-tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+.ai-tag{border:1px solid var(--border);background:var(--bg);color:var(--muted);padding:6px 9px;border-radius:16px;font-size:10px;font-weight:700;cursor:pointer}
+.ai-tag.on{background:#1f6feb22;border-color:#58a6ff;color:#58a6ff}
+.ai-tag.hot.on{background:#3fb95022;border-color:#3fb950;color:#3fb950}
+.ai-tag.warn.on{background:#d2992222;border-color:#d29922;color:#d29922}
+.ai-tag.bad.on{background:#f8514922;border-color:#f85149;color:#f85149}
+.ai-btn-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+.ai-btn{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px 8px;font-size:11px;font-weight:800;cursor:pointer;text-align:center}
+.ai-btn.primary{background:#1f6feb22;border-color:#58a6ff;color:#58a6ff}
+.ai-btn.green{background:#3fb95022;border-color:#3fb950;color:#3fb950}
+.ai-btn.gold{background:#d2992222;border-color:#d29922;color:#d29922}
+.ai-output{margin-top:10px;background:#010409;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:10px;font-size:12px;line-height:1.45;white-space:pre-wrap;max-height:190px;overflow:auto}
+.ai-select,.ai-input{width:100%;background:var(--panel);border:1px solid var(--border);color:var(--text);padding:9px 11px;border-radius:8px;font-size:13px;font-family:inherit}
+.ai-mini-label{font-size:10px;color:var(--muted);text-transform:uppercase;font-weight:800;letter-spacing:.4px;margin:10px 0 5px}
+.ai-dashboard-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+.ai-dashboard-card h3{font-size:12px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.ai-queue-item{padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--bg);margin-bottom:8px;cursor:pointer}
+.ai-queue-item .name{font-size:13px;font-weight:800;color:var(--text)}
+.ai-queue-item .meta{font-size:11px;color:var(--muted);margin-top:3px}
+.ai-queue-item .why{font-size:11px;color:var(--blue);margin-top:4px}
+.ai-empty{color:var(--muted);font-size:12px;text-align:center;padding:14px}
 </style>
 
 <script>
-  ...all the patch JavaScript...
-</script>
+(function(){
+const AI_TAGS=[
+{key:'solar_only',label:'Solar only'},
+{key:'mini_split_only',label:'Mini-split only'},
+{key:'solar_mini_split',label:'Solar + mini-split',hot:true},
+{key:'boiler_conversion',label:'Boiler conversion',hot:true},
+{key:'high_gas_bill',label:'High gas bill',hot:true},
+{key:'high_electric_bill',label:'High electric bill',hot:true},
+{key:'window_ac_user',label:'Window AC user'},
+{key:'roof_concern',label:'Roof concern',warn:true},
+{key:'financing_needed',label:'Financing needed',warn:true},
+{key:'decision_maker_missing',label:'Decision maker missing',warn:true},
+{key:'renter',label:'Renter',bad:true},
+{key:'callback_priority',label:'Callback priority',hot:true}
+];
 
-</body>
+const OBJECTIONS={
+not_interested:`No problem — most people say that before they know whether the home even qualifies.
+
+I’m not asking you to buy anything at the door. I’m just checking which homes may qualify for a lower bill assessment. Quick question: do you own the home?`,
+
+too_expensive:`I hear you. That’s why I usually don’t lead with price — I start with the bill.
+
+If the monthly option does not beat or compete with what you’re already paying Con Edison, it probably does not make sense. Would it be worth checking the numbers first?`,
+
+spouse:`Completely fair — for something like this, both decision makers should be comfortable.
+
+Would it be better to set a quick time when both of you are home so we can review the bill and see if the numbers even make sense?`,
+
+send_info:`I can send info, but it’s more useful if I send the right info.
+
+Are you mainly curious about lowering the electric bill, solar, mini-splits, or getting away from the boiler?`,
+
+come_back:`No problem. What’s usually better — weekday evening or Saturday morning?
+
+I’ll make a note so I’m not randomly catching you at a bad time again.`,
+
+rent:`Got it. I don’t want to waste your time if you don’t own it.
+
+Do you know if the owner lives here or if there’s a landlord contact? This may still help them lower operating costs for the property.`,
+
+roof:`That’s important to know early.
+
+If the roof needs work, we would not want to put panels on top of a bad roof. The next step would be checking roof age and condition first.`
+};
+
+function getLead(id){return state.leads.find(l=>l.id===id)}
+function ensure(l){l.ai_tags=l.ai_tags||[];l.ai_summary=l.ai_summary||'';l.ai_next_action=l.ai_next_action||'';l.callback_due=l.callback_due||'';l.appt_time=l.appt_time||'';return l}
+function bill(l){let n=Number(l.monthly_bill||0);if(n>0)return n;if(typeof estBill==='function')return Number(estBill(l)||0);return 0}
+
+function detectTags(l){
+ensure(l);
+let t=[l.notes,l.roof_notes,l.ai_summary,l.ai_next_action].join(' ').toLowerCase();
+let s=new Set(l.ai_tags);
+if(/gas|boiler|radiator|baseboard|oil/.test(t))s.add('boiler_conversion');
+if(/gas bill|heat bill|winter bill/.test(t))s.add('high_gas_bill');
+if(/con ?ed|electric|light bill|summer bill|utility bill|high bill|\$[2-9]\d\d/.test(t))s.add('high_electric_bill');
+if(/window ac|window unit|ac unit/.test(t))s.add('window_ac_user');
+if(/roof|shingle|leak|old roof|new roof/.test(t))s.add('roof_concern');
+if(/finance|payment|monthly|loan|credit/.test(t))s.add('financing_needed');
+if(/wife|husband|spouse|decision|partner|not home/.test(t))s.add('decision_maker_missing');
+if(/rent|tenant|landlord/.test(t))s.add('renter');
+if(/mini|split|heat pump|hvac/.test(t)&&/solar|panel/.test(t))s.add('solar_mini_split');
+l.ai_tags=[...s];
+return l.ai_tags;
+}
+
+function score(l){
+ensure(l);detectTags(l);
+let pts=0,r=[],b=bill(l),tags=l.ai_tags;
+if(l.status==='set'){pts+=35;r.push('Appointment set')}
+else if(l.status==='callback'){pts+=24;r.push('Callback requested')}
+else if(l.status==='knocked'){pts+=10;r.push('Contact made')}
+else if(l.status==='not_interested'){pts-=28;r.push('Not interested')}
+else if(l.status==='not_home'){pts+=2;r.push('Needs re-knock')}
+
+if(l.phone&&isValidUSPhone(l.phone)){pts+=15;r.push('Phone captured')}
+if(b>=250){pts+=18;r.push('High bill')}
+else if(b>=175){pts+=10;r.push('Moderate bill')}
+if(l.viability==='high'){pts+=14;r.push('High-viability property')}
+if(l.source==='imported'){pts+=6;r.push('Imported lead')}
+if(l.hpd_enriched){pts+=8;r.push('Owner unmasked')}
+if(l.entity&&!l.hpd_enriched){pts-=6;r.push('Entity needs verification')}
+
+if(tags.includes('solar_mini_split')){pts+=15;r.push('Solar + mini-split')}
+if(tags.includes('boiler_conversion')){pts+=12;r.push('Boiler conversion')}
+if(tags.includes('high_electric_bill')){pts+=10;r.push('High electric bill')}
+if(tags.includes('high_gas_bill')){pts+=10;r.push('High gas bill')}
+if(tags.includes('window_ac_user'))pts+=6;
+if(tags.includes('decision_maker_missing'))pts-=7;
+if(tags.includes('roof_concern'))pts-=12;
+if(tags.includes('renter'))pts-=35;
+
+pts=Math.max(0,Math.min(100,pts));
+let grade=pts>=75?'A':pts>=55?'B':pts>=35?'C':'D';
+return{pts,grade,reasons:r};
+}
+
+function nextAction(l){
+ensure(l);let tags=l.ai_tags||[],s=score(l);
+if(l.status==='set')return'Send appointment confirmation now. Ask them to have a recent Con Edison bill ready. Confirm all decision makers will be present.';
+if(l.status==='callback')return l.callback_due?`Follow up on ${l.callback_due}. Lead with the exact reason they asked for callback and ask for a firm appointment time.`:'Set a specific callback date/time. Do not leave it as a vague callback.';
+if(tags.includes('decision_maker_missing'))return'Book a time when both decision makers are home. Do not fully pitch without the missing decision maker.';
+if(tags.includes('roof_concern'))return'Ask roof age and condition before pitching savings. Position roof review as part of qualification.';
+if(tags.includes('renter'))return'Ask for landlord/owner contact or mark low priority unless they can connect you to the owner.';
+if(s.grade==='A'||s.grade==='B')return'Try to convert to appointment. Use bill review + roof fit + qualification close.';
+if(l.status==='not_home'||l.status==='fresh')return'Re-knock between 5:30–7:30 PM or Saturday morning.';
+if(l.status==='not_interested')return'Low priority. Only revisit if there is a strong bill/roof reason.';
+return'Qualify ownership, bill amount, roof fit, and decision maker.';
+}
+
+function summary(l){
+ensure(l);detectTags(l);
+let s=score(l),b=bill(l),name=`${l.first||''} ${l.last||''}`.trim()||l.last||'Homeowner';
+let out=`${name} — ${STATUS_LABELS[l.status]||l.status}
+${l.addr||''}${l.boro?', '+l.boro:''}${l.zip?' '+l.zip:''}
+
+Lead score: ${s.grade} (${s.pts}/100)
+Why: ${s.reasons.slice(0,5).join(', ')||'Needs more qualification'}
+
+`;
+if(b)out+=`Bill angle: ${l.monthly_bill?'$'+b+'/mo actual':'$'+b+'/mo estimated'}.\n`;
+
+if(l.ai_tags.includes('solar_mini_split')||l.ai_tags.includes('boiler_conversion')||l.ai_tags.includes('high_gas_bill')){
+out+=`Pitch angle: Mini-splits move heating/cooling to electric. Solar can help offset that electric usage. Use gas-bill pain + comfort pain first, then solar as the offset layer.\n`;
+}else if(l.ai_tags.includes('high_electric_bill')){
+out+=`Pitch angle: Lead with Con Edison bill review and solar savings qualification.\n`;
+}else{
+out+=`Pitch angle: Start with ownership, bill amount, and roof fit before pitching.\n`;
+}
+if(l.notes)out+=`\nRaw notes: ${l.notes}`;
+if(l.roof_notes)out+=`\nRoof notes: ${l.roof_notes}`;
+l.ai_summary=out.trim();
+l.ai_next_action=nextAction(l);
+saveState();
+return l.ai_summary;
+}
+
+function apptText(l){
+let name=l.first||'there';
+let appt=l.appt_time?` for ${l.appt_time}`:'';
+return`Hi ${name}, this is Shaquille. Thanks for speaking with me today. Confirming your home energy assessment${appt}. Please have a recent Con Edison bill available if possible so we can review your usage, roof fit, and whether solar or mini-splits make sense for the home.`;
+}
+
+function infoText(l){
+let name=l.first||'there';
+return`Hi ${name}, this is Shaquille. Here’s the simple version: we review your Con Edison bill, roof fit, and home setup to see if solar can lower your electric cost. If you also have high gas bills, a boiler, or window ACs, we can also look at mini-splits and how solar may offset more electric usage.`;
+}
+
+function noShowText(l){
+let name=l.first||'there';
+return`Hi ${name}, this is Shaquille. Sorry we missed each other today. I can still help check whether your home qualifies for solar or mini-split savings. Would later today or tomorrow work better?`;
+}
+
+function miniPitch(){
+return`Mini-split + solar pitch:
+
+“The mini-split project helps move heating and cooling over to electric. That matters because solar cannot offset gas directly, but it can help offset electric usage. So if the home has a high gas bill, old boiler, or window ACs, we can look at mini-splits for comfort and solar as the layer that helps reduce the cost of powering that comfort.”`;
+}
+
+function copyText(t){navigator.clipboard.writeText(t).then(()=>showToast('✓ Copied'),()=>alert(t))}
+
+function panel(l){
+ensure(l);detectTags(l);let s=score(l);
+let tagHtml=AI_TAGS.map(t=>{
+let on=l.ai_tags.includes(t.key);
+let cls=['ai-tag',on?'on':'',t.hot?'hot':'',t.warn?'warn':'',t.bad?'bad':''].join(' ');
+return`<span class="${cls}" data-ai-tag="${t.key}">${t.label}</span>`;
+}).join('');
+
+return`
+<details class="ai-card" open>
+<summary>🤖 AI Sales Assistant</summary>
+<div class="ai-inner">
+<div class="ai-score-row">
+<div class="ai-score-badge ai-${s.grade.toLowerCase()}">${s.grade}</div>
+<div class="ai-score-text"><b>${s.pts}/100 lead score</b><br>${s.reasons.slice(0,4).join(' · ')||'Needs more qualification'}</div>
+</div>
+
+<div class="ai-mini-label">Product tags</div>
+<div class="ai-tags">${tagHtml}</div>
+
+<div class="ai-mini-label">Appointment / callback time</div>
+<input class="ai-input" id="ai-appt-time" placeholder="Sat 8 AM, Tonight 6:30, etc." value="${l.appt_time||l.callback_due||''}">
+
+<div class="ai-btn-grid">
+<button class="ai-btn primary" id="ai-summary-btn">Summarize lead</button>
+<button class="ai-btn green" id="ai-next-btn">Next action</button>
+<button class="ai-btn gold" id="ai-confirm-btn">Appt text</button>
+<button class="ai-btn" id="ai-info-btn">Send info text</button>
+<button class="ai-btn" id="ai-mini-btn">Mini + solar pitch</button>
+<button class="ai-btn" id="ai-noshow-btn">No-show text</button>
+</div>
+
+<div class="ai-mini-label">Objection helper</div>
+<select class="ai-select" id="ai-objection">
+<option value="">Choose objection script…</option>
+<option value="not_interested">Not interested</option>
+<option value="too_expensive">Too expensive</option>
+<option value="spouse">Need to ask spouse</option>
+<option value="send_info">Send me info</option>
+<option value="come_back">Come back later</option>
+<option value="rent">I rent</option>
+<option value="roof">Roof is old</option>
+</select>
+
+<div class="ai-output" id="ai-output">${l.ai_summary||l.ai_next_action||'Tap a button to generate summary, next action, scripts, or texts.'}</div>
+<button class="save-btn secondary" id="ai-copy-btn" style="margin-top:8px;">Copy AI output</button>
+</div>
+</details>`;
+}
+
+function handlers(l){
+let out=document.getElementById('ai-output');if(!out)return;
+document.querySelectorAll('[data-ai-tag]').forEach(tag=>{
+tag.onclick=()=>{
+ensure(l);let k=tag.dataset.aiTag;
+if(l.ai_tags.includes(k)){l.ai_tags=l.ai_tags.filter(x=>x!==k);tag.classList.remove('on')}
+else{l.ai_tags.push(k);tag.classList.add('on')}
+let s=score(l);
+let badge=document.querySelector('.ai-score-badge'),txt=document.querySelector('.ai-score-text');
+if(badge){badge.className=`ai-score-badge ai-${s.grade.toLowerCase()}`;badge.textContent=s.grade}
+if(txt)txt.innerHTML=`<b>${s.pts}/100 lead score</b><br>${s.reasons.slice(0,4).join(' · ')||'Needs more qualification'}`;
+l.updated_at=new Date().toISOString();saveState();
+};
+});
+
+let appt=document.getElementById('ai-appt-time');
+if(appt)appt.onchange=()=>{if(l.status==='callback')l.callback_due=appt.value;else l.appt_time=appt.value;l.updated_at=new Date().toISOString();saveState()};
+
+function set(t){out.textContent=t;saveState()}
+document.getElementById('ai-summary-btn').onclick=()=>set(summary(l));
+document.getElementById('ai-next-btn').onclick=()=>{l.ai_next_action=nextAction(l);set(l.ai_next_action)};
+document.getElementById('ai-confirm-btn').onclick=()=>{if(appt&&appt.value)l.appt_time=appt.value;set(apptText(l))};
+document.getElementById('ai-info-btn').onclick=()=>set(infoText(l));
+document.getElementById('ai-mini-btn').onclick=()=>set(miniPitch());
+document.getElementById('ai-noshow-btn').onclick=()=>set(noShowText(l));
+document.getElementById('ai-copy-btn').onclick=()=>copyText(out.textContent);
+document.getElementById('ai-objection').onchange=e=>{if(e.target.value)set(OBJECTIONS[e.target.value])};
+}
+
+const originalOpenLead=window.openLead;
+window.openLead=function(id){
+originalOpenLead(id);
+let l=getLead(id);if(!l)return;
+setTimeout(()=>{
+let body=document.getElementById('sh-body');
+if(!body||document.querySelector('.ai-card'))return;
+body.insertAdjacentHTML('afterbegin',panel(l));
+handlers(l);
+},0);
+};
+
+function days(l){if(!l.updated_at)return 999;return Math.floor((Date.now()-new Date(l.updated_at).getTime())/86400000)}
+function dashItem(x,why){
+let l=x.l,name=`${l.first||''} ${l.last||''}`.trim()||l.last||'Lead';
+return`<div class="ai-queue-item" data-ai-lead="${l.id}">
+<div class="name">${x.s.grade} · ${name}</div>
+<div class="meta">${l.addr||''}${l.boro?' · '+l.boro:''} · ${STATUS_LABELS[l.status]||l.status}</div>
+<div class="why">${why}</div>
+</div>`;
+}
+
+function renderAIDash(){
+let stats=document.getElementById('stats-view');if(!stats)return;
+let panel=document.getElementById('ai-dashboard-panel');
+if(!panel){panel=document.createElement('div');panel.id='ai-dashboard-panel';stats.insertBefore(panel,stats.firstChild)}
+let scored=state.leads.map(l=>{ensure(l);detectTags(l);return{l,s:score(l)}});
+let appts=scored.filter(x=>x.l.status==='set').slice(0,5);
+let callbacks=scored.filter(x=>x.l.status==='callback').slice(0,5);
+let hot=scored.filter(x=>x.s.grade==='A'&&x.l.status!=='set').sort((a,b)=>b.s.pts-a.s.pts).slice(0,5);
+let stale=scored.filter(x=>days(x.l)>=7&&['fresh','not_home','knocked','callback'].includes(x.l.status)).slice(0,5);
+
+let today=typeof todayLeads==='function'?todayLeads():[];
+let knocked=today.filter(l=>['knocked','not_home','callback','set','not_interested'].includes(l.status)).length;
+let contacts=today.filter(l=>['knocked','callback','set','not_interested'].includes(l.status)).length;
+let sets=today.filter(l=>l.status==='set').length;
+let cbs=today.filter(l=>l.status==='callback').length;
+let conv=knocked?Math.round(sets/knocked*100):0;
+let coach='Keep collecting ownership, bill amount, roof fit, and decision-maker info.';
+if(knocked>=10&&sets===0)coach='Lots of doors but no appointments: ask bill pain before pitching solar. Close with two time options.';
+else if(cbs>sets)coach='Callbacks are piling up: turn vague callbacks into exact times before leaving the door.';
+else if(sets>0)coach='Good momentum: send confirmation texts immediately and make sure they have a Con Edison bill ready.';
+
+panel.innerHTML=`
+<div class="ai-dashboard-card">
+<h3>🤖 AI Follow-Up Queue</h3>
+<div class="section-title">Appointments</div>
+${appts.length?appts.map(x=>dashItem(x,'Confirm time, bill, and decision makers.')).join(''):'<div class="ai-empty">No appointments saved.</div>'}
+<div class="section-title">Callbacks</div>
+${callbacks.length?callbacks.map(x=>dashItem(x,'Lock a specific callback or appointment time.')).join(''):'<div class="ai-empty">No callbacks due.</div>'}
+<div class="section-title">Hot leads without appointment</div>
+${hot.length?hot.map(x=>dashItem(x,'High score. Push for appointment.')).join(''):'<div class="ai-empty">No hot no-appointment leads yet.</div>'}
+<div class="section-title">Stale leads 7+ days</div>
+${stale.length?stale.map(x=>dashItem(x,'Re-knock or archive.')).join(''):'<div class="ai-empty">No stale leads.</div>'}
+</div>
+
+<div class="ai-dashboard-card">
+<h3>📈 End-of-Day AI Recap</h3>
+<div class="stat-row"><span class="l">Doors touched today</span><span>${knocked}</span></div>
+<div class="stat-row"><span class="l">Contacts</span><span>${contacts}</span></div>
+<div class="stat-row"><span class="l">Appointments</span><span>${sets}</span></div>
+<div class="stat-row"><span class="l">Callbacks</span><span>${cbs}</span></div>
+<div class="stat-row"><span class="l">Conversion</span><span>${conv}%</span></div>
+<div class="ai-output">${coach}</div>
+</div>`;
+
+panel.querySelectorAll('[data-ai-lead]').forEach(el=>{
+el.onclick=()=>{
+let l=getLead(el.dataset.aiLead);if(!l)return;
+switchView('map');map.setView([l.lat,l.lng],18);setTimeout(()=>openLead(l.id),250);
+};
+});
+}
+
+const oldRenderStats=window.renderStats;
+window.renderStats=function(){oldRenderStats();renderAIDash()};
+
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+btn.addEventListener('click',()=>{if(btn.dataset.view==='stats')setTimeout(renderAIDash,50)});
+});
+
+function exportAI(){
+let headers=['first','last','addr','boro','zip','status','ai_score','ai_grade','ai_tags','monthly_bill','phone','roof_notes','notes','ai_summary','ai_next_action','callback_due','appt_time','updated_at'];
+let rows=state.leads.map(l=>{
+let s=score(l),v={...l,ai_score:s.pts,ai_grade:s.grade,ai_tags:(l.ai_tags||[]).join('|')};
+return headers.map(h=>`"${String(v[h]??'').replace(/"/g,'""')}"`).join(',');
+});
+let csv=headers.join(',')+'\n'+rows.join('\n');
+let blob=new Blob([csv],{type:'text/csv'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+a.href=url;a.download=`solar-leads-ai-${new Date().toISOString().slice(0,10)}.csv`;a.click();URL.revokeObjectURL(url);
+}
+
+setTimeout(()=>{
+let ex=document.getElementById('export-btn');
+if(ex&&!document.getElementById('ai-export-btn')){
+let b=document.createElement('button');
+b.className='save-btn';b.id='ai-export-btn';b.style.background='#a371f7';b.style.marginTop='8px';b.textContent='Export AI CRM CSV';
+b.onclick=exportAI;ex.insertAdjacentElement('afterend',b);
+}
+renderAIDash();
+},500);
+})();
+</script></body>
 </html></body>
 </html>
