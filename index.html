@@ -2487,9 +2487,19 @@ function createLoginOverlay() {
     const pin = document.getElementById('login-pin').value.trim();
     const acc = getAccountAccess();
     if (role === 'master') {
-      if (!acc.master_pin) { showToast('Set up master PIN in Stats first'); return; }
-      if ((email && acc.master_email && email !== acc.master_email.toLowerCase()) || pin !== acc.master_pin) { showToast('Login not matched'); return; }
-      saveCurrentSession({ role:'master', name: acc.master_name || 'Master', email: acc.master_email || email });
+      let masterOk = false;
+      if (acc.master_pin && pin === acc.master_pin && (!email || !acc.master_email || email === String(acc.master_email || '').toLowerCase())) {
+        saveCurrentSession({ role:'master', name: acc.master_name || 'Master', email: acc.master_email || email, team_id: acc.team_id || '' });
+        masterOk = true;
+      }
+      if (!masterOk && typeof cloudMasterLoginByPin === 'function') {
+        const cloudMaster = await cloudMasterLoginByPin(email, pin);
+        if (cloudMaster) {
+          saveCurrentSession({ role:'master', name: cloudMaster.name || 'Master', email: cloudMaster.email || email, team_id: cloudMaster.team_id || '' });
+          masterOk = true;
+        }
+      }
+      if (!masterOk) { showToast(acc.master_pin ? 'Login not matched' : 'Master not found on this device. Sync Master to Cloud from your main device first.'); return; }
     } else {
       let agent = (acc.agents || []).find(a => String(a.email || '').toLowerCase() === email && String(a.pin || '') === pin);
       if (!agent && typeof cloudAgentLoginByPin === 'function') {
@@ -3230,6 +3240,90 @@ async function syncAgentAccountsToCloud({ silent=false }={}) {
   }
 }
 
+
+
+// === CLOUD MASTER LOGIN FIX: lets master log in from new phones/browsers ===
+let cloudMasterSaveTimer = null;
+function normalizeMasterForCloud(acc) {
+  return {
+    team_id: sbProfile?.team_id || null,
+    owner_id: sbUser?.id || null,
+    name: acc.master_name || 'Master',
+    email: String(acc.master_email || '').trim().toLowerCase(),
+    pin: String(acc.master_pin || '').trim(),
+    active: true,
+    updated_at: new Date().toISOString()
+  };
+}
+async function syncMasterAccountToCloud({ silent=false }={}) {
+  const sb = initSupabaseClient();
+  if (!sb || !sbUser || !sbProfile?.team_id) {
+    if (!silent) showToast('Log into Supabase first');
+    return;
+  }
+  if ((sbProfile.role || '').toLowerCase() !== 'master') {
+    if (!silent) setCloudStatus('Security: only master can sync the master account.', 'warn');
+    return;
+  }
+  const acc = getAccountAccess();
+  const row = normalizeMasterForCloud(acc);
+  if (!row.email || !row.pin) {
+    if (!silent) showToast('Save master email and PIN first');
+    return;
+  }
+  try {
+    if (!silent) setCloudStatus('Syncing master account to cloud...', 'warn');
+    const del = await sb.from('master_accounts').delete().eq('team_id', sbProfile.team_id);
+    if (del.error) throw del.error;
+    const { error } = await sb.from('master_accounts').insert([{ ...row, created_at: new Date().toISOString() }]);
+    if (error) throw error;
+    if (!silent) setCloudStatus('Master account synced to cloud. New devices can log in as master.', 'good');
+  } catch(e) {
+    console.error(e);
+    if (!silent) setCloudStatus(e.message || 'Master cloud sync failed. Run the Master Cloud Login SQL.', 'warn');
+  }
+}
+async function cloudMasterLoginByPin(email, pin) {
+  const sb = initSupabaseClient();
+  email = String(email || '').trim().toLowerCase();
+  pin = String(pin || '').trim();
+  if (!sb || !email || !pin) return null;
+  try {
+    showToast('Checking cloud master login...');
+    const { data, error } = await sb.rpc('m2_master_login_by_pin', { p_email: email, p_pin: pin });
+    if (error) throw error;
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row || !row.id) return null;
+    const master = {
+      id: row.id,
+      team_id: row.team_id || '',
+      name: row.name || 'Master',
+      email: String(row.email || email).toLowerCase(),
+      pin,
+      active: true,
+      created_at: row.created_at || new Date().toISOString()
+    };
+    const acc = getAccountAccess();
+    acc.master_name = master.name;
+    acc.master_email = master.email;
+    acc.master_pin = master.pin;
+    acc.team_id = master.team_id;
+    localStorage.setItem(ACCOUNT_KEY, JSON.stringify(acc));
+    if (typeof setCloudStatus === 'function') setCloudStatus('Cloud master login found. This device is now connected.', 'good');
+    return master;
+  } catch(e) {
+    console.error(e);
+    showToast(e.message || 'Cloud master login failed');
+    return null;
+  }
+}
+function scheduleMasterAccountCloudSave() {
+  if (!cloudEnabled() || !sbUser || !sbProfile?.team_id) return;
+  const acc = getAccountAccess();
+  if (!acc.master_email || !acc.master_pin) return;
+  clearTimeout(cloudMasterSaveTimer);
+  cloudMasterSaveTimer = setTimeout(() => syncMasterAccountToCloud({ silent:true }), 1600);
+}
 async function cloudAgentLoginByPin(email, pin) {
   const sb = initSupabaseClient();
   email = String(email || '').trim().toLowerCase();
@@ -3317,6 +3411,7 @@ const _m2CloudOldSaveAccountAccess = saveAccountAccess;
 saveAccountAccess = function(data) {
   _m2CloudOldSaveAccountAccess(data);
   scheduleAgentAccountsCloudSave();
+  if (typeof scheduleMasterAccountCloudSave === 'function') scheduleMasterAccountCloudSave();
 };
 
 const _m2CloudOldEnsureCloudProfile = ensureCloudProfile;
@@ -3335,10 +3430,12 @@ renderAccessCard = function() {
   div.id = 'm2-cloud-agent-actions';
   div.className = 'daily-action-row';
   div.innerHTML = `
+    <button class="daily-btn secondary" id="m2-sync-master-cloud">Sync Master to Cloud</button>
     <button class="daily-btn secondary" id="m2-sync-agents-cloud">Sync Agents to Cloud</button>
     <button class="daily-btn secondary" id="m2-load-agents-cloud">Load Cloud Agents</button>
   `;
   card.appendChild(div);
+  document.getElementById('m2-sync-master-cloud')?.addEventListener('click', () => syncMasterAccountToCloud());
   document.getElementById('m2-sync-agents-cloud')?.addEventListener('click', () => syncAgentAccountsToCloud());
   document.getElementById('m2-load-agents-cloud')?.addEventListener('click', () => loadAgentAccountsFromCloud());
 };
