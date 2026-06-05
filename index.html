@@ -2999,6 +2999,142 @@ setCloudStatus = function(msg, tone='') {
   }
 };
 
+
+// === CLOUD TEAM ROSTER MVP: save/load master + agent logins in Supabase ===
+// Requires the agent_accounts SQL table. This keeps agent setup consistent across devices.
+let cloudAgentSyncBusy = false;
+let cloudAgentSaveTimer = null;
+
+function normalizeAgentForCloud(a) {
+  return {
+    id: String(a.id || ('a_' + Date.now())),
+    team_id: sbProfile?.team_id || null,
+    name: a.name || '',
+    email: (a.email || '').toLowerCase(),
+    pin: a.pin || '',
+    territory: a.territory || '',
+    active: a.active !== false,
+    created_at: a.created_at || new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+}
+
+async function syncAgentAccountsToCloud({ silent=false }={}) {
+  if (cloudAgentSyncBusy) return;
+  const sb = initSupabaseClient();
+  if (!sb || !sbUser || !sbProfile?.team_id) {
+    if (!silent) showToast('Log into Supabase first');
+    return;
+  }
+  const acc = getAccountAccess();
+  const agents = (acc.agents || []).map(normalizeAgentForCloud).filter(a => a.email && a.name);
+  cloudAgentSyncBusy = true;
+  try {
+    if (!silent) setCloudStatus('Syncing agent accounts...', 'warn');
+    const del = await sb.from('agent_accounts').delete().eq('team_id', sbProfile.team_id);
+    if (del.error) throw del.error;
+    if (agents.length) {
+      const { error } = await sb.from('agent_accounts').insert(agents);
+      if (error) throw error;
+    }
+    if (!silent) setCloudStatus(`Synced ${agents.length} agent account(s) to cloud.`, 'good');
+  } catch(e) {
+    console.error(e);
+    if (!silent) setCloudStatus(e.message || 'Agent cloud sync failed. Run the agent_accounts SQL.', 'warn');
+  } finally {
+    cloudAgentSyncBusy = false;
+  }
+}
+
+async function loadAgentAccountsFromCloud({ silent=false }={}) {
+  const sb = initSupabaseClient();
+  if (!sb || !sbUser || !sbProfile?.team_id) {
+    if (!silent) showToast('Log into Supabase first');
+    return;
+  }
+  try {
+    if (!silent) setCloudStatus('Loading agent accounts from cloud...', 'warn');
+    const { data, error } = await sb
+      .from('agent_accounts')
+      .select('id,name,email,pin,territory,active,created_at,updated_at')
+      .eq('team_id', sbProfile.team_id)
+      .order('created_at', { ascending:true });
+    if (error) throw error;
+    const acc = getAccountAccess();
+    const localByEmail = new Map((acc.agents || []).map(a => [String(a.email || '').toLowerCase(), a]));
+    (data || []).forEach(row => {
+      if (row.active === false) return;
+      const key = String(row.email || '').toLowerCase();
+      if (!key) return;
+      const existing = localByEmail.get(key) || {};
+      localByEmail.set(key, {
+        ...existing,
+        id: row.id || existing.id || ('a_' + Date.now()),
+        name: row.name || existing.name || key,
+        email: key,
+        pin: row.pin || existing.pin || '',
+        territory: row.territory || existing.territory || '',
+        active: row.active !== false,
+        created_at: row.created_at || existing.created_at || new Date().toISOString()
+      });
+    });
+    acc.agents = Array.from(localByEmail.values());
+    localStorage.setItem(ACCOUNT_KEY, JSON.stringify(acc));
+    if (!silent) setCloudStatus(`Loaded ${acc.agents.length} agent account(s) from cloud.`, 'good');
+    renderStats();
+  } catch(e) {
+    console.error(e);
+    if (!silent) setCloudStatus(e.message || 'Could not load agent accounts. Run the SQL setup.', 'warn');
+  }
+}
+
+function scheduleAgentAccountsCloudSave() {
+  if (!cloudEnabled() || !sbUser || !sbProfile?.team_id) return;
+  clearTimeout(cloudAgentSaveTimer);
+  cloudAgentSaveTimer = setTimeout(() => syncAgentAccountsToCloud({ silent:true }), 1500);
+}
+
+const _m2CloudOldSaveAccountAccess = saveAccountAccess;
+saveAccountAccess = function(data) {
+  _m2CloudOldSaveAccountAccess(data);
+  scheduleAgentAccountsCloudSave();
+};
+
+const _m2CloudOldEnsureCloudProfile = ensureCloudProfile;
+ensureCloudProfile = async function() {
+  const profile = await _m2CloudOldEnsureCloudProfile();
+  if (profile && sbProfile?.team_id) await loadAgentAccountsFromCloud({ silent:true });
+  return profile;
+};
+
+const _m2CloudOldRenderAccessCard = renderAccessCard;
+renderAccessCard = function() {
+  _m2CloudOldRenderAccessCard();
+  const card = document.getElementById('m2-access-card');
+  if (!card || document.getElementById('m2-cloud-agent-actions')) return;
+  const div = document.createElement('div');
+  div.id = 'm2-cloud-agent-actions';
+  div.className = 'daily-action-row';
+  div.innerHTML = `
+    <button class="daily-btn secondary" id="m2-sync-agents-cloud">Sync Agents to Cloud</button>
+    <button class="daily-btn secondary" id="m2-load-agents-cloud">Load Cloud Agents</button>
+  `;
+  card.appendChild(div);
+  document.getElementById('m2-sync-agents-cloud')?.addEventListener('click', () => syncAgentAccountsToCloud());
+  document.getElementById('m2-load-agents-cloud')?.addEventListener('click', () => loadAgentAccountsFromCloud());
+};
+
+// Add assigned user fields into cloud lead rows when those SQL columns exist.
+const _m2CloudOldLeadPayloadForCloud = leadPayloadForCloud;
+leadPayloadForCloud = function(lead) {
+  const row = _m2CloudOldLeadPayloadForCloud(lead);
+  row.assigned_agent = lead.assigned_agent || '';
+  row.assigned_user_email = lead.assigned_user_email || '';
+  row.assigned_user_id = lead.assigned_user_id || '';
+  return row;
+};
+
+
 initSupabaseClient();
 refreshCloudSession().catch(e => console.warn('Supabase session error', e));
 
