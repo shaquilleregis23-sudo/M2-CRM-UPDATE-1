@@ -695,7 +695,34 @@ function updateSingleMarker(leadId) {
   const markerSymbol = lead.status === 'do_not_knock' ? '<span style="position:absolute;inset:-7px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:900;text-shadow:0 1px 3px #000;">!</span>' : '';
   markers[leadId].setIcon(L.divIcon({ className:'', html:`<div style="position:relative;width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2px solid #fff;${ring}">${dot}${markerSymbol}</div>`, iconSize:[size,size], iconAnchor:[size/2,size/2] }));
 }
+function isLeadVisibleToCurrentUser(lead) {
+  try {
+    const sess = (typeof getCurrentSession === 'function') ? getCurrentSession() : null;
+    if (!sess || sess.role !== 'agent') return true;
+    const agentName = String(sess.name || '').trim().toLowerCase();
+    const agentEmail = String(sess.email || '').trim().toLowerCase();
+    const agentId = String(sess.id || '').trim();
+    const assignedName = String(lead.assigned_agent || lead.agent_name || '').trim().toLowerCase();
+    const assignedEmail = String(lead.assigned_user_email || '').trim().toLowerCase();
+    const assignedId = String(lead.assigned_user_id || '').trim();
+    return !!(
+      (agentName && assignedName && assignedName === agentName) ||
+      (agentEmail && assignedEmail && assignedEmail === agentEmail) ||
+      (agentId && assignedId && assignedId === agentId)
+    );
+  } catch(e) { return true; }
+}
+function scopedLeadsForCurrentUser(leads) {
+  return (leads || state.leads || []).filter(isLeadVisibleToCurrentUser);
+}
+function canManageTeam() {
+  try { return (typeof activeUserRole === 'function' ? activeUserRole() : 'master') !== 'agent'; }
+  catch(e) { return true; }
+}
+function explicitLeadAgent(lead) { return String(lead.assigned_agent || lead.agent_name || '').trim(); }
+
 function filterLeads(leads) {
+  leads = scopedLeadsForCurrentUser(leads);
   if (state.filter === 'all') return leads;
   if (state.filter === 'high_viability') return leads.filter(l => l.viability === 'high');
   if (state.filter === 'manual') return leads.filter(l => l.source === 'manual');
@@ -709,7 +736,7 @@ function filterLeads(leads) {
 }
 function renderFilterBar() {
   const bar = document.getElementById('filter-bar');
-  const counts = state.leads.reduce((acc, l) => {
+  const counts = scopedLeadsForCurrentUser(state.leads).reduce((acc, l) => {
     acc.all++;
     acc[l.status] = (acc[l.status]||0) + 1;
     if (l.viability === 'high') acc.high_viability++;
@@ -1193,6 +1220,8 @@ function createLead() {
     credit:document.getElementById('f-credit').value,
     phone:document.getElementById('f-phone').value,
     assigned_agent:document.getElementById('f-assigned-agent').value,
+    assigned_user_email:(getCurrentSession()?.email || ''),
+    assigned_user_id:(getCurrentSession()?.id || ''),
     territory:document.getElementById('f-territory').value,
     solar_status:document.getElementById('f-solar-status').value,
     heating_type:document.getElementById('f-heating-type').value,
@@ -1259,8 +1288,9 @@ function renderTopStats() {
   document.getElementById('s-knock').textContent = today.filter(l => isDoorTouched(l.status)).length;
   document.getElementById('s-set').textContent = today.filter(l => l.status === 'set').length;
 }
-function todayLeads() { const today = new Date().toDateString(); return state.leads.filter(l => l.updated_at && new Date(l.updated_at).toDateString() === today); }
+function todayLeads() { const today = new Date().toDateString(); return scopedLeadsForCurrentUser(state.leads).filter(l => l.updated_at && new Date(l.updated_at).toDateString() === today); }
 function renderStats() {
+  const visibleLeads = scopedLeadsForCurrentUser(state.leads);
   const today = todayLeads();
   const knocks = today.filter(l => isDoorTouched(l.status)).length;
   const sets = today.filter(l => l.status === 'set').length;
@@ -1268,15 +1298,15 @@ function renderStats() {
   document.getElementById('ts-knock').textContent = knocks; document.getElementById('ts-knock2').textContent = knocks;
   document.getElementById('ts-set').textContent = sets; document.getElementById('ts-cb').textContent = cbs;
   document.getElementById('ts-conv').textContent = knocks ? `${Math.round(sets/knocks*100)}%` : '0%';
-  document.getElementById('ts-all-knock').textContent = state.leads.filter(l => isDoorTouched(l.status)).length;
-  document.getElementById('ts-all-set').textContent = state.leads.filter(l => l.status === 'set').length;
-  document.getElementById('ts-viable').textContent = state.leads.filter(l => l.viability === 'high').length;
-  document.getElementById('ts-total').textContent = state.leads.length;
-  document.getElementById('ts-manual').textContent = state.leads.filter(l => l.source === 'manual').length;
-  document.getElementById('ts-imported').textContent = state.leads.filter(l => l.source === 'imported').length;
-  document.getElementById('ts-entity').textContent = state.leads.filter(l => l.entity).length;
-  document.getElementById('ts-hpd').textContent = state.leads.filter(l => l.hpd_enriched).length;
-  document.getElementById('ts-pluto').textContent = state.leads.filter(l => l.source === 'pluto').length;
+  document.getElementById('ts-all-knock').textContent = visibleLeads.filter(l => isDoorTouched(l.status)).length;
+  document.getElementById('ts-all-set').textContent = visibleLeads.filter(l => l.status === 'set').length;
+  document.getElementById('ts-viable').textContent = visibleLeads.filter(l => l.viability === 'high').length;
+  document.getElementById('ts-total').textContent = visibleLeads.length;
+  document.getElementById('ts-manual').textContent = visibleLeads.filter(l => l.source === 'manual').length;
+  document.getElementById('ts-imported').textContent = visibleLeads.filter(l => l.source === 'imported').length;
+  document.getElementById('ts-entity').textContent = visibleLeads.filter(l => l.entity).length;
+  document.getElementById('ts-hpd').textContent = visibleLeads.filter(l => l.hpd_enriched).length;
+  document.getElementById('ts-pluto').textContent = visibleLeads.filter(l => l.source === 'pluto').length;
   const bytes = new Blob([JSON.stringify(state)]).size;
   document.getElementById('ts-storage').textContent = `${(bytes/1024/1024).toFixed(2)} MB`;
   renderPhase3Dashboard();
@@ -1293,7 +1323,8 @@ function renderPhase3Dashboard() {
     panel.id = 'phase3-dashboard';
     statsView.insertBefore(panel, statsView.firstChild);
   }
-  const followups = state.leads
+  const visibleLeads = scopedLeadsForCurrentUser(state.leads);
+  const followups = visibleLeads
     .filter(l => (isDueToday(l.callback_due) || isDueToday(l.appt_time)) && !['closed','do_not_knock','not_qualified'].includes(l.status))
     .sort((a,b) => new Date(a.callback_due || a.appt_time) - new Date(b.callback_due || b.appt_time))
     .slice(0, 12);
@@ -1303,7 +1334,7 @@ function renderPhase3Dashboard() {
   }).join('') : '<div class="ai-empty">No callbacks or appointments due today.</div>';
 
   const agents = {};
-  state.leads.forEach(l => {
+  visibleLeads.forEach(l => {
     const a = leadAgent(l);
     if (!agents[a]) agents[a] = { touched:0, interested:0, set:0, sat:0, closed:0, callbacks:0 };
     if (isDoorTouched(l.status)) agents[a].touched++;
@@ -1317,9 +1348,9 @@ function renderPhase3Dashboard() {
     .sort((a,b) => b.score - a.score).slice(0, 8);
   const leaderHtml = leaders.length ? leaders.map(x => `<div class="leader-row"><div><div class="nm">${x.name}</div><div class="meta">Doors ${x.touched} · Interested ${x.interested} · Set ${x.set} · Sat ${x.sat} · Closed ${x.closed}</div></div><div class="score">${x.score}</div></div>`).join('') : '<div class="ai-empty">No agent activity yet.</div>';
 
-  const dnkCount = state.leads.filter(l => l.status === 'do_not_knock').length;
+  const dnkCount = visibleLeads.filter(l => l.status === 'do_not_knock').length;
   const territories = {};
-  state.leads.forEach(l => { const t = leadTerritory(l) || 'No territory'; territories[t] = (territories[t] || 0) + 1; });
+  visibleLeads.forEach(l => { const t = leadTerritory(l) || 'No territory'; territories[t] = (territories[t] || 0) + 1; });
   const territoryHtml = Object.entries(territories).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([t,c]) => `<span class="territory-pill">${t}: ${c}</span>`).join(' ') || '<span class="territory-pill">No territory data</span>';
 
   panel.innerHTML = `
@@ -1457,7 +1488,7 @@ function savePhase5Checklist(data) {
   localStorage.setItem('m2_phase5_checklist_' + phase5DateKey(), JSON.stringify(data || {}));
 }
 function getBestNextLead() {
-  const active = state.leads.filter(l => !['closed','do_not_knock','not_qualified','not_interested'].includes(l.status));
+  const active = scopedLeadsForCurrentUser(state.leads).filter(l => !['closed','do_not_knock','not_qualified','not_interested'].includes(l.status));
   const due = active.filter(l => isDueToday(l.appt_time) || isDueToday(l.callback_due));
   if (due.length) return due.sort((a,b) => new Date(a.appt_time || a.callback_due) - new Date(b.appt_time || b.callback_due))[0];
   const hot = active.find(l => l.status === 'interested') || active.find(l => l.status === 'callback') || active.find(l => l.status === 'set');
@@ -1485,7 +1516,7 @@ function renderPhase5Dashboard() {
   const today = todayLeads();
   const doors = today.filter(l => isDoorTouched(l.status)).length;
   const sets = today.filter(l => l.status === 'set' || l.status === 'sat' || l.status === 'closed').length;
-  const followupsDue = state.leads.filter(l => (isDueToday(l.callback_due) || isDueToday(l.appt_time)) && !['closed','do_not_knock','not_qualified'].includes(l.status)).length;
+  const followupsDue = scopedLeadsForCurrentUser(state.leads).filter(l => (isDueToday(l.callback_due) || isDueToday(l.appt_time)) && !['closed','do_not_knock','not_qualified'].includes(l.status)).length;
   const checklist = getPhase5Checklist();
   const items = [
     ['route', 'Pick today’s territory', `Default: ${s.default_territory || 'No default territory set'}`],
@@ -2308,6 +2339,50 @@ function createLoginOverlay() {
   });
 }
 function openLoginOverlay() { createLoginOverlay(); document.getElementById('m2-login-overlay').classList.add('open'); }
+function assignVisibleLeadsToAgent(agentId) {
+  if (!canManageTeam()) { showToast('Only master can assign leads'); return; }
+  const acc = getAccountAccess();
+  const agent = (acc.agents || []).find(a => a.id === agentId);
+  if (!agent) return;
+  const leadsToAssign = filterLeads(state.leads);
+  if (!leadsToAssign.length) { showToast('No leads in current filter'); return; }
+  const label = state.filter === 'all' ? 'ALL visible leads' : `current ${state.filter} filter`;
+  if (!confirm(`Assign ${leadsToAssign.length} ${label} to ${agent.name}?`)) return;
+  const now = new Date().toISOString();
+  leadsToAssign.forEach(l => {
+    l.assigned_agent = agent.name;
+    l.assigned_user_email = agent.email || '';
+    l.assigned_user_id = agent.id || '';
+    if (agent.territory) l.territory = agent.territory;
+    l.updated_at = now;
+  });
+  saveState();
+  renderMarkers(); renderFilterBar(); renderList(); renderStats();
+  showToast(`✓ Assigned ${leadsToAssign.length} leads to ${agent.name}`);
+}
+function assignUnassignedLeadsToAgent(agentId) {
+  if (!canManageTeam()) { showToast('Only master can assign leads'); return; }
+  const acc = getAccountAccess();
+  const agent = (acc.agents || []).find(a => a.id === agentId);
+  if (!agent) return;
+  const territory = String(agent.territory || '').trim().toLowerCase();
+  let leadsToAssign = state.leads.filter(l => !explicitLeadAgent(l));
+  if (territory) leadsToAssign = leadsToAssign.filter(l => String(leadTerritory(l) || '').trim().toLowerCase() === territory);
+  if (!leadsToAssign.length) { showToast('No unassigned leads found for this agent'); return; }
+  if (!confirm(`Assign ${leadsToAssign.length} unassigned ${agent.territory || ''} leads to ${agent.name}?`)) return;
+  const now = new Date().toISOString();
+  leadsToAssign.forEach(l => {
+    l.assigned_agent = agent.name;
+    l.assigned_user_email = agent.email || '';
+    l.assigned_user_id = agent.id || '';
+    if (agent.territory) l.territory = agent.territory;
+    l.updated_at = now;
+  });
+  saveState();
+  renderMarkers(); renderFilterBar(); renderList(); renderStats();
+  showToast(`✓ Assigned ${leadsToAssign.length} leads to ${agent.name}`);
+}
+
 function renderAccessCard() {
   const statsView = document.getElementById('stats-view');
   if (!statsView) return;
@@ -2324,7 +2399,11 @@ function renderAccessCard() {
   const agentList = agents.length ? agents.map(a => `
     <div class="agent-row">
       <div><div class="nm">${escapeHtml(a.name)} <span class="role-pill">Agent</span></div><div class="meta">${escapeHtml(a.email)} · ${escapeHtml(a.territory || 'No territory')} · PIN: ${escapeHtml(a.pin)}</div></div>
-      <button class="phase4-mini-btn" data-agent-login="${escapeHtml(a.id)}">Use</button>
+      <div style="display:grid;gap:6px;min-width:130px;">
+        <button class="phase4-mini-btn" data-agent-login="${escapeHtml(a.id)}">Login View</button>
+        <button class="phase4-mini-btn" data-agent-assign-filter="${escapeHtml(a.id)}">Assign Filter</button>
+        <button class="phase4-mini-btn" data-agent-assign-unassigned="${escapeHtml(a.id)}">Assign Unassigned</button>
+      </div>
     </div>`).join('') : '<div class="access-sub">No agent logins created yet.</div>';
   card.className = 'access-card';
   card.innerHTML = `
@@ -2389,6 +2468,8 @@ function renderAccessCard() {
     const s = getSettings(); saveSettings({ ...s, agent_name:a.name, default_territory:a.territory || s.default_territory || '' });
     renderSettings(); renderStats(); showToast('✓ Using agent account');
   }));
+  document.querySelectorAll('[data-agent-assign-filter]').forEach(btn => btn.addEventListener('click', () => assignVisibleLeadsToAgent(btn.dataset.agentAssignFilter)));
+  document.querySelectorAll('[data-agent-assign-unassigned]').forEach(btn => btn.addEventListener('click', () => assignUnassignedLeadsToAgent(btn.dataset.agentAssignUnassigned)));
   const login = document.getElementById('m2-open-login'); if (login) login.addEventListener('click', openLoginOverlay);
   const logout = document.getElementById('m2-logout'); if (logout) logout.addEventListener('click', () => { localStorage.removeItem(SESSION_KEY); openLoginOverlay(); renderStats(); });
 }
@@ -2409,7 +2490,7 @@ renderPhase5Dashboard = function() {
   const today = todayLeads();
   const doors = today.filter(l => isDoorTouched(l.status)).length;
   const sets = today.filter(l => l.status === 'set' || l.status === 'sat' || l.status === 'closed').length;
-  const followupsDue = state.leads.filter(l => (isDueToday(l.callback_due) || isDueToday(l.appt_time)) && !['closed','do_not_knock','not_qualified'].includes(l.status)).length;
+  const followupsDue = scopedLeadsForCurrentUser(state.leads).filter(l => (isDueToday(l.callback_due) || isDueToday(l.appt_time)) && !['closed','do_not_knock','not_qualified'].includes(l.status)).length;
   const checklist = getPhase5Checklist();
   const doorPct = Math.min(100, Math.round((doors / dailyDoorGoal) * 100));
   const apptPct = Math.min(100, Math.round((sets / dailyApptGoal) * 100));
