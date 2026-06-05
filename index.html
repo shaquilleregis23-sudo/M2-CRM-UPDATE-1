@@ -2546,33 +2546,83 @@ async function ensureCloudProfile() {
   return existing;
 }
 
+
+function cloudErrorMessage(e) {
+  if (!e) return 'Unknown cloud error';
+  return e.message || e.error_description || e.error || String(e);
+}
+function setCloudBusy(buttonId, label, busy=true) {
+  const btn = document.getElementById(buttonId);
+  if (!btn) return;
+  if (busy) { btn.dataset.oldText = btn.textContent; btn.textContent = label; btn.disabled = true; }
+  else { btn.textContent = btn.dataset.oldText || btn.textContent; btn.disabled = false; }
+}
+async function withCloudTimeout(promise, label='Supabase request', ms=12000) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(label + ' timed out. Check Supabase SQL/Auth settings, then try again.')), ms);
+  });
+  try { return await Promise.race([promise, timeout]); }
+  finally { clearTimeout(timer); }
+}
+
 async function cloudSignUp() {
   const sb = initSupabaseClient();
   const email = document.getElementById('cloud-email')?.value.trim();
   const password = document.getElementById('cloud-password')?.value;
   const name = document.getElementById('cloud-name')?.value.trim();
+  if (!sb) return setCloudStatus('Supabase library did not load. Refresh and try again.', 'warn');
   if (!email || !password) return showToast('Enter email + password');
   if (password.length < 6) return showToast('Password needs 6+ characters');
+  setCloudBusy('cloud-signup', 'Creating...', true);
   setCloudStatus('Creating account...', 'warn');
-  const { data, error } = await sb.auth.signUp({ email, password, options:{ data:{ full_name:name || email.split('@')[0] } } });
-  if (error) return setCloudStatus(error.message, 'warn');
-  sbUser = data.user || null;
-  if (sbUser) { await ensureCloudProfile(); setCloudEnabled(true); }
-  setCloudStatus('Account created. If Supabase asks for email confirmation, confirm it then log in.', 'good');
-  renderCloudPanel();
+  try {
+    const { data, error } = await withCloudTimeout(
+      sb.auth.signUp({ email, password, options:{ data:{ full_name:name || email.split('@')[0] } } }),
+      'Create account'
+    );
+    if (error) throw error;
+    sbUser = data.user || null;
+    if (!sbUser) {
+      setCloudStatus('Account may need email confirmation. Check inbox, then use Log In.', 'warn');
+      return;
+    }
+    try { await withCloudTimeout(ensureCloudProfile(), 'Create master profile'); }
+    catch(profileErr) { console.error(profileErr); setCloudStatus('Account created, but profile setup failed: ' + cloudErrorMessage(profileErr), 'warn'); return; }
+    setCloudEnabled(true);
+    setCloudStatus('Account created and logged in. Cloud sync is on.', 'good');
+    renderCloudPanel(); renderStats();
+  } catch(e) {
+    console.error(e);
+    setCloudStatus(cloudErrorMessage(e), 'warn');
+  } finally {
+    setCloudBusy('cloud-signup', 'Create Master Account', false);
+  }
 }
 
 async function cloudLogin() {
   const sb = initSupabaseClient();
   const email = document.getElementById('cloud-email')?.value.trim();
   const password = document.getElementById('cloud-password')?.value;
+  if (!sb) return setCloudStatus('Supabase library did not load. Refresh and try again.', 'warn');
   if (!email || !password) return showToast('Enter email + password');
+  setCloudBusy('cloud-login', 'Logging in...', true);
   setCloudStatus('Logging in...', 'warn');
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) return setCloudStatus(error.message, 'warn');
-  sbUser = data.user; await ensureCloudProfile(); setCloudEnabled(true);
-  setCloudStatus('Logged in. Cloud sync is on.', 'good');
-  renderCloudPanel(); renderStats();
+  try {
+    const { data, error } = await withCloudTimeout(sb.auth.signInWithPassword({ email, password }), 'Log in');
+    if (error) throw error;
+    sbUser = data.user;
+    try { await withCloudTimeout(ensureCloudProfile(), 'Load profile/team'); }
+    catch(profileErr) { console.error(profileErr); setCloudStatus('Logged in, but profile/team setup failed: ' + cloudErrorMessage(profileErr), 'warn'); return; }
+    setCloudEnabled(true);
+    setCloudStatus('Logged in. Cloud sync is on.', 'good');
+    renderCloudPanel(); renderStats();
+  } catch(e) {
+    console.error(e);
+    setCloudStatus(cloudErrorMessage(e), 'warn');
+  } finally {
+    setCloudBusy('cloud-login', 'Log In', false);
+  }
 }
 
 async function cloudLogout() {
@@ -2586,20 +2636,67 @@ async function cloudLogout() {
 function leadPayloadForCloud(lead) {
   const session = getCurrentSession ? getCurrentSession() : null;
   return {
-    id: String(lead.id),
+    local_id: String(lead.id),
     team_id: sbProfile?.team_id || null,
     owner_id: sbUser?.id || null,
-    assigned_user_id: lead.assigned_user_id || null,
-    assigned_agent: lead.assigned_agent || session?.name || getDefaultAgent?.() || '',
-    territory: lead.territory || session?.territory || getDefaultTerritory?.() || '',
-    status: lead.status || 'fresh',
-    homeowner_name: [lead.first, lead.last].filter(Boolean).join(' ') || lead.last || '',
-    address: lead.addr || '',
+    first: lead.first || '',
+    last: lead.last || '',
     phone: lead.phone || '',
+    email: lead.email || '',
+    addr: lead.addr || '',
+    city: lead.city || '',
+    boro: lead.boro || '',
+    zip: lead.zip || '',
+    lat: lead.lat || null,
+    lng: lead.lng || null,
+    status: lead.status || 'fresh',
+    source: lead.source || '',
+    territory: lead.territory || session?.territory || getDefaultTerritory?.() || '',
+    monthly_bill: String(lead.monthly_bill || ''),
+    heating_bill: String(lead.heating_bill || ''),
+    credit: lead.credit || '',
+    roof_notes: lead.roof_notes || '',
+    notes: lead.notes || '',
+    solar_status: lead.solar_status || 'unknown',
+    heating_type: lead.heating_type || 'unknown',
+    hvac_opportunity: lead.hvac_opportunity || 'unknown',
+    bill_received: !!lead.bill_received,
+    bill_file_name: lead.bill_file_name || '',
     callback_due: lead.callback_due || null,
     appt_time: lead.appt_time || null,
-    data: lead,
+    assigned_closer: lead.assigned_closer || '',
+    appt_outcome: lead.appt_outcome || 'none',
+    bbl: lead.bbl || '',
+    bldg_class: lead.bldg_class || '',
+    year_built: lead.year_built || null,
+    units: lead.units || null,
+    lot_sqft: lead.lot_sqft || null,
+    est_value: lead.est_value || null,
+    viability: lead.viability || '',
+    raw_data: lead,
     updated_at: lead.updated_at || new Date().toISOString()
+  };
+}
+
+function cloudRowToLead(r) {
+  const raw = r.raw_data || {};
+  return {
+    ...raw,
+    id: raw.id || r.local_id || r.id,
+    first: raw.first || r.first || '',
+    last: raw.last || r.last || '',
+    phone: raw.phone || r.phone || '',
+    email: raw.email || r.email || '',
+    addr: raw.addr || r.addr || '',
+    city: raw.city || r.city || '',
+    boro: raw.boro || r.boro || '',
+    zip: raw.zip || r.zip || '',
+    lat: raw.lat || r.lat,
+    lng: raw.lng || r.lng,
+    status: raw.status || r.status || 'fresh',
+    source: raw.source || r.source || '',
+    territory: raw.territory || r.territory || '',
+    updated_at: r.updated_at || raw.updated_at || new Date().toISOString()
   };
 }
 
@@ -2612,7 +2709,7 @@ async function pushLeadsToCloud({ silent=false }={}) {
   try {
     const rows = state.leads.map(leadPayloadForCloud);
     if (!rows.length) { if(!silent) setCloudStatus('No leads to sync yet.', 'warn'); return; }
-    const { error } = await sb.from('leads').upsert(rows, { onConflict:'id' });
+    const { error } = await sb.from('leads').upsert(rows, { onConflict:'local_id' });
     if (error) throw error;
     if (!silent) setCloudStatus(`Synced ${rows.length} leads to Supabase.`, 'good');
   } catch(e) {
@@ -2626,9 +2723,9 @@ async function pullLeadsFromCloud() {
   if (!sb || !sbUser) return setCloudStatus('Log in before loading cloud leads.', 'warn');
   if (!sbProfile) await ensureCloudProfile();
   setCloudStatus('Loading cloud leads...', 'warn');
-  const { data, error } = await sb.from('leads').select('id,data,updated_at').order('updated_at', { ascending:false }).limit(10000);
+  const { data, error } = await sb.from('leads').select('*').order('updated_at', { ascending:false }).limit(10000);
   if (error) return setCloudStatus(error.message || 'Could not load cloud leads.', 'warn');
-  const cloudLeads = (data || []).map(r => ({ ...(r.data || {}), id:r.id, updated_at:r.updated_at || r.data?.updated_at })).filter(l => l.id && l.lat && l.lng);
+  const cloudLeads = (data || []).map(cloudRowToLead).filter(l => l.id && l.lat && l.lng);
   const byId = new Map(state.leads.map(l => [String(l.id), l]));
   cloudLeads.forEach(l => {
     const existing = byId.get(String(l.id));
@@ -2688,11 +2785,13 @@ function renderCloudPanel() {
         <div class="cloud-actions">
           <button class="cloud-btn primary" id="cloud-login">Log In</button>
           <button class="cloud-btn good" id="cloud-signup">Create Master Account</button>
+          <button class="cloud-btn warn" id="cloud-reset" type="button">Reset Session</button>
         </div>
       `}
       <div class="cloud-status ${loggedIn ? 'good' : 'warn'}" id="cloud-status">${loggedIn ? 'Cloud panel ready.' : 'Waiting for Supabase SQL setup + login.'}</div>
     </div>`;
   document.getElementById('cloud-signup')?.addEventListener('click', cloudSignUp);
+  document.getElementById('cloud-reset')?.addEventListener('click', async () => { try { await cloudLogout(); } catch(e) {} localStorage.removeItem('sb-cghblukwgsqqwedlzmgh-auth-token'); setCloudStatus('Session reset. Refresh, then log in again.', 'warn'); });
   document.getElementById('cloud-login')?.addEventListener('click', cloudLogin);
   document.getElementById('cloud-logout')?.addEventListener('click', cloudLogout);
   document.getElementById('cloud-push')?.addEventListener('click', () => pushLeadsToCloud());
