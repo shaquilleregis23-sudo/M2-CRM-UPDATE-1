@@ -4406,5 +4406,150 @@ if (state.leads.length === 0) showInfo('Tap "📍 Neighborhoods" to load homes. 
 })();
 </script>
 
+
+<script>
+/* === M2 MASTER LOGIN HARD FIX v1 ===
+   Replaces fragile login overlay with a stable version and multiple safe master login paths.
+   Keeps old design and does not change map/stats features. */
+(function(){
+  function m2Toast(msg,type){
+    try { if (typeof showToast === 'function') return showToast(msg,type); } catch(e) {}
+    alert(msg);
+  }
+  function m2Account(){
+    try { if (typeof getAccountAccess === 'function') return getAccountAccess() || {}; } catch(e) {}
+    try { return JSON.parse(localStorage.getItem(typeof ACCOUNT_KEY !== 'undefined' ? ACCOUNT_KEY : 'm2_account_access_v1') || '{}') || {}; } catch(e) { return {}; }
+  }
+  function m2SaveAccount(acc){
+    try { if (typeof saveAccountAccess === 'function') return saveAccountAccess(acc); } catch(e) {}
+    try { localStorage.setItem(typeof ACCOUNT_KEY !== 'undefined' ? ACCOUNT_KEY : 'm2_account_access_v1', JSON.stringify(acc || {})); } catch(e) {}
+  }
+  function m2SaveSession(sess){
+    try { if (typeof saveCurrentSession === 'function') return saveCurrentSession(sess); } catch(e) {}
+    try { localStorage.setItem(typeof SESSION_KEY !== 'undefined' ? SESSION_KEY : 'm2_current_session_v1', JSON.stringify(sess || {})); } catch(e) {}
+  }
+  function m2Refresh(){
+    ['renderSettings','renderStats','renderFilterBar','renderList','renderMarkers'].forEach(fn => {
+      try { if (typeof window[fn] === 'function') window[fn](); } catch(e) { console.warn(fn,e); }
+    });
+  }
+  async function m2CloudMasterLogin(email,pin){
+    email=String(email||'').trim().toLowerCase(); pin=String(pin||'').trim();
+    if(!email || !pin) return null;
+    // First try the official RPC if it exists.
+    try {
+      if (typeof cloudMasterLoginByPin === 'function') {
+        const row = await cloudMasterLoginByPin(email,pin);
+        if (row) return row;
+      }
+    } catch(e) { console.warn('RPC master login failed', e); }
+    // Second try a direct safe table lookup. This helps if the RPC function is missing/outdated.
+    try {
+      if (typeof initSupabaseClient !== 'function') return null;
+      const sb = initSupabaseClient();
+      if(!sb) return null;
+      const res = await sb.from('master_accounts').select('*').eq('email', email).eq('pin', pin).limit(1);
+      if(res.error) throw res.error;
+      const row = Array.isArray(res.data) ? res.data[0] : null;
+      if(!row) return null;
+      const acc = m2Account();
+      acc.master_name = row.name || row.master_name || 'Master';
+      acc.master_email = String(row.email || email).toLowerCase();
+      acc.master_pin = pin;
+      acc.team_id = row.team_id || acc.team_id || '';
+      m2SaveAccount(acc);
+      return { role:'master', name:acc.master_name, email:acc.master_email, team_id:acc.team_id };
+    } catch(e) {
+      console.warn('Direct master lookup failed', e);
+      return null;
+    }
+  }
+  async function m2CloudAgentLogin(email,pin){
+    email=String(email||'').trim().toLowerCase(); pin=String(pin||'').trim();
+    if(!email || !pin) return null;
+    try { if (typeof cloudAgentLoginByPin === 'function') return await cloudAgentLoginByPin(email,pin); } catch(e){ console.warn(e); }
+    try {
+      if (typeof initSupabaseClient !== 'function') return null;
+      const sb = initSupabaseClient(); if(!sb) return null;
+      const res = await sb.from('agent_accounts').select('*').eq('email', email).eq('pin', pin).limit(1);
+      if(res.error) throw res.error;
+      const row = Array.isArray(res.data) ? res.data[0] : null;
+      if(!row) return null;
+      return { id:row.id, name:row.name||row.agent_name||'Agent', email:row.email||email, territory:row.territory||'', team_id:row.team_id||'' };
+    } catch(e){ console.warn('Direct agent lookup failed', e); return null; }
+  }
+
+  window.createLoginOverlay = function(){
+    let div=document.getElementById('m2-login-overlay');
+    if(div) div.remove();
+    div=document.createElement('div');
+    div.id='m2-login-overlay';
+    div.className='login-overlay';
+    div.innerHTML=`
+      <div class="login-box" style="max-width:520px;">
+        <h2>Welcome to M2 Energy CRM</h2>
+        <p>Log in as the owner or as an assigned rep.</p>
+        <div class="beta-login-choice">
+          <button type="button" class="active" data-m2-role="master">👑 Master / Owner</button>
+          <button type="button" data-m2-role="agent">👥 Agent / Rep</button>
+        </div>
+        <div class="form-row"><label>Email / username</label><input type="text" id="m2-login-email-fixed" autocomplete="username" placeholder="you@email.com" /></div>
+        <div class="form-row"><label>PIN / password</label><input type="password" id="m2-login-pin-fixed" autocomplete="current-password" placeholder="4+ digits" /></div>
+        <button class="save-btn" type="button" data-m2-login-submit style="background:#1f6feb;">Login</button>
+        <button class="save-btn secondary" type="button" data-m2-login-demo style="margin-top:8px;">Try Demo Mode</button>
+        <button class="save-btn secondary" type="button" data-m2-login-close style="margin-top:8px;">Close</button>
+        <p style="margin-top:10px;color:#8b949e;">Need access? Contact your manager. If Master fails on a new device, sync Master to Cloud from the main device first.</p>
+      </div>`;
+    document.body.appendChild(div);
+    let role='master';
+    div.addEventListener('click', async function(e){
+      const roleBtn=e.target.closest('[data-m2-role]');
+      if(roleBtn){ role=roleBtn.dataset.m2Role; div.querySelectorAll('[data-m2-role]').forEach(b=>b.classList.toggle('active',b===roleBtn)); return; }
+      if(e.target.closest('[data-m2-login-close]')){ div.classList.remove('open'); return; }
+      if(e.target.closest('[data-m2-login-demo]')){ try{ if(typeof startM2DemoMode==='function') startM2DemoMode(); }catch(err){console.error(err); m2Toast('Demo error: '+err.message,'error');} div.classList.remove('open'); return; }
+      if(e.target.closest('[data-m2-login-submit]')){
+        const email=document.getElementById('m2-login-email-fixed').value.trim().toLowerCase();
+        const pin=document.getElementById('m2-login-pin-fixed').value.trim();
+        if(!pin){ m2Toast('Enter your PIN.','warn'); return; }
+        const acc=m2Account();
+        try{
+          if(role==='master'){
+            let ok=false, sess=null;
+            const savedEmail=String(acc.master_email||'').trim().toLowerCase();
+            const savedPin=String(acc.master_pin||'').trim();
+            if(savedPin && pin===savedPin && (!savedEmail || !email || email===savedEmail)){
+              sess={role:'master', name:acc.master_name||'Master', email:savedEmail||email, team_id:acc.team_id||''}; ok=true;
+            }
+            if(!ok){
+              m2Toast('Checking cloud master login...','info');
+              const cloud=await m2CloudMasterLogin(email,pin);
+              if(cloud){ sess={role:'master', name:cloud.name||'Master', email:cloud.email||email, team_id:cloud.team_id||''}; ok=true; }
+            }
+            if(!ok){ m2Toast('Master login not found. Check email/PIN, or Sync Master to Cloud from the main device.','error'); return; }
+            m2SaveSession(sess);
+          } else {
+            let agent=(acc.agents||[]).find(a=>String(a.email||'').toLowerCase()===email && String(a.pin||'')===pin);
+            if(!agent){ m2Toast('Checking cloud agent login...','info'); agent=await m2CloudAgentLogin(email,pin); }
+            if(!agent){ m2Toast('Agent login not found. Master may need to Sync Agents to Cloud.','error'); return; }
+            m2SaveSession({role:'agent', name:agent.name, email:agent.email, territory:agent.territory||'', id:agent.id, team_id:agent.team_id||''});
+            try { const s=getSettings(); saveSettings({...s, agent_name:agent.name, default_territory:agent.territory||s.default_territory||''}); } catch(x){}
+          }
+          div.classList.remove('open');
+          m2Refresh();
+          m2Toast('✓ Logged in','success');
+        }catch(err){ console.error(err); m2Toast('Login error: '+(err.message||err),'error'); }
+      }
+    });
+  };
+  window.openLoginOverlay = function(){ window.createLoginOverlay(); const el=document.getElementById('m2-login-overlay'); if(el) el.classList.add('open'); };
+  // Keep existing buttons working even after stats re-renders.
+  document.addEventListener('click', function(e){
+    if(e.target.closest('#m2-open-login') || e.target.closest('#m2-open-beta-login')){
+      e.preventDefault(); e.stopPropagation(); window.openLoginOverlay();
+    }
+  }, true);
+})();
+</script>
+
 </body>
 </html>
