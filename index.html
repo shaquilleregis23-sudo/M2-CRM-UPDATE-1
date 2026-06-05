@@ -4815,5 +4815,179 @@ renderStats = function(){ _m2SalesReadyRenderStats(); renderM2SalesReadyCenter()
 })();
 </script>
 
+
+<script>
+/* === M2 RELIABLE SETTINGS + DEMO BUTTON FIX v2 === */
+(function(){
+  function toast(msg){ try{ if(typeof showToast==='function') showToast(msg); else console.log(msg); }catch(e){ console.log(msg); } }
+  function forceStats(){ try{ if(typeof switchView==='function') switchView('stats'); }catch(e){} }
+  function forceView(view){
+    try{ localStorage.setItem('m2_stats_clean_view_v1', view); }catch(e){}
+    try{ if(typeof m2SetStatsMenuCollapsed==='function') m2SetStatsMenuCollapsed(true); }catch(e){}
+    try{ forceStats(); }catch(e){}
+    try{ if(typeof renderSettings==='function') renderSettings(); }catch(e){}
+    try{ if(typeof renderStats==='function') renderStats(); }catch(e){}
+    try{ if(typeof applyM2StatsPolish==='function') applyM2StatsPolish(); }catch(e){}
+    setTimeout(function(){
+      try{ localStorage.setItem('m2_stats_clean_view_v1', view); }catch(e){}
+      try{ if(typeof renderSettings==='function') renderSettings(); }catch(e){}
+      try{ if(typeof applyM2StatsPolish==='function') applyM2StatsPolish(); }catch(e){}
+      // Fallback: manually hide/show grouped sections if the tab engine missed it.
+      try{
+        var stats=document.getElementById('stats-view');
+        if(stats){
+          ['overview','activity','team','settings','admin'].forEach(function(g){
+            stats.querySelectorAll('[data-m2-stats-group="'+g+'"]').forEach(function(el){
+              if(view==='all' || view===g){ el.classList.remove('m2-stats-hidden'); el.style.display=''; }
+              else { el.classList.add('m2-stats-hidden'); el.style.display='none'; }
+            });
+          });
+          var bar=document.getElementById('m2-stats-toolbar'); if(bar){ bar.classList.remove('m2-stats-hidden'); bar.style.display=''; }
+        }
+      }catch(e){}
+      var target=null;
+      if(view==='settings') target=document.getElementById('m2-settings-pro') || document.getElementById('m2-plan-status-card') || document.querySelector('[data-m2-stats-group="settings"]');
+      if(view==='team') target=document.getElementById('m2-invite-agent-flow') || document.querySelector('[data-m2-stats-group="team"]');
+      if(view==='admin') target=document.getElementById('m2-sales-quick-panel') || document.querySelector('[data-m2-stats-group="admin"]');
+      try{ if(target && target.scrollIntoView) target.scrollIntoView({behavior:'smooth', block:'start'}); }catch(e){}
+    },150);
+  }
+  function openSettings(){ forceView('settings'); toast('Settings opened'); }
+  function openTeam(){ forceView('team'); toast('Team opened'); }
+  function loadDemo(){
+    try{
+      if(typeof m2LoadPremiumDemoData==='function') m2LoadPremiumDemoData();
+      else if(typeof startM2DemoMode==='function') startM2DemoMode();
+      else if(typeof loadM2PremiumDemo==='function') loadM2PremiumDemo();
+      else { toast('Demo loader not found'); return; }
+      try{ localStorage.setItem('m2_demo_mode_active','1'); }catch(e){}
+      toast('Demo loaded');
+    }catch(err){ console.error(err); toast('Demo load error — send screenshot'); }
+  }
+  window.m2OpenSettingsReliable=openSettings;
+  window.m2OpenTeamReliable=openTeam;
+  window.m2LoadDemoReliable=loadDemo;
+  document.addEventListener('click',function(e){
+    var el=e.target && e.target.closest ? e.target.closest('#m2-onboard-settings,[data-m2-open-settings],#m2-open-settings,#open-settings') : null;
+    if(el){ e.preventDefault(); e.stopPropagation(); openSettings(); return; }
+    var demo=e.target && e.target.closest ? e.target.closest('#m2-onboard-demo,#m2-demo-load-premium,#m2-hard-demo,#m2-start-demo-mode,[data-m2-load-demo]') : null;
+    if(demo){ e.preventDefault(); e.stopPropagation(); loadDemo(); return; }
+    var team=e.target && e.target.closest ? e.target.closest('#m2-onboard-invite,[data-m2-open-team]') : null;
+    if(team){ e.preventDefault(); e.stopPropagation(); if(typeof openM2InviteAgentModal==='function') openM2InviteAgentModal(); else openTeam(); return; }
+  },true);
+  // Make visible checklist buttons use reliable handlers even after renderStats recreates them.
+  function relabel(){
+    var s=document.getElementById('m2-onboard-settings'); if(s){ s.onclick=function(ev){ev.preventDefault(); openSettings();}; s.setAttribute('data-m2-open-settings','1'); }
+    var d=document.getElementById('m2-onboard-demo'); if(d){ d.onclick=function(ev){ev.preventDefault(); loadDemo();}; d.setAttribute('data-m2-load-demo','1'); }
+  }
+  setInterval(relabel,700);
+  window.addEventListener('load',function(){ setTimeout(relabel,500); setTimeout(relabel,1500); });
+})();
+</script>
+
+
+<script>
+/* === M2 HARD FIX: SETTINGS + LOAD DEMO BUTTONS v1 === */
+(function(){
+  function toast(msg){ try{ (window.showToast||window.showInfo||alert)(msg); }catch(e){ alert(msg); } }
+  function safeGetSettings(){ try{ return (typeof getSettings==='function'?getSettings():JSON.parse(localStorage.getItem('nyc_solar_settings_v1')||'{}'))||{}; }catch(e){ return {}; } }
+  function safeSaveSettings(updates){
+    try{ if(typeof saveSettings==='function'){ saveSettings(updates); return; } }catch(e){}
+    try{ const cur=safeGetSettings(); localStorage.setItem('nyc_solar_settings_v1', JSON.stringify(Object.assign({},cur,updates))); }catch(e){}
+  }
+  function renderAll(){
+    try{ if(typeof renderBranding==='function') renderBranding(); }catch(e){}
+    try{ if(typeof m2ApplyBrandingPolish==='function') m2ApplyBrandingPolish(); }catch(e){}
+    try{ if(typeof renderSettings==='function') renderSettings(); }catch(e){}
+    try{ if(typeof renderStats==='function') renderStats(); }catch(e){}
+  }
+  function openSettingsModal(){
+    const s=safeGetSettings();
+    const old=document.getElementById('m2-hard-settings-modal'); if(old) old.remove();
+    const div=document.createElement('div');
+    div.id='m2-hard-settings-modal';
+    div.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(8px);';
+    div.innerHTML=`
+      <div style="width:min(680px,96vw);max-height:88vh;overflow:auto;background:#0d1117;border:1px solid rgba(88,166,255,.45);border-radius:22px;padding:20px;box-shadow:0 30px 90px rgba(0,0,0,.7);color:#f0f6fc;font-family:system-ui,-apple-system,Segoe UI,sans-serif;">
+        <h2 style="margin:0 0 6px;font-size:22px;">⚙️ CRM Settings</h2>
+        <p style="margin:0 0 16px;color:#9aa7b8;font-size:13px;line-height:1.4;">Update branding, owner info, support contact, and territory. This works even if the Settings tab button glitches.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <label style="display:grid;gap:6px;font-size:11px;color:#9aa7b8;font-weight:900;text-transform:uppercase;">Business / CRM Name<input id="hf-company" value="${String(s.company_name||s.crm_name||'M2 Energy CRM').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" style="background:#161b22;color:#fff;border:1px solid #30363d;border-radius:12px;padding:12px;font-weight:800;"></label>
+          <label style="display:grid;gap:6px;font-size:11px;color:#9aa7b8;font-weight:900;text-transform:uppercase;">Logo / Icon<input id="hf-icon" value="${String(s.brand_icon||'⚡').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" style="background:#161b22;color:#fff;border:1px solid #30363d;border-radius:12px;padding:12px;font-weight:800;"></label>
+          <label style="display:grid;gap:6px;font-size:11px;color:#9aa7b8;font-weight:900;text-transform:uppercase;">Owner Name<input id="hf-owner" value="${String(s.owner_name||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" style="background:#161b22;color:#fff;border:1px solid #30363d;border-radius:12px;padding:12px;font-weight:800;"></label>
+          <label style="display:grid;gap:6px;font-size:11px;color:#9aa7b8;font-weight:900;text-transform:uppercase;">Support Email<input id="hf-support" value="${String(s.support_email||s.owner_email||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" style="background:#161b22;color:#fff;border:1px solid #30363d;border-radius:12px;padding:12px;font-weight:800;"></label>
+          <label style="display:grid;gap:6px;font-size:11px;color:#9aa7b8;font-weight:900;text-transform:uppercase;grid-column:1/-1;">Main Territory<input id="hf-territory" value="${String(s.main_territory||s.default_territory||'Queens / Long Island').replace(/&/g,'&amp;').replace(/"/g,'&quot;')}" style="background:#161b22;color:#fff;border:1px solid #30363d;border-radius:12px;padding:12px;font-weight:800;"></label>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;">
+          <button id="hf-save" style="border:0;border-radius:13px;padding:13px;background:linear-gradient(135deg,#2f81f7,#00d4ff);color:#fff;font-weight:900;">Save Settings</button>
+          <button id="hf-close" style="border:1px solid #30363d;border-radius:13px;padding:13px;background:#21262d;color:#fff;font-weight:900;">Close</button>
+        </div>
+      </div>`;
+    document.body.appendChild(div);
+    div.querySelector('#hf-close').onclick=()=>div.remove();
+    div.onclick=(e)=>{ if(e.target===div) div.remove(); };
+    div.querySelector('#hf-save').onclick=()=>{
+      safeSaveSettings({
+        company_name:document.getElementById('hf-company').value.trim()||'M2 Energy CRM',
+        crm_name:document.getElementById('hf-company').value.trim()||'M2 Energy CRM',
+        brand_icon:document.getElementById('hf-icon').value.trim()||'⚡',
+        owner_name:document.getElementById('hf-owner').value.trim(),
+        support_email:document.getElementById('hf-support').value.trim(),
+        main_territory:document.getElementById('hf-territory').value.trim(),
+        default_territory:document.getElementById('hf-territory').value.trim()
+      });
+      div.remove(); renderAll(); toast('✓ Settings saved');
+    };
+  }
+  function hardLoadDemo(){
+    try{
+      if(typeof m2LoadPremiumDemoData==='function'){ m2LoadPremiumDemoData(); return; }
+    }catch(e){ console.warn('premium demo failed, fallback running',e); }
+    try{
+      if(typeof m2AutoLocalBackup==='function') m2AutoLocalBackup('before_demo_hard_fix');
+      const now=new Date().toISOString();
+      const rows=[
+        ['High Sun Solar Home','42-15 Sample Ave','Queens',40.728,-73.794,'hot',95,'No solar visible. Clean roof line. High electric bill.','Demo Rep Ava'],
+        ['Boiler + Solar Lead','88-20 Demo Blvd','Queens',40.706,-73.821,'callback',88,'Oil heat. Good roof. Wants estimate tomorrow.','Demo Rep Ava'],
+        ['Mini Split Opportunity','120 Sample Street','Queens',40.681,-73.835,'set',82,'Old boiler. Asked about rebates and monthly payment.','Demo Rep Ava'],
+        ['Bill Uploaded Lead','77-31 Sample Ct','Queens',40.735,-73.742,'interested',79,'Uploaded bill. $280 electric. Good follow-up.','Demo Rep Ava'],
+        ['Long Island High Sun','14 Demo Harbor Rd','Long Island',40.761,-73.610,'hot',91,'Large roof. No shade notes. Good solar candidate.','Demo Rep Jay'],
+        ['HVAC Estimate Set','55 Clean Heat Way','Long Island',40.730,-73.560,'set',76,'Gas boiler replacement. Mini split estimate scheduled.','Demo Rep Jay'],
+        ['Follow-up Needed','15-44 Prospect Rd','Brooklyn',40.667,-73.941,'callback',74,'Spoke to homeowner. Send solar + HVAC breakdown.',''],
+        ['Already Has Solar','230 Demo Lane','Long Island',40.781,-73.590,'not_qualified',28,'Panels visible. Marked as existing solar.',''],
+        ['Doorknock Later','99 Sample Parkway','Queens',40.715,-73.800,'new',68,'No answer. Good roof from street.',''],
+        ['Appointment Tomorrow','31-10 Demo Place','Queens',40.701,-73.812,'appt',84,'Homeowner wants 10-15 minute estimate.','Demo Rep Ava']
+      ];
+      if(typeof state==='undefined') throw new Error('state missing');
+      state.leads=rows.map((r,i)=>({
+        id:'demo_'+Date.now()+'_'+i, first:r[0], last:'', addr:r[1], city:r[2], boro:r[2], zip:'', lat:r[3], lng:r[4], status:r[5], source:'Premium Demo', territory:r[2], notes:r[7], monthly_bill:i<6?'250':'', heating_bill:(i===1||i===5)?'300':'', heating_type:i===1?'oil':(i===5?'gas':''), hvac_opportunity:(i===1||i===2||i===5)?'yes':'', solar_status:i===7?'has_solar':'no_solar_visible', sun_score:r[6], sun_level:r[6]>=75?'High':'Medium', assigned_agent:r[8], assigned_user_email:r[8].includes('Ava')?'ava@m2demo.com':(r[8].includes('Jay')?'jay@m2demo.com':''), assigned_user_id:r[8].includes('Ava')?'demo_rep_1':(r[8].includes('Jay')?'demo_rep_2':''), team_id:'demo_team_m2', team_name:'M2 Demo Solar + HVAC', callback_due:(i===1||i===6)?new Date(Date.now()+86400000).toISOString().slice(0,10):'', appt_time:(i===2||i===5||i===9)?new Date(Date.now()+86400000).toISOString().slice(0,16):'', created_at:now, updated_at:now, demo:true
+      }));
+      state.filter='all';
+      try{ if(typeof saveState==='function') saveState(); }catch(e){}
+      try{ if(typeof saveCurrentSession==='function') saveCurrentSession({role:'master',name:'Demo Owner',email:'owner@m2demo.com',team_id:'demo_team_m2',demo:true}); }catch(e){}
+      localStorage.setItem('m2_demo_mode_v1','1');
+      try{ if(typeof saveSettings==='function') saveSettings({company_name:'M2 Demo Solar + HVAC',crm_name:'M2 Demo Solar + HVAC',brand_icon:'⚡',main_territory:'Queens / Long Island'}); }catch(e){}
+      ['renderMarkers','renderFilterBar','renderList','renderStats','renderSettings','renderBranding'].forEach(fn=>{ try{ if(typeof window[fn]==='function') window[fn](); }catch(e){} });
+      try{ if(typeof switchView==='function') switchView('map'); }catch(e){}
+      toast('✓ Demo loaded');
+    }catch(err){ console.error(err); toast('Demo load error: '+(err.message||err)); }
+  }
+  window.m2HardOpenSettings=openSettingsModal;
+  window.m2HardLoadDemo=hardLoadDemo;
+  function isSettingsBtn(t){ return t&&t.closest&&t.closest('#m2-onboard-settings,[data-m2-open-settings],#m2-open-settings,#open-settings,.m2-open-settings'); }
+  function isDemoBtn(t){ return t&&t.closest&&t.closest('#m2-onboard-demo,#m2-demo-load-premium,#m2-hard-demo,#m2-start-demo-mode,[data-m2-load-demo],.m2-load-demo'); }
+  document.addEventListener('click',function(e){
+    if(isSettingsBtn(e.target)){ e.preventDefault(); e.stopImmediatePropagation(); openSettingsModal(); return false; }
+    if(isDemoBtn(e.target)){ e.preventDefault(); e.stopImmediatePropagation(); hardLoadDemo(); return false; }
+  },true);
+  function bind(){
+    const s=document.getElementById('m2-onboard-settings'); if(s){ s.onclick=function(ev){ev.preventDefault(); openSettingsModal();}; s.setAttribute('data-m2-open-settings','1'); }
+    const d=document.getElementById('m2-onboard-demo'); if(d){ d.onclick=function(ev){ev.preventDefault(); hardLoadDemo();}; d.setAttribute('data-m2-load-demo','1'); }
+  }
+  setInterval(bind,500);
+  window.addEventListener('load',()=>{ setTimeout(bind,300); setTimeout(bind,1200); });
+})();
+</script>
+
 </body>
 </html>
