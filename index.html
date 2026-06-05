@@ -114,7 +114,16 @@
   .lead-item .ad { font-size:12px; color:var(--muted); margin-top:2px; }
   .lead-item .row { display:flex; gap:8px; margin-top:6px; align-items:center; font-size:11px; }
   .badge { padding:2px 8px; border-radius:10px; font-weight:700; text-transform:uppercase; font-size:9px; }
-  .b-set { background:#1f6feb22; color:var(--blue); } .b-callback { background:#d2992222; color:var(--yellow); } .b-knock { background:#3fb95022; color:var(--green); } .b-not-home { background:#8b949e22; color:var(--muted); } .b-no { background:#f8514922; color:var(--red); } .b-fresh { background:#21262d; color:var(--muted); }
+  .b-set { background:#1f6feb22; color:var(--blue); }
+.b-callback { background:#d2992222; color:var(--yellow); }
+.b-knock { background:#3fb95022; color:var(--green); }
+.b-not-home { background:#8b949e22; color:var(--muted); }
+.b-interested { background:#58a6ff22; color:var(--blue); }
+.b-sat { background:#a371f722; color:var(--purple); }
+.b-closed { background:#3fb95033; color:var(--green); }
+.b-dnk { background:#6e768133; color:var(--muted); }
+.b-no { background:#f8514922; color:var(--red); }
+.b-fresh { background:#21262d; color:var(--muted); }
   .stat-card { background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px; margin-bottom:12px; }
   .stat-card h3 { font-size:12px; color:var(--muted); text-transform:uppercase; font-weight:600; margin-bottom:8px; }
   .stat-card .big { font-size:28px; font-weight:700; color:var(--green); }
@@ -354,17 +363,59 @@ const satelliteLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertil
 if (state.satellite) { satelliteTiles.addTo(map); satelliteLabels.addTo(map); } else { darkTiles.addTo(map); }
 L.control.zoom({ position:'bottomright' }).addTo(map);
 
-const COLORS = { fresh:'#444c56', knocked:'#3fb950', not_home:'#8b949e', callback:'#d29922', set:'#1f6feb', not_interested:'#f85149' };
-const STATUS_LABELS = { fresh:'Fresh', knocked:'Knocked', not_home:'Not Home', callback:'Callback', set:'Appt Set', not_interested:'Not Interested' };
-const STATUS_BADGE = { fresh:'b-fresh', knocked:'b-knock', not_home:'b-not-home', callback:'b-callback', set:'b-set', not_interested:'b-no' };
+const COLORS = const COLORS = {
+  fresh:'#444c56',
+  knocked:'#3fb950',
+  not_home:'#8b949e',
+  interested:'#58a6ff',
+  callback:'#d29922',
+  set:'#1f6feb',
+  sat:'#a371f7',
+  closed:'#2ea043',
+  not_qualified:'#f85149',
+  do_not_knock:'#6e7681',
+  not_interested:'#f85149'
+};
+
+const STATUS_LABELS = {
+  fresh:'Fresh',
+  knocked:'Knocked',
+  not_home:'Not Home',
+  interested:'Interested',
+  callback:'Callback',
+  set:'Appt Set',
+  sat:'Sat',
+  closed:'Closed',
+  not_qualified:'Not Qualified',
+  do_not_knock:'Do Not Knock',
+  not_interested:'Not Interested'
+};
+
+const STATUS_BADGE = {
+  fresh:'b-fresh',
+  knocked:'b-knock',
+  not_home:'b-not-home',
+  interested:'b-interested',
+  callback:'b-callback',
+  set:'b-set',
+  sat:'b-sat',
+  closed:'b-closed',
+  not_qualified:'b-no',
+  do_not_knock:'b-dnk',
+  not_interested:'b-no'
+};
+
 const DISP_LIST = [
   { key:'knocked', label:'Knocked', icon:'✊' },
   { key:'not_home', label:'Not Home', icon:'🚪' },
+  { key:'interested', label:'Interested', icon:'🔥' },
   { key:'callback', label:'Callback', icon:'📞' },
   { key:'set', label:'Appt Set', icon:'🎯' },
-  { key:'not_interested', label:'Not Interested', icon:'✕' }
+  { key:'sat', label:'Sat', icon:'🪑' },
+  { key:'closed', label:'Closed', icon:'💰' },
+  { key:'not_qualified', label:'Not Qualified', icon:'⚠️' },
+  { key:'do_not_knock', label:'Do Not Knock', icon:'⛔' }
 ];
-
 const markers = {};
 function renderMarkers() {
   Object.values(markers).forEach(m => map.removeLayer(m));
@@ -430,7 +481,26 @@ function renderFilterBar() {
     {key:'fresh',label:'Fresh'},
     {key:'knocked',label:'Knock'},
     {key:'callback',label:'CB'},
-    {key:'set',label:'Set'}
+    const filters = [
+  {key:'all',label:'All'},
+  {key:'high_viability',label:'⭐'},
+  {key:'imported',label:'📁 Bought'},
+  {key:'manual',label:'+'},
+  {key:'entity',label:'🏢 LLC'},
+  {key:'hpd',label:'🔓 HPD'},
+  {key:'verify',label:'🔍 Verify'},
+  {key:'joint',label:'👥 Joint'},
+  {key:'pluto',label:'PLUTO'},
+  {key:'fresh',label:'Fresh'},
+  {key:'knocked',label:'Knock'},
+  {key:'interested',label:'Interested'},
+  {key:'callback',label:'CB'},
+  {key:'set',label:'Set'},
+  {key:'sat',label:'Sat'},
+  {key:'closed',label:'Closed'},
+  {key:'not_qualified',label:'NQ'},
+  {key:'do_not_knock',label:'DNK'}
+];
   ];
   bar.innerHTML = filters.map(f => `<div class="chip ${state.filter===f.key?'active':''}" data-filter="${f.key}">${f.label}<span class="count">${counts[f.key]||0}</span></div>`).join('');
   bar.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => { state.filter = c.dataset.filter; saveState(); renderFilterBar(); renderMarkers(); renderList(); }));
@@ -710,7 +780,22 @@ document.getElementById('place-cancel').addEventListener('click', exitPlacingMod
 // LIST + STATS
 function renderList() {
   const container = document.getElementById('list-container');
-  const filtered = filterLeads(state.leads).slice().sort((a,b) => { const order={set:0,callback:1,knocked:2,not_home:3,fresh:4,not_interested:5}; return (order[a.status]??9)-(order[b.status]??9); });
+  const filtered = filterLeads(state.leads).slice().sort((a,b) => {
+  const order = {
+    closed:0,
+    set:1,
+    sat:2,
+    interested:3,
+    callback:4,
+    knocked:5,
+    not_home:6,
+    fresh:7,
+    not_qualified:8,
+    do_not_knock:9,
+    not_interested:10
+  };
+  return (order[a.status]??99) - (order[b.status]??99);
+});
   if (filtered.length === 0) { container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">No leads. Tap 📍 Neighborhoods.</div>'; return; }
   const display = filtered.slice(0, 500);
   let html = display.map(l => `<div class="lead-item" data-id="${l.id}"><div class="nm">${l.first ? `${l.first} ${l.last}` : l.last}${l.source==='manual'?' <span style="color:#a371f7;font-size:10px;">+</span>':''}${l.source==='imported'?' <span style="color:#39d0d8;font-size:10px;">📁</span>':''}${l.entity?' <span style="color:#f9c74f;font-size:10px;">🏢</span>':''}</div><div class="ad">${l.addr}${l.city?' · '+l.city:''}</div><div class="row"><span class="badge ${STATUS_BADGE[l.status]}">${STATUS_LABELS[l.status]}</span>${l.viability==='high'?'<span style="color:var(--green);font-size:10px;">⭐</span>':''}${l.monthly_bill?`<span style="color:var(--muted);">$${l.monthly_bill}/mo</span>`:''}</div></div>`).join('');
@@ -1402,9 +1487,6 @@ function switchView(view) {
 }
 document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
 
-renderFilterBar(); renderMarkers(); renderTopStats(); updateRoute(); renderNeighborhoods();
-if (state.leads.length === 0) showInfo('Tap "📍 Neighborhoods" to load homes. Tap a pin to knock.');
-</script>
 renderFilterBar(); renderMarkers(); renderTopStats(); updateRoute(); renderNeighborhoods();
 if (state.leads.length === 0) showInfo('Tap "📍 Neighborhoods" to load homes. Tap a pin to knock.');
 </script>
