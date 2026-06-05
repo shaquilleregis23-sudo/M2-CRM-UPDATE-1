@@ -354,6 +354,16 @@
   .cloud-status.good { color:var(--green); border-color:#3fb95066; background:#3fb95011; }
   .cloud-status.warn { color:var(--yellow); border-color:#d2992266; background:#d2992211; }
 
+
+  .sun-score-card { margin:10px 0; border:1px solid rgba(248,195,77,.35); background:linear-gradient(135deg, rgba(248,195,77,.16), rgba(57,208,216,.08)); border-radius:14px; padding:12px; }
+  .sun-score-top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .sun-score-title { font-weight:900; font-size:13px; color:#f8c34d; }
+  .sun-score-num { font-size:26px; font-weight:1000; color:#f8c34d; line-height:1; }
+  .sun-score-bar { height:8px; border-radius:999px; background:rgba(255,255,255,.12); overflow:hidden; margin:10px 0 8px; }
+  .sun-score-fill { height:100%; border-radius:999px; background:linear-gradient(90deg,#f85149,#f8c34d,#3fb950); }
+  .sun-score-reason { font-size:11px; color:var(--muted); line-height:1.45; }
+  .sun-score-mini { color:#f8c34d; font-weight:800; }
+
 </style>
 </head>
 <body>
@@ -747,10 +757,92 @@ function canManageTeam() {
 }
 function explicitLeadAgent(lead) { return String(lead.assigned_agent || lead.agent_name || '').trim(); }
 
+
+function clampSunScore(n) { return Math.max(0, Math.min(100, Math.round(Number(n) || 0))); }
+function keywordHit(text, words) {
+  text = String(text || '').toLowerCase();
+  return words.some(w => text.includes(w));
+}
+function calculateFreeSunScore(lead) {
+  lead = lead || {};
+  let score = 42;
+  const reasons = [];
+  const solar = String(lead.solar_status || '').toLowerCase();
+  const roof = String(lead.roof_notes || '').toLowerCase();
+  const bldg = String(lead.bldg_class || '').toUpperCase();
+  const bill = Number(lead.monthly_bill || 0);
+  const lot = Number(lead.lot_sqft || 0);
+  const units = Number(lead.units || 0);
+
+  if (solar.includes('installed') || solar.includes('existing') || solar.includes('has_solar')) { score -= 38; reasons.push('already solar'); }
+  else { score += 14; reasons.push('no solar noted'); }
+
+  if (lead.viability === 'high') { score += 12; reasons.push('high viability'); }
+  if (bldg.startsWith('A')) { score += 12; reasons.push('1-family style roof'); }
+  else if (bldg.startsWith('B')) { score += 9; reasons.push('2-family style roof'); }
+  else if (bldg) { score += 2; reasons.push('property class known'); }
+
+  if (bill >= 250) { score += 13; reasons.push('high bill'); }
+  else if (bill >= 150) { score += 9; reasons.push('solid bill'); }
+  else if (bill > 0 && bill < 90) { score -= 7; reasons.push('low bill'); }
+
+  if (units > 0 && units <= 2) { score += 6; reasons.push('low unit count'); }
+  else if (units >= 4) { score -= 5; reasons.push('multi-unit complexity'); }
+
+  if (lot >= 2500) { score += 6; reasons.push('larger lot'); }
+  else if (lot > 0 && lot < 1400) { score -= 4; reasons.push('tight lot'); }
+
+  if (keywordHit(roof, ['good','new','south','flat','open','clear','no shade','sunny','clean'])) { score += 12; reasons.push('good roof notes'); }
+  if (keywordHit(roof, ['shade','tree','blocked','bad','old','poor','north','repair','leak'])) { score -= 18; reasons.push('shade/roof risk'); }
+
+  if (lead.hpd_enriched || lead.entity_resolved) { score += 3; reasons.push('owner info stronger'); }
+  if (lead.status === 'interested' || lead.status === 'callback' || lead.status === 'set' || lead.status === 'sat') { score += 6; reasons.push('sales interest'); }
+  if (lead.status === 'not_qualified' || lead.status === 'do_not_knock' || lead.status === 'not_interested') { score -= 22; reasons.push('bad status'); }
+
+  score = clampSunScore(score);
+  let label = 'Low';
+  if (score >= 85) label = 'Excellent';
+  else if (score >= 75) label = 'High';
+  else if (score >= 60) label = 'Medium';
+  const shadeRisk = keywordHit(roof, ['shade','tree','blocked']) ? 'Possible shade risk' : 'Unknown until site check';
+  return { score, label, shadeRisk, reasons: reasons.slice(0,5).join(' · ') || 'basic address/property estimate' };
+}
+function refreshLeadSunScore(lead) {
+  const r = calculateFreeSunScore(lead);
+  lead.sun_score = r.score;
+  lead.sun_score_label = r.label;
+  lead.sun_score_reason = r.reasons;
+  lead.shade_risk = r.shadeRisk;
+  lead.sun_score_updated_at = new Date().toISOString();
+  return r;
+}
+function getLeadSunScore(lead) {
+  if (!lead) return { score:0, label:'Low', shadeRisk:'Unknown', reasons:'' };
+  if (lead.sun_score === undefined || lead.sun_score === null || lead.sun_score === '') return calculateFreeSunScore(lead);
+  return { score: clampSunScore(lead.sun_score), label: lead.sun_score_label || calculateFreeSunScore(lead).label, shadeRisk: lead.shade_risk || 'Unknown until site check', reasons: lead.sun_score_reason || calculateFreeSunScore(lead).reasons };
+}
+function sunScoreCardHTML(lead) {
+  const r = getLeadSunScore(lead);
+  return `<div class="sun-score-card">
+    <div class="sun-score-top"><div><div class="sun-score-title">☀️ Free Sun Potential Score</div><div class="sun-score-reason">Estimate for ranking leads. Not official TSRF.</div></div><div class="sun-score-num">${r.score}</div></div>
+    <div class="sun-score-bar"><div class="sun-score-fill" style="width:${r.score}%;"></div></div>
+    <div class="sun-score-reason"><b>${escapeHtml(r.label)}</b> · ${escapeHtml(r.shadeRisk)} · ${escapeHtml(r.reasons)}</div>
+    <button class="phase4-mini-btn" id="refresh-sun-score" style="margin-top:10px;width:100%;">Recalculate Sun Score</button>
+  </div>`;
+}
+function calculateAllFreeSunScores() {
+  const leads = scopedLeadsForCurrentUser(state.leads);
+  leads.forEach(refreshLeadSunScore);
+  saveState();
+  renderMarkers(); renderFilterBar(); renderList(); renderStats();
+  showToast(`✓ Sun Scores calculated for ${leads.length} homes`);
+}
+
 function filterLeads(leads) {
   leads = scopedLeadsForCurrentUser(leads);
   if (state.filter === 'all') return leads;
   if (state.filter === 'high_viability') return leads.filter(l => l.viability === 'high');
+  if (state.filter === 'high_sun') return leads.filter(l => getLeadSunScore(l).score >= 75);
   if (state.filter === 'manual') return leads.filter(l => l.source === 'manual');
   if (state.filter === 'imported') return leads.filter(l => l.source === 'imported');
   if (state.filter === 'entity') return leads.filter(l => l.entity);
@@ -766,6 +858,7 @@ function renderFilterBar() {
     acc.all++;
     acc[l.status] = (acc[l.status]||0) + 1;
     if (l.viability === 'high') acc.high_viability++;
+    if (getLeadSunScore(l).score >= 75) acc.high_sun++;
     if (l.source === 'manual') acc.manual++;
     if (l.source === 'imported') acc.imported++;
     if (l.entity) acc.entity++;
@@ -774,10 +867,11 @@ function renderFilterBar() {
     if (l.hpd_enriched) acc.hpd++;
     if ((l.source === 'pluto' || !l.source) && !l.entity) acc.pluto++;
     return acc;
-  }, { all:0, high_viability:0, manual:0, imported:0, entity:0, verify:0, joint:0, hpd:0, pluto:0 });
+  }, { all:0, high_viability:0, high_sun:0, manual:0, imported:0, entity:0, verify:0, joint:0, hpd:0, pluto:0 });
   const filters = [
     {key:'all',label:'All'},
     {key:'high_viability',label:'⭐'},
+    {key:'high_sun',label:'☀️ Sun'},
     {key:'imported',label:'📁 Bought'},
     {key:'manual',label:'+'},
     {key:'entity',label:'🏢 LLC'},
@@ -940,6 +1034,7 @@ function openLead(id) {
       <span class="${leadTerritory(lead) ? 'hot' : ''}">📍 ${leadTerritory(lead) || 'No territory'}</span>
     </div>
   `;
+  const freeSunPanel = sunScoreCardHTML(lead);
   const dnkAlert = lead.status === 'do_not_knock' ? '<div class="dnk-alert">⛔ DO NOT KNOCK — keep this record to protect the team.</div>' : '';
 
   const actionRow = (hasPhone || showCloser || showLookup) ? `
@@ -964,6 +1059,7 @@ function openLead(id) {
     ${propLine}
     ${dnkAlert}
     ${miniPipeline}
+    ${freeSunPanel}
     ${actionRow}
     <div class="quick-disp">${dispButtons}</div>
 
@@ -1057,6 +1153,8 @@ function openLead(id) {
   `;
 
   bindOptionChips(lead);
+  const sunBtn = document.getElementById('refresh-sun-score');
+  if (sunBtn) sunBtn.addEventListener('click', () => { refreshLeadSunScore(lead); saveState(); showToast('✓ Sun Score updated'); openLead(lead.id); });
 
   // SEAMLESS: tap any disposition tile → save + close
   // EXCEPTION: when status='set' and closer phone is configured, KEEP sheet open
@@ -1114,6 +1212,7 @@ function openLead(id) {
       if (lead.appt_outcome === 'sat') lead.status = 'sat';
       if (lead.appt_outcome === 'closed') lead.status = 'closed';
       lead.roof_notes = document.getElementById('f-roof').value;
+      refreshLeadSunScore(lead);
       lead.notes = document.getElementById('f-notes').value;
       lead.updated_at = new Date().toISOString();
       saveState();
@@ -1327,7 +1426,7 @@ function renderList() {
   });
   if (filtered.length === 0) { container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">No leads. Tap 📍 Neighborhoods.</div>'; return; }
   const display = filtered.slice(0, 500);
-  let html = display.map(l => `<div class="lead-item" data-id="${l.id}"><div class="nm">${l.first ? `${l.first} ${l.last}` : l.last}${l.source==='manual'?' <span style="color:#a371f7;font-size:10px;">+</span>':''}${l.source==='imported'?' <span style="color:#39d0d8;font-size:10px;">📁</span>':''}${l.entity?' <span style="color:#f9c74f;font-size:10px;">🏢</span>':''}</div><div class="ad">${l.addr}${l.city?' · '+l.city:''}</div><div class="row"><span class="badge ${STATUS_BADGE[l.status]}">${STATUS_LABELS[l.status]}</span>${l.viability==='high'?'<span style="color:var(--green);font-size:10px;">⭐</span>':''}${l.monthly_bill?`<span style="color:var(--muted);">$${l.monthly_bill}/mo</span>`:''}${l.solar_status&&l.solar_status!=='unknown'?`<span style="color:var(--blue);">☀️ ${humanOption(SOLAR_STATUS_OPTIONS,l.solar_status)}</span>`:''}${l.heating_type&&l.heating_type!=='unknown'?`<span style="color:var(--yellow);">🔥 ${humanOption(HEATING_TYPE_OPTIONS,l.heating_type)}</span>`:''}${leadAgent(l)!=='Unassigned'?`<span style="color:var(--green);">👤 ${leadAgent(l)}</span>`:''}${leadTerritory(l)?`<span class="territory-pill">${leadTerritory(l)}</span>`:''}</div></div>`).join('');
+  let html = display.map(l => `<div class="lead-item" data-id="${l.id}"><div class="nm">${l.first ? `${l.first} ${l.last}` : l.last}${l.source==='manual'?' <span style="color:#a371f7;font-size:10px;">+</span>':''}${l.source==='imported'?' <span style="color:#39d0d8;font-size:10px;">📁</span>':''}${l.entity?' <span style="color:#f9c74f;font-size:10px;">🏢</span>':''}</div><div class="ad">${l.addr}${l.city?' · '+l.city:''}</div><div class="row"><span class="badge ${STATUS_BADGE[l.status]}">${STATUS_LABELS[l.status]}</span>${l.viability==='high'?'<span style="color:var(--green);font-size:10px;">⭐</span>':''}${l.monthly_bill?`<span style="color:var(--muted);">$${l.monthly_bill}/mo</span>`:''}${l.solar_status&&l.solar_status!=='unknown'?`<span style="color:var(--blue);">☀️ ${humanOption(SOLAR_STATUS_OPTIONS,l.solar_status)}</span>`:''}${l.heating_type&&l.heating_type!=='unknown'?`<span style="color:var(--yellow);">🔥 ${humanOption(HEATING_TYPE_OPTIONS,l.heating_type)}</span>`:''}${getLeadSunScore(l).score>=75?`<span class="sun-score-mini">☀️ ${getLeadSunScore(l).score}</span>`:''}${leadAgent(l)!=='Unassigned'?`<span style="color:var(--green);">👤 ${leadAgent(l)}</span>`:''}${leadTerritory(l)?`<span class="territory-pill">${leadTerritory(l)}</span>`:''}</div></div>`).join('');
   if (filtered.length > 500) html += `<div style="padding:14px;text-align:center;color:var(--muted);font-size:11px;">Showing 500 of ${filtered.length}.</div>`;
   container.innerHTML = html;
   container.querySelectorAll('.lead-item').forEach(item => item.addEventListener('click', () => { const lead = state.leads.find(l => l.id === item.dataset.id); if (!lead) return; switchView('map'); map.setView([lead.lat, lead.lng], 18); setTimeout(() => openLead(lead.id), 250); }));
@@ -1880,7 +1979,7 @@ document.getElementById('import-file-input').addEventListener('change', async (e
 });
 
 document.getElementById('export-btn').addEventListener('click', () => {
-  const headers = ['first','last','addr','city','boro','zip','territory','assigned_agent','bbl','status','solar_status','heating_type','hvac_opportunity','monthly_bill','heating_bill','bill_received','bill_file_name','credit','phone','callback_due','appt_time','assigned_closer','appt_outcome','roof_notes','notes','viability','est_value','year_built','bldg_class','source','updated_at'];
+  const headers = ['first','last','addr','city','boro','zip','territory','assigned_agent','bbl','status','solar_status','heating_type','hvac_opportunity','monthly_bill','heating_bill','bill_received','bill_file_name','credit','phone','callback_due','appt_time','assigned_closer','appt_outcome','roof_notes','sun_score','sun_score_label','shade_risk','notes','viability','est_value','year_built','bldg_class','source','updated_at'];
   const rows = state.leads.map(l => headers.map(h => { const v = l[h] ?? ''; return `"${String(v).replace(/"/g,'""')}"`; }).join(','));
   const csv = headers.join(',') + '\n' + rows.join('\n');
   const blob = new Blob([csv], { type:'text/csv' });
@@ -2949,7 +3048,7 @@ function m2LeadCardHTML(lead) {
   const score = m2MoneyLeadValue(lead);
   const due = m2DueKind(lead);
   return `<div class="followup-item" data-m2-open-lead="${escapeHtml(lead.id)}">
-    <div class="nm">${name} <span class="territory-pill">${escapeHtml(leadTerritory(lead) || 'No territory')}</span> <span class="territory-pill">${score}/100</span></div>
+    <div class="nm">${name} <span class="territory-pill">${escapeHtml(leadTerritory(lead) || 'No territory')}</span> <span class="territory-pill">${score}/100</span> <span class="territory-pill">☀️ ${getLeadSunScore(lead).score}</span></div>
     <div class="meta">${escapeHtml(lead.addr || '')} · ${escapeHtml(STATUS_LABELS[lead.status] || lead.status || 'Fresh')} · ${escapeHtml(leadAgent(lead))}</div>
     ${due ? `<div class="due">${escapeHtml(due)}${lead.appt_time ? ': '+escapeHtml(formatShortDue(lead.appt_time)) : lead.callback_due ? ': '+escapeHtml(formatShortDue(lead.callback_due)) : ''}</div>` : ''}
   </div>`;
@@ -3012,6 +3111,15 @@ function renderM2TeamDashboard() {
       </div>
     </div>
     <div class="phase3-card">
+      <h3>☀️ Sun Score Tools</h3>
+      <div class="phase4-grid">
+        <div class="phase4-metric"><div class="k">High Sun Homes</div><div class="v good">${leads.filter(l => getLeadSunScore(l).score >= 75).length}</div></div>
+        <div class="phase4-metric"><div class="k">Avg Sun Score</div><div class="v">${leads.length ? Math.round(leads.reduce((a,l)=>a+getLeadSunScore(l).score,0)/leads.length) : 0}</div></div>
+      </div>
+      <button class="save-btn" id="calc-free-sun-scores" style="margin-top:10px;">Calculate Free Sun Scores For Visible Homes</button>
+      <div class="help" style="margin-top:8px;">Free ranking score only: uses property type, bill, solar status, roof notes, lot/unit data, and sales status. Real TSRF still requires site/satellite shade data.</div>
+    </div>
+    <div class="phase3-card">
       <h3>🔥 Highest Value Leads</h3>
       ${hot.length ? hot.map(m2LeadCardHTML).join('') : '<div class="access-sub">No hot leads yet. Start marking interest, callback, bill, heating type, and HVAC opportunity.</div>'}
     </div>
@@ -3031,6 +3139,8 @@ function renderM2TeamDashboard() {
     map.setView([lead.lat, lead.lng], 18);
     setTimeout(() => openLead(lead.id), 250);
   }));
+  const calcSunBtn = document.getElementById('calc-free-sun-scores');
+  if (calcSunBtn) calcSunBtn.addEventListener('click', calculateAllFreeSunScores);
 }
 
 const _m2Phase6RenderStats = renderStats;
