@@ -672,12 +672,12 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
 
 // === M2 SALES-READY LAYER + COLLAPSIBLE STATS MENU v1 ===
-const M2_STATS_COLLAPSED_KEY = 'm2_stats_menu_collapsed_v1';
+var M2_STATS_COLLAPSED_KEY = 'm2_stats_menu_collapsed_v1';
 function m2StatsMenuCollapsed(){ return localStorage.getItem(M2_STATS_COLLAPSED_KEY) === '1'; }
 function m2SetStatsMenuCollapsed(v){ localStorage.setItem(M2_STATS_COLLAPSED_KEY, v ? '1':'0'); }
 function m2ActiveStatsLabel(){ const m={overview:'Overview',activity:'Activity',team:'Team',settings:'Settings',admin:'Admin',all:'All'}; try{return m[m2StatsView?.()]||'Overview';}catch(e){return 'Overview';} }
 if (typeof m2SetStatsView === 'function') {
-  const _m2OldSetStatsView = m2SetStatsView;
+  var _m2OldSetStatsView = m2SetStatsView;
   m2SetStatsView = function(v){ m2SetStatsMenuCollapsed(true); _m2OldSetStatsView(v); };
 }
 if (typeof m2EnsureStatsToolbar === 'function') {
@@ -740,7 +740,7 @@ function renderM2SalesReadyCenter(){
   let card=document.getElementById('m2-sales-ready-center');
   if(!card){ card=document.createElement('div'); card.id='m2-sales-ready-center'; card.dataset.m2StatsGroup='admin'; const anchor=document.getElementById('m2-demo-sales-workflow')||document.getElementById('m2-hardening-center')||statsView.lastChild; if(anchor) anchor.insertAdjacentElement('afterend',card); else statsView.appendChild(card); }
   card.innerHTML=`<div class="m2-sales-card"><h3>💼 Sell This CRM Center</h3><div class="m2-sales-sub">Sales-ready tools for demos, beta customers, pricing, and customer onboarding.</div><div class="m2-sales-grid"><div class="m2-sales-tile"><b>🎬 Guided Demo</b><span>Walk prospects through map, Sun Score, lead cards, agent assignment, and pricing.</span></div><div class="m2-sales-tile"><b>💰 Value Calculator</b><span>Show how one extra closed deal can pay for the CRM.</span></div><div class="m2-sales-tile"><b>📅 Book Demo</b><span>Copy a clean message for prospects and beta teams.</span></div><div class="m2-sales-tile"><b>🧾 Beta Notes</b><span>Track what to show, test, and improve before Stripe.</span></div></div><div class="m2-sales-actions"><button class="primary" id="m2-sales-guided-demo">Start Guided Demo</button><button class="gold" id="m2-sales-value-calc">Open Value Calculator</button><button id="m2-sales-book-demo">Copy Book Demo Text</button><button id="m2-sales-pricing">Open Pricing</button></div></div>`;
-  card.querySelector('#m2-sales-guided-demo')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); if(typeof m2Copy==='function') m2Copy('Guided Demo Flow:
+  card.querySelector('#m2-sales-guided-demo')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); if(typeof m2Copy==='function') m2Copy(`Guided Demo Flow:
 1. Open Launch Screen
 2. Try Demo Mode
 3. Show Smart Map + Sun Icons
@@ -748,7 +748,7 @@ function renderM2SalesReadyCenter(){
 5. Show Team tab and Invite Agent
 6. Show Agent-only access
 7. Open Pricing
-8. Ask: Want to beta test this for 7 days?','Guided demo steps copied'); });
+8. Ask: Want to beta test this for 7 days?`,'Guided demo steps copied'); });
   card.querySelector('#m2-sales-value-calc')?.addEventListener('click',m2OpenValueCalculator);
   card.querySelector('#m2-sales-book-demo')?.addEventListener('click',m2CopyBookDemoText);
   card.querySelector('#m2-sales-pricing')?.addEventListener('click',()=>{ if(typeof openM2PricingModal==='function') openM2PricingModal(); });
@@ -761,24 +761,24 @@ function renderM2TrialChecklist(){
   const checked=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}');
   card.innerHTML=`<div class="m2-sales-card"><h3>🚀 Trial Onboarding Checklist</h3><div class="m2-sales-sub">Use this when setting up a beta customer or testing your own account before a demo.</div><div class="m2-checklist">${items.map((it,i)=>`<label class="m2-checkitem"><input type="checkbox" data-m2-trial-check="${i}" ${checked[i]?'checked':''}> <span>${it}</span></label>`).join('')}</div><div class="m2-sales-actions" style="grid-template-columns:1fr 1fr;"><button id="m2-copy-onboarding-list">Copy Checklist</button><button class="danger" id="m2-reset-onboarding-list">Reset Checklist</button></div></div>`;
   card.querySelectorAll('[data-m2-trial-check]').forEach(cb=>cb.addEventListener('change',()=>{ const c=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}'); c[cb.dataset.m2TrialCheck]=cb.checked; localStorage.setItem('m2_trial_checklist_v1',JSON.stringify(c)); }));
-  card.querySelector('#m2-copy-onboarding-list')?.addEventListener('click',()=>m2Copy?.('M2 CRM Beta Setup Checklist:
-- '+items.join('
-- '),'Checklist copied'));
+  card.querySelector('#m2-copy-onboarding-list')?.addEventListener('click',()=>m2Copy?.(`M2 CRM Beta Setup Checklist:
+- ${items.join('\n- ')}`,'Checklist copied'));
   card.querySelector('#m2-reset-onboarding-list')?.addEventListener('click',()=>{ localStorage.removeItem('m2_trial_checklist_v1'); renderStats(); });
 }
-const _m2SalesReadyRenderStats = renderStats;
+var _m2SalesReadyRenderStats = renderStats;
 renderStats = function(){ _m2SalesReadyRenderStats(); renderM2SalesReadyCenter(); renderM2TrialChecklist(); applyM2StatsPolish?.(); };
 
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
 
 // === M2 SALES-READY LAYER + COLLAPSIBLE STATS MENU v1 ===
-const M2_STATS_COLLAPSED_KEY = 'm2_stats_menu_collapsed_v1';
+var M2_STATS_COLLAPSED_KEY = 'm2_stats_menu_collapsed_v1';
 function m2StatsMenuCollapsed(){ return localStorage.getItem(M2_STATS_COLLAPSED_KEY) === '1'; }
 function m2SetStatsMenuCollapsed(v){ localStorage.setItem(M2_STATS_COLLAPSED_KEY, v ? '1':'0'); }
 function m2ActiveStatsLabel(){ const m={overview:'Overview',activity:'Activity',team:'Team',settings:'Settings',admin:'Admin',all:'All'}; try{return m[m2StatsView?.()]||'Overview';}catch(e){return 'Overview';} }
 if (typeof m2SetStatsView === 'function') {
-  const _m2OldSetStatsView = m2SetStatsView;
+  var _m2OldSetStatsView = m2SetStatsView;
   m2SetStatsView = function(v){ m2SetStatsMenuCollapsed(true); _m2OldSetStatsView(v); };
 }
 if (typeof m2EnsureStatsToolbar === 'function') {
@@ -841,7 +841,7 @@ function renderM2SalesReadyCenter(){
   let card=document.getElementById('m2-sales-ready-center');
   if(!card){ card=document.createElement('div'); card.id='m2-sales-ready-center'; card.dataset.m2StatsGroup='admin'; const anchor=document.getElementById('m2-demo-sales-workflow')||document.getElementById('m2-hardening-center')||statsView.lastChild; if(anchor) anchor.insertAdjacentElement('afterend',card); else statsView.appendChild(card); }
   card.innerHTML=`<div class="m2-sales-card"><h3>💼 Sell This CRM Center</h3><div class="m2-sales-sub">Sales-ready tools for demos, beta customers, pricing, and customer onboarding.</div><div class="m2-sales-grid"><div class="m2-sales-tile"><b>🎬 Guided Demo</b><span>Walk prospects through map, Sun Score, lead cards, agent assignment, and pricing.</span></div><div class="m2-sales-tile"><b>💰 Value Calculator</b><span>Show how one extra closed deal can pay for the CRM.</span></div><div class="m2-sales-tile"><b>📅 Book Demo</b><span>Copy a clean message for prospects and beta teams.</span></div><div class="m2-sales-tile"><b>🧾 Beta Notes</b><span>Track what to show, test, and improve before Stripe.</span></div></div><div class="m2-sales-actions"><button class="primary" id="m2-sales-guided-demo">Start Guided Demo</button><button class="gold" id="m2-sales-value-calc">Open Value Calculator</button><button id="m2-sales-book-demo">Copy Book Demo Text</button><button id="m2-sales-pricing">Open Pricing</button></div></div>`;
-  card.querySelector('#m2-sales-guided-demo')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); if(typeof m2Copy==='function') m2Copy('Guided Demo Flow:
+  card.querySelector('#m2-sales-guided-demo')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); if(typeof m2Copy==='function') m2Copy(`Guided Demo Flow:
 1. Open Launch Screen
 2. Try Demo Mode
 3. Show Smart Map + Sun Icons
@@ -849,7 +849,7 @@ function renderM2SalesReadyCenter(){
 5. Show Team tab and Invite Agent
 6. Show Agent-only access
 7. Open Pricing
-8. Ask: Want to beta test this for 7 days?','Guided demo steps copied'); });
+8. Ask: Want to beta test this for 7 days?`,'Guided demo steps copied'); });
   card.querySelector('#m2-sales-value-calc')?.addEventListener('click',m2OpenValueCalculator);
   card.querySelector('#m2-sales-book-demo')?.addEventListener('click',m2CopyBookDemoText);
   card.querySelector('#m2-sales-pricing')?.addEventListener('click',()=>{ if(typeof openM2PricingModal==='function') openM2PricingModal(); });
@@ -862,12 +862,11 @@ function renderM2TrialChecklist(){
   const checked=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}');
   card.innerHTML=`<div class="m2-sales-card"><h3>🚀 Trial Onboarding Checklist</h3><div class="m2-sales-sub">Use this when setting up a beta customer or testing your own account before a demo.</div><div class="m2-checklist">${items.map((it,i)=>`<label class="m2-checkitem"><input type="checkbox" data-m2-trial-check="${i}" ${checked[i]?'checked':''}> <span>${it}</span></label>`).join('')}</div><div class="m2-sales-actions" style="grid-template-columns:1fr 1fr;"><button id="m2-copy-onboarding-list">Copy Checklist</button><button class="danger" id="m2-reset-onboarding-list">Reset Checklist</button></div></div>`;
   card.querySelectorAll('[data-m2-trial-check]').forEach(cb=>cb.addEventListener('change',()=>{ const c=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}'); c[cb.dataset.m2TrialCheck]=cb.checked; localStorage.setItem('m2_trial_checklist_v1',JSON.stringify(c)); }));
-  card.querySelector('#m2-copy-onboarding-list')?.addEventListener('click',()=>m2Copy?.('M2 CRM Beta Setup Checklist:
-- '+items.join('
-- '),'Checklist copied'));
+  card.querySelector('#m2-copy-onboarding-list')?.addEventListener('click',()=>m2Copy?.(`M2 CRM Beta Setup Checklist:
+- ${items.join('\n- ')}`,'Checklist copied'));
   card.querySelector('#m2-reset-onboarding-list')?.addEventListener('click',()=>{ localStorage.removeItem('m2_trial_checklist_v1'); renderStats(); });
 }
-const _m2SalesReadyRenderStats = renderStats;
+var _m2SalesReadyRenderStats = renderStats;
 renderStats = function(){ _m2SalesReadyRenderStats(); renderM2SalesReadyCenter(); renderM2TrialChecklist(); applyM2StatsPolish?.(); };
 
 </script>
@@ -2744,7 +2743,7 @@ function activeUserRole() {
   const sess = getCurrentSession();
   return sess.role || 'master';
 }
-const _m2OldGetAgentName = getAgentName;
+var _m2OldGetAgentName = getAgentName;
 getAgentName = function() {
   const sess = getCurrentSession();
   if (sess && sess.name) return sess.name;
@@ -3083,7 +3082,7 @@ renderPhase5Dashboard = function() {
   const reset = document.getElementById('phase5-reset-checklist'); if (reset) reset.addEventListener('click', () => { savePhase5Checklist({}); renderPhase5Dashboard(); showToast('✓ Checklist reset'); });
 };
 
-const _m2OldRenderStats = renderStats;
+var _m2OldRenderStats = renderStats;
 renderStats = function() { _m2OldRenderStats(); renderAccessCard(); renderPhase5Dashboard(); };
 
 createLoginOverlay();
@@ -3116,10 +3115,21 @@ function setCloudEnabled(v) { localStorage.setItem(CLOUD_SYNC_ENABLED_KEY, v ? '
 function cloudEmail() { return (sbUser && sbUser.email) || ''; }
 
 async function refreshCloudSession() {
-  const sb = 
+  const sb = initSupabaseClient();
+  if (!sb) return null;
+  try {
+    const { data } = await sb.auth.getSession();
+    sbUser = data?.session?.user || null;
+    return sbUser;
+  } catch(e) {
+    console.warn('Cloud session refresh failed', e);
+    sbUser = null;
+    return null;
+  }
+}
 
 // === M2 SETTINGS + PLAN + INVITE + SALES POLISH ===
-const M2_PRODUCT_POLISH_VERSION = 'settings_plan_invite_v1';
+var M2_PRODUCT_POLISH_VERSION = 'settings_plan_invite_v1';
 function m2TodayISO(){ return new Date().toISOString().slice(0,10); }
 function m2AddDaysISO(days){ const d=new Date(); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
 function m2DaysUntil(iso){ if(!iso) return 0; const a=new Date(); const b=new Date(iso+'T23:59:59'); return Math.ceil((b-a)/86400000); }
@@ -3194,18 +3204,9 @@ function renderM2DemoSalesWorkflow(){
   document.getElementById('m2-demo-open-launch')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); });
 }
 function applyM2ProductVisibility(){ const s=getSettings?.()||{}; document.body.classList.toggle('m2-hide-admin-tools', s.show_demo_tools===false); }
-const _m2ProductPolishRenderStats = renderStats;
+var _m2ProductPolishRenderStats = renderStats;
 renderStats = function(){ _m2ProductPolishRenderStats(); renderM2SettingsPro(); renderM2PlanStatus(); renderM2InviteAgentCard(); renderM2DemoSalesWorkflow(); applyM2StatsPolish?.(); applyM2ProductVisibility(); };
 
-
-initSupabaseClient();
-  if (!sb) return null;
-  const { data } = await sb.auth.getUser();
-  sbUser = data && data.user ? data.user : null;
-  if (sbUser) await ensureCloudProfile();
-  renderCloudPanel();
-  return sbUser;
-}
 
 async function ensureCloudProfile() {
   if (!sbClient || !sbUser) return null;
@@ -3415,7 +3416,7 @@ function scheduleCloudSave() {
   cloudSaveTimer = setTimeout(() => pushLeadsToCloud({ silent:true }), 1200);
 }
 
-const _m2LocalSaveState = saveState;
+var _m2LocalSaveState = saveState;
 saveState = function(){ _m2LocalSaveState(); scheduleCloudSave(); };
 
 function setCloudStatus(msg, tone='') {
@@ -3474,7 +3475,7 @@ function renderCloudPanel() {
 
 // === M2 PHASE 6 STARTER: TEAM + FOLLOW-UP DASHBOARD ===
 // This layer adds better sales-team controls without changing your working Supabase setup.
-const M2_PHASE6_VERSION = 'team_followups_v1';
+var M2_PHASE6_VERSION = 'team_followups_v1';
 
 function m2MoneyLeadValue(lead) {
   if (!lead) return 0;
@@ -3616,7 +3617,7 @@ function renderM2TeamDashboard() {
   if (calcSunBtn) calcSunBtn.addEventListener('click', calculateAllFreeSunScores);
 }
 
-const _m2Phase6RenderStats = renderStats;
+var _m2Phase6RenderStats = renderStats;
 renderStats = function() {
   _m2Phase6RenderStats();
   renderM2TeamDashboard();
@@ -3624,7 +3625,7 @@ renderStats = function() {
 };
 
 // Cloud helper: show a visible timestamp after successful manual sync/load.
-const _m2Phase6SetCloudStatus = setCloudStatus;
+var _m2Phase6SetCloudStatus = setCloudStatus;
 setCloudStatus = function(msg, tone='') {
   _m2Phase6SetCloudStatus(msg, tone);
   if (tone === 'good' && /Synced|Loaded/.test(String(msg))) {
@@ -3850,21 +3851,21 @@ function scheduleAgentAccountsCloudSave() {
   cloudAgentSaveTimer = setTimeout(() => syncAgentAccountsToCloud({ silent:true }), 1500);
 }
 
-const _m2CloudOldSaveAccountAccess = saveAccountAccess;
+var _m2CloudOldSaveAccountAccess = saveAccountAccess;
 saveAccountAccess = function(data) {
   _m2CloudOldSaveAccountAccess(data);
   scheduleAgentAccountsCloudSave();
   if (typeof scheduleMasterAccountCloudSave === 'function') scheduleMasterAccountCloudSave();
 };
 
-const _m2CloudOldEnsureCloudProfile = ensureCloudProfile;
+var _m2CloudOldEnsureCloudProfile = ensureCloudProfile;
 ensureCloudProfile = async function() {
   const profile = await _m2CloudOldEnsureCloudProfile();
   if (profile && sbProfile?.team_id) await loadAgentAccountsFromCloud({ silent:true });
   return profile;
 };
 
-const _m2CloudOldRenderAccessCard = renderAccessCard;
+var _m2CloudOldRenderAccessCard = renderAccessCard;
 renderAccessCard = function() {
   _m2CloudOldRenderAccessCard();
   const card = document.getElementById('m2-access-card');
@@ -3884,7 +3885,7 @@ renderAccessCard = function() {
 };
 
 // Add assigned user fields into cloud lead rows when those SQL columns exist.
-const _m2CloudOldLeadPayloadForCloud = leadPayloadForCloud;
+var _m2CloudOldLeadPayloadForCloud = leadPayloadForCloud;
 leadPayloadForCloud = function(lead) {
   const row = _m2CloudOldLeadPayloadForCloud(lead);
   row.assigned_agent = lead.assigned_agent || '';
@@ -3899,7 +3900,7 @@ leadPayloadForCloud = function(lead) {
 
 
 // === M2 BETA LAUNCH POLISH V1: clean onboarding + demo + backup + pricing ===
-const M2_BETA_POLISH_VERSION = 'beta_polish_v1';
+var M2_BETA_POLISH_VERSION = 'beta_polish_v1';
 
 (function injectM2BetaPolishStyles(){
   if (document.getElementById('m2-beta-polish-styles')) return;
@@ -4041,7 +4042,7 @@ function openM2LaunchModal() {
   modal.classList.add('open');
 }
 
-const _m2PolishOldRenderBetaLaunchCenter = renderBetaLaunchCenter;
+var _m2PolishOldRenderBetaLaunchCenter = renderBetaLaunchCenter;
 renderBetaLaunchCenter = function() {
   _m2PolishOldRenderBetaLaunchCenter();
   const card = document.getElementById('m2-beta-launch-card');
@@ -4082,7 +4083,7 @@ renderBetaLaunchCenter = function() {
 
 // === M2 SECURITY STARTER ===
 // Front-end guardrails. Real protection comes from the Supabase RLS SQL file.
-const M2_SECURITY_VERSION = 'rls_starter_v1';
+var M2_SECURITY_VERSION = 'rls_starter_v1';
 
 function renderSecurityCenter() {
   const statsView = document.getElementById('stats-view');
@@ -4117,13 +4118,13 @@ function renderSecurityCenter() {
     </div>`;
 }
 
-const _m2SecurityOldRenderCloudPanel = renderCloudPanel;
+var _m2SecurityOldRenderCloudPanel = renderCloudPanel;
 renderCloudPanel = function() { _m2SecurityOldRenderCloudPanel(); renderSecurityCenter(); };
 
 
 
 // === M2 PRODUCT HARDENING v1: backup, team separation, demo polish, pricing ===
-const M2_HARDENING_VERSION = 'beta_product_hardening_v1';
+var M2_HARDENING_VERSION = 'beta_product_hardening_v1';
 
 function m2ActiveTeamId() {
   try {
@@ -4298,11 +4299,11 @@ function renderM2HardeningCenter() {
   document.getElementById('m2-hard-pricing')?.addEventListener('click', openM2PricingModal);
   document.getElementById('m2-hard-clear-demo')?.addEventListener('click', clearM2DemoMode);
 }
-const _m2HardeningRenderStats = renderStats;
+var _m2HardeningRenderStats = renderStats;
 renderStats = function() { _m2HardeningRenderStats(); renderM2HardeningCenter(); };
 
 // === M2 STATS CLEANUP / SETTINGS TABS ===
-const M2_STATS_VIEW_KEY = 'm2_stats_clean_view_v1';
+var M2_STATS_VIEW_KEY = 'm2_stats_clean_view_v1';
 function m2StatsView(){ return localStorage.getItem(M2_STATS_VIEW_KEY) || 'overview'; }
 function m2SetStatsView(v){ localStorage.setItem(M2_STATS_VIEW_KEY, v || 'overview'); applyM2StatsPolish(); }
 function m2StatsText(el){ return (el?.textContent || '').toLowerCase(); }
@@ -4357,13 +4358,13 @@ function applyM2StatsPolish(){
   // Keep toolbar visible no matter what.
   document.getElementById('m2-stats-toolbar')?.classList.remove('m2-stats-hidden');
 }
-const _m2StatsPolishRenderStats = renderStats;
+var _m2StatsPolishRenderStats = renderStats;
 renderStats = function(){ _m2StatsPolishRenderStats(); applyM2StatsPolish(); };
 
 
 
 // === M2 CUSTOMER-READY POLISH v1 ===
-const M2_CUSTOMER_READY_VERSION = 'customer_ready_polish_v1';
+var M2_CUSTOMER_READY_VERSION = 'customer_ready_polish_v1';
 function m2CustomerSettings(){ try { return getSettings() || {}; } catch(e){ return {}; } }
 function m2CustomerAccess(){ try { return getAccountAccess() || {}; } catch(e){ return {}; } }
 function m2BrandName(){ const s=m2CustomerSettings(), a=m2CustomerAccess(); return (s.company_name || a.company_name || a.crm_name || 'M2 Energy CRM').trim(); }
@@ -4440,9 +4441,9 @@ function m2MobilePolishCheck(){
   const settings=document.getElementById('m2-plan-status-card') || document.getElementById('m2-settings-pro') || statsView.firstChild;
   settings?.insertAdjacentElement('afterend',note);
 }
-const _m2CustomerOldRenderStats = renderStats;
+var _m2CustomerOldRenderStats = renderStats;
 renderStats = function(){ _m2CustomerOldRenderStats(); m2ApplyBrandingPolish(); renderM2CustomerOnboarding(); m2MobilePolishCheck(); applyM2StatsPolish?.(); };
-const _m2CustomerOldSaveSettings = saveSettings;
+var _m2CustomerOldSaveSettings = saveSettings;
 saveSettings = function(updates){ const r=_m2CustomerOldSaveSettings(updates); setTimeout(m2ApplyBrandingPolish,0); return r; };
 window.addEventListener('load',()=>setTimeout(()=>{ m2ApplyBrandingPolish(); renderM2CustomerOnboarding(); },500));
 
@@ -4454,12 +4455,12 @@ if (state.leads.length === 0) showInfo('Tap "📍 Neighborhoods" to load homes. 
 
 
 // === M2 SALES-READY LAYER + COLLAPSIBLE STATS MENU v1 ===
-const M2_STATS_COLLAPSED_KEY = 'm2_stats_menu_collapsed_v1';
+var M2_STATS_COLLAPSED_KEY = 'm2_stats_menu_collapsed_v1';
 function m2StatsMenuCollapsed(){ return localStorage.getItem(M2_STATS_COLLAPSED_KEY) === '1'; }
 function m2SetStatsMenuCollapsed(v){ localStorage.setItem(M2_STATS_COLLAPSED_KEY, v ? '1':'0'); }
 function m2ActiveStatsLabel(){ const m={overview:'Overview',activity:'Activity',team:'Team',settings:'Settings',admin:'Admin',all:'All'}; try{return m[m2StatsView?.()]||'Overview';}catch(e){return 'Overview';} }
 if (typeof m2SetStatsView === 'function') {
-  const _m2OldSetStatsView = m2SetStatsView;
+  var _m2OldSetStatsView = m2SetStatsView;
   m2SetStatsView = function(v){ m2SetStatsMenuCollapsed(true); _m2OldSetStatsView(v); };
 }
 if (typeof m2EnsureStatsToolbar === 'function') {
@@ -4522,7 +4523,7 @@ function renderM2SalesReadyCenter(){
   let card=document.getElementById('m2-sales-ready-center');
   if(!card){ card=document.createElement('div'); card.id='m2-sales-ready-center'; card.dataset.m2StatsGroup='admin'; const anchor=document.getElementById('m2-demo-sales-workflow')||document.getElementById('m2-hardening-center')||statsView.lastChild; if(anchor) anchor.insertAdjacentElement('afterend',card); else statsView.appendChild(card); }
   card.innerHTML=`<div class="m2-sales-card"><h3>💼 Sell This CRM Center</h3><div class="m2-sales-sub">Sales-ready tools for demos, beta customers, pricing, and customer onboarding.</div><div class="m2-sales-grid"><div class="m2-sales-tile"><b>🎬 Guided Demo</b><span>Walk prospects through map, Sun Score, lead cards, agent assignment, and pricing.</span></div><div class="m2-sales-tile"><b>💰 Value Calculator</b><span>Show how one extra closed deal can pay for the CRM.</span></div><div class="m2-sales-tile"><b>📅 Book Demo</b><span>Copy a clean message for prospects and beta teams.</span></div><div class="m2-sales-tile"><b>🧾 Beta Notes</b><span>Track what to show, test, and improve before Stripe.</span></div></div><div class="m2-sales-actions"><button class="primary" id="m2-sales-guided-demo">Start Guided Demo</button><button class="gold" id="m2-sales-value-calc">Open Value Calculator</button><button id="m2-sales-book-demo">Copy Book Demo Text</button><button id="m2-sales-pricing">Open Pricing</button></div></div>`;
-  card.querySelector('#m2-sales-guided-demo')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); if(typeof m2Copy==='function') m2Copy('Guided Demo Flow:
+  card.querySelector('#m2-sales-guided-demo')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); if(typeof m2Copy==='function') m2Copy(`Guided Demo Flow:
 1. Open Launch Screen
 2. Try Demo Mode
 3. Show Smart Map + Sun Icons
@@ -4530,7 +4531,7 @@ function renderM2SalesReadyCenter(){
 5. Show Team tab and Invite Agent
 6. Show Agent-only access
 7. Open Pricing
-8. Ask: Want to beta test this for 7 days?','Guided demo steps copied'); });
+8. Ask: Want to beta test this for 7 days?`,'Guided demo steps copied'); });
   card.querySelector('#m2-sales-value-calc')?.addEventListener('click',m2OpenValueCalculator);
   card.querySelector('#m2-sales-book-demo')?.addEventListener('click',m2CopyBookDemoText);
   card.querySelector('#m2-sales-pricing')?.addEventListener('click',()=>{ if(typeof openM2PricingModal==='function') openM2PricingModal(); });
@@ -4543,12 +4544,11 @@ function renderM2TrialChecklist(){
   const checked=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}');
   card.innerHTML=`<div class="m2-sales-card"><h3>🚀 Trial Onboarding Checklist</h3><div class="m2-sales-sub">Use this when setting up a beta customer or testing your own account before a demo.</div><div class="m2-checklist">${items.map((it,i)=>`<label class="m2-checkitem"><input type="checkbox" data-m2-trial-check="${i}" ${checked[i]?'checked':''}> <span>${it}</span></label>`).join('')}</div><div class="m2-sales-actions" style="grid-template-columns:1fr 1fr;"><button id="m2-copy-onboarding-list">Copy Checklist</button><button class="danger" id="m2-reset-onboarding-list">Reset Checklist</button></div></div>`;
   card.querySelectorAll('[data-m2-trial-check]').forEach(cb=>cb.addEventListener('change',()=>{ const c=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}'); c[cb.dataset.m2TrialCheck]=cb.checked; localStorage.setItem('m2_trial_checklist_v1',JSON.stringify(c)); }));
-  card.querySelector('#m2-copy-onboarding-list')?.addEventListener('click',()=>m2Copy?.('M2 CRM Beta Setup Checklist:
-- '+items.join('
-- '),'Checklist copied'));
+  card.querySelector('#m2-copy-onboarding-list')?.addEventListener('click',()=>m2Copy?.(`M2 CRM Beta Setup Checklist:
+- ${items.join('\n- ')}`,'Checklist copied'));
   card.querySelector('#m2-reset-onboarding-list')?.addEventListener('click',()=>{ localStorage.removeItem('m2_trial_checklist_v1'); renderStats(); });
 }
-const _m2SalesReadyRenderStats = renderStats;
+var _m2SalesReadyRenderStats = renderStats;
 renderStats = function(){ _m2SalesReadyRenderStats(); renderM2SalesReadyCenter(); renderM2TrialChecklist(); applyM2StatsPolish?.(); };
 
 </script>
@@ -4602,12 +4602,12 @@ renderStats = function(){ _m2SalesReadyRenderStats(); renderM2SalesReadyCenter()
 
 
 // === M2 SALES-READY LAYER + COLLAPSIBLE STATS MENU v1 ===
-const M2_STATS_COLLAPSED_KEY = 'm2_stats_menu_collapsed_v1';
+var M2_STATS_COLLAPSED_KEY = 'm2_stats_menu_collapsed_v1';
 function m2StatsMenuCollapsed(){ return localStorage.getItem(M2_STATS_COLLAPSED_KEY) === '1'; }
 function m2SetStatsMenuCollapsed(v){ localStorage.setItem(M2_STATS_COLLAPSED_KEY, v ? '1':'0'); }
 function m2ActiveStatsLabel(){ const m={overview:'Overview',activity:'Activity',team:'Team',settings:'Settings',admin:'Admin',all:'All'}; try{return m[m2StatsView?.()]||'Overview';}catch(e){return 'Overview';} }
 if (typeof m2SetStatsView === 'function') {
-  const _m2OldSetStatsView = m2SetStatsView;
+  var _m2OldSetStatsView = m2SetStatsView;
   m2SetStatsView = function(v){ m2SetStatsMenuCollapsed(true); _m2OldSetStatsView(v); };
 }
 if (typeof m2EnsureStatsToolbar === 'function') {
@@ -4670,7 +4670,7 @@ function renderM2SalesReadyCenter(){
   let card=document.getElementById('m2-sales-ready-center');
   if(!card){ card=document.createElement('div'); card.id='m2-sales-ready-center'; card.dataset.m2StatsGroup='admin'; const anchor=document.getElementById('m2-demo-sales-workflow')||document.getElementById('m2-hardening-center')||statsView.lastChild; if(anchor) anchor.insertAdjacentElement('afterend',card); else statsView.appendChild(card); }
   card.innerHTML=`<div class="m2-sales-card"><h3>💼 Sell This CRM Center</h3><div class="m2-sales-sub">Sales-ready tools for demos, beta customers, pricing, and customer onboarding.</div><div class="m2-sales-grid"><div class="m2-sales-tile"><b>🎬 Guided Demo</b><span>Walk prospects through map, Sun Score, lead cards, agent assignment, and pricing.</span></div><div class="m2-sales-tile"><b>💰 Value Calculator</b><span>Show how one extra closed deal can pay for the CRM.</span></div><div class="m2-sales-tile"><b>📅 Book Demo</b><span>Copy a clean message for prospects and beta teams.</span></div><div class="m2-sales-tile"><b>🧾 Beta Notes</b><span>Track what to show, test, and improve before Stripe.</span></div></div><div class="m2-sales-actions"><button class="primary" id="m2-sales-guided-demo">Start Guided Demo</button><button class="gold" id="m2-sales-value-calc">Open Value Calculator</button><button id="m2-sales-book-demo">Copy Book Demo Text</button><button id="m2-sales-pricing">Open Pricing</button></div></div>`;
-  card.querySelector('#m2-sales-guided-demo')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); if(typeof m2Copy==='function') m2Copy('Guided Demo Flow:
+  card.querySelector('#m2-sales-guided-demo')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); if(typeof m2Copy==='function') m2Copy(`Guided Demo Flow:
 1. Open Launch Screen
 2. Try Demo Mode
 3. Show Smart Map + Sun Icons
@@ -4678,7 +4678,7 @@ function renderM2SalesReadyCenter(){
 5. Show Team tab and Invite Agent
 6. Show Agent-only access
 7. Open Pricing
-8. Ask: Want to beta test this for 7 days?','Guided demo steps copied'); });
+8. Ask: Want to beta test this for 7 days?`,'Guided demo steps copied'); });
   card.querySelector('#m2-sales-value-calc')?.addEventListener('click',m2OpenValueCalculator);
   card.querySelector('#m2-sales-book-demo')?.addEventListener('click',m2CopyBookDemoText);
   card.querySelector('#m2-sales-pricing')?.addEventListener('click',()=>{ if(typeof openM2PricingModal==='function') openM2PricingModal(); });
@@ -4691,12 +4691,11 @@ function renderM2TrialChecklist(){
   const checked=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}');
   card.innerHTML=`<div class="m2-sales-card"><h3>🚀 Trial Onboarding Checklist</h3><div class="m2-sales-sub">Use this when setting up a beta customer or testing your own account before a demo.</div><div class="m2-checklist">${items.map((it,i)=>`<label class="m2-checkitem"><input type="checkbox" data-m2-trial-check="${i}" ${checked[i]?'checked':''}> <span>${it}</span></label>`).join('')}</div><div class="m2-sales-actions" style="grid-template-columns:1fr 1fr;"><button id="m2-copy-onboarding-list">Copy Checklist</button><button class="danger" id="m2-reset-onboarding-list">Reset Checklist</button></div></div>`;
   card.querySelectorAll('[data-m2-trial-check]').forEach(cb=>cb.addEventListener('change',()=>{ const c=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}'); c[cb.dataset.m2TrialCheck]=cb.checked; localStorage.setItem('m2_trial_checklist_v1',JSON.stringify(c)); }));
-  card.querySelector('#m2-copy-onboarding-list')?.addEventListener('click',()=>m2Copy?.('M2 CRM Beta Setup Checklist:
-- '+items.join('
-- '),'Checklist copied'));
+  card.querySelector('#m2-copy-onboarding-list')?.addEventListener('click',()=>m2Copy?.(`M2 CRM Beta Setup Checklist:
+- ${items.join('\n- ')}`,'Checklist copied'));
   card.querySelector('#m2-reset-onboarding-list')?.addEventListener('click',()=>{ localStorage.removeItem('m2_trial_checklist_v1'); renderStats(); });
 }
-const _m2SalesReadyRenderStats = renderStats;
+var _m2SalesReadyRenderStats = renderStats;
 renderStats = function(){ _m2SalesReadyRenderStats(); renderM2SalesReadyCenter(); renderM2TrialChecklist(); applyM2StatsPolish?.(); };
 
 </script>
