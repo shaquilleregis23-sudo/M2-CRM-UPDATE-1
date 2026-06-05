@@ -330,6 +330,20 @@
   .login-box { width:min(420px,100%); background:var(--panel); border:1px solid var(--border); border-radius:18px; padding:18px; box-shadow:0 20px 80px rgba(0,0,0,.65); }
   .login-box h2 { font-size:18px; margin-bottom:6px; }
   .login-box p { color:var(--muted); font-size:12px; line-height:1.4; margin-bottom:12px; }
+  .beta-launch-card { background:linear-gradient(135deg,#0b1220,#101b2f 55%,#062f34); border:1px solid #58f5d744; border-radius:18px; padding:16px; margin-bottom:12px; box-shadow:0 14px 45px rgba(0,0,0,.28); }
+  .beta-launch-card h3 { font-size:15px; margin-bottom:7px; }
+  .beta-sub { color:var(--muted); font-size:12px; line-height:1.45; margin-bottom:12px; }
+  .beta-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .beta-chip { background:#0d1117cc; border:1px solid #30363d; border-radius:14px; padding:10px; }
+  .beta-chip b { display:block; font-size:12px; margin-bottom:3px; }
+  .beta-chip span { color:var(--muted); font-size:11px; line-height:1.35; }
+  .beta-hero { background:linear-gradient(135deg,#111827,#06333a); border:1px solid #58f5d766; border-radius:16px; padding:14px; margin:10px 0; }
+  .beta-login-choice { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0; }
+  .beta-login-choice button { border:1px solid #30363d; background:#161b22; color:var(--text); border-radius:14px; padding:12px; font-weight:900; cursor:pointer; }
+  .beta-login-choice button.active { background:#1f6feb; border-color:#58a6ff; }
+  .demo-badge { display:inline-flex; gap:6px; align-items:center; padding:5px 9px; background:#d2992230; border:1px solid #d2992270; color:#ffd479; border-radius:999px; font-size:11px; font-weight:900; margin-left:6px; }
+  @media(max-width:600px){ .beta-grid{ grid-template-columns:1fr; } }
+
   .login-tabs { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:12px; }
   .login-tab { padding:10px; border-radius:10px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-weight:800; }
   .login-tab.active { background:var(--accent); border-color:var(--accent); color:#fff; }
@@ -2467,13 +2481,19 @@ function createLoginOverlay() {
   div.className = 'login-overlay';
   div.innerHTML = `
     <div class="login-box">
-      <h2>M2 Energy CRM Login</h2>
-      <p>This creates a front-end master/agent login experience for demos and team use on this device. For paid public accounts, connect this later to Firebase or Supabase.</p>
-      <div class="login-tabs"><button class="login-tab active" data-login-role="master">Master</button><button class="login-tab" data-login-role="agent">Agent</button></div>
-      <div class="form-row"><label>Email / username</label><input type="text" id="login-email" placeholder="agent@email.com" /></div>
+      <h2>Welcome to M2 Energy CRM</h2>
+      <p>Choose your role and log in. Masters control teams, leads, and assignments. Agents only see the leads assigned to them.</p>
+      <div class="beta-hero">
+        <b>Beta Launch Login</b>
+        <p style="margin:6px 0 0;">For new devices: master and agent logins can be pulled from Supabase cloud after you sync them from the main device.</p>
+      </div>
+      <div class="beta-login-choice"><button class="active" data-login-role="master">👑 Master / Owner</button><button data-login-role="agent">👥 Agent / Rep</button></div>
+      <div class="form-row"><label>Email / username</label><input type="text" id="login-email" placeholder="you@email.com" /></div>
       <div class="form-row"><label>PIN / password</label><input type="password" id="login-pin" placeholder="4+ digits" /></div>
       <button class="save-btn" id="login-submit" style="background:#1f6feb;">Login</button>
+      <button class="save-btn secondary" id="m2-demo-mode-login" style="margin-top:8px;">Try Demo Mode</button>
       <button class="save-btn secondary" id="login-close" style="margin-top:8px;">Close</button>
+      <p style="margin-top:10px;">Need access? Contact your manager.</p>
     </div>`;
   document.body.appendChild(div);
   let role = 'master';
@@ -2482,6 +2502,7 @@ function createLoginOverlay() {
     div.querySelectorAll('[data-login-role]').forEach(b => b.classList.toggle('active', b === btn));
   }));
   document.getElementById('login-close').addEventListener('click', () => div.classList.remove('open'));
+  document.getElementById('m2-demo-mode-login')?.addEventListener('click', () => { startM2DemoMode(); div.classList.remove('open'); });
   document.getElementById('login-submit').addEventListener('click', async () => {
     const email = document.getElementById('login-email').value.trim().toLowerCase();
     const pin = document.getElementById('login-pin').value.trim();
@@ -2514,6 +2535,69 @@ function createLoginOverlay() {
   });
 }
 function openLoginOverlay() { createLoginOverlay(); document.getElementById('m2-login-overlay').classList.add('open'); }
+
+
+function startM2DemoMode() {
+  const base = [
+    ['High Sun Home','42-15 Sample Ave','Queens',40.728,-73.794,'hot',92,'No solar visible. Clean roof line. High bill.'],
+    ['Boiler + Solar Lead','88-20 Demo Blvd','Queens',40.706,-73.821,'callback',86,'Oil heat. Good roof. Wants estimate tomorrow.'],
+    ['Mini Split Opportunity','120 Sample Street','Queens',40.681,-73.835,'set',78,'Old boiler. Asked about rebates and monthly payment.'],
+    ['Follow-up Needed','15-44 Prospect Rd','Brooklyn',40.667,-73.941,'interested',74,'Spoke to homeowner. Send solar + HVAC breakdown.'],
+    ['Already Has Solar','230 Demo Lane','Long Island',40.761,-73.610,'not_qualified',28,'Panels visible. Marked as existing solar.']
+  ];
+  state.leads = base.map((r,i) => ({
+    id:'demo_'+Date.now()+'_'+i,
+    first:r[0], last:'', addr:r[1], city:r[2], boro:r[2], zip:'', lat:r[3], lng:r[4],
+    status:r[5], source:'Demo Mode', territory:r[2], notes:r[7], monthly_bill:i<3?'250':'',
+    solar_status:i===4?'has_solar':'no_solar_visible', sun_score:r[6], sun_level:r[6]>=75?'High':'Medium',
+    assigned_agent:i<3?'Demo Rep':'', assigned_user_email:i<3?'demoagent@m2crm.com':'', assigned_user_id:'demo_agent',
+    created_at:new Date().toISOString(), updated_at:new Date().toISOString(), demo:true
+  }));
+  state.filter = 'all';
+  saveState();
+  saveCurrentSession({ role:'master', name:'Demo Master', email:'demo@m2crm.com', demo:true });
+  localStorage.setItem('m2_demo_mode_v1','1');
+  renderMarkers(); renderFilterBar(); renderList(); renderStats(); switchView('map');
+  showToast('✓ Demo mode loaded');
+}
+function clearM2DemoMode() {
+  if (!confirm('Clear demo leads from this browser?')) return;
+  state.leads = (state.leads || []).filter(l => !l.demo);
+  localStorage.removeItem('m2_demo_mode_v1');
+  saveState(); renderMarkers(); renderFilterBar(); renderList(); renderStats();
+  showToast('Demo mode cleared');
+}
+function renderBetaLaunchCenter() {
+  const statsView = document.getElementById('stats-view');
+  if (!statsView) return;
+  let card = document.getElementById('m2-beta-launch-card');
+  if (!card) {
+    card = document.createElement('div');
+    card.id = 'm2-beta-launch-card';
+    statsView.insertBefore(card, statsView.firstChild);
+  }
+  const sess = getCurrentSession();
+  const demoOn = localStorage.getItem('m2_demo_mode_v1') === '1';
+  card.className = 'beta-launch-card';
+  card.innerHTML = `
+    <h3>🚀 M2 CRM Beta Launch Center ${demoOn ? '<span class="demo-badge">DEMO MODE</span>' : ''}</h3>
+    <div class="beta-sub">This version is focused on making the CRM ready to show to outside solar, HVAC, and clean heat teams.</div>
+    <div class="beta-grid">
+      <div class="beta-chip"><b>Clean Login</b><span>Master / Owner and Agent / Rep login choices.</span></div>
+      <div class="beta-chip"><b>Cloud Access</b><span>Master and agent logins can sync through Supabase.</span></div>
+      <div class="beta-chip"><b>Demo Mode</b><span>Show the CRM without exposing your real lead list.</span></div>
+      <div class="beta-chip"><b>Security Path</b><span>Agents are blocked from master-only sync actions.</span></div>
+    </div>
+    <div class="daily-action-row" style="margin-top:12px;">
+      <button class="daily-btn" id="m2-open-beta-login">Open Beta Login</button>
+      <button class="daily-btn secondary" id="m2-start-demo-mode">Try Demo Mode</button>
+      ${demoOn ? '<button class="daily-btn danger" id="m2-clear-demo-mode">Clear Demo</button>' : ''}
+    </div>
+    <div class="beta-sub" style="margin-top:8px;">Current session: <b>${escapeHtml(sess.name || 'Not logged in')}</b> · ${escapeHtml(sess.role || 'guest')}</div>`;
+  document.getElementById('m2-open-beta-login')?.addEventListener('click', openLoginOverlay);
+  document.getElementById('m2-start-demo-mode')?.addEventListener('click', startM2DemoMode);
+  document.getElementById('m2-clear-demo-mode')?.addEventListener('click', clearM2DemoMode);
+}
 function assignVisibleLeadsToAgent(agentId) {
   if (!canManageTeam()) { showToast('Only master can assign leads'); return; }
   const acc = getAccountAccess();
@@ -3178,6 +3262,7 @@ const _m2Phase6RenderStats = renderStats;
 renderStats = function() {
   _m2Phase6RenderStats();
   renderM2TeamDashboard();
+  renderBetaLaunchCenter();
 };
 
 // Cloud helper: show a visible timestamp after successful manual sync/load.
@@ -3452,6 +3537,190 @@ leadPayloadForCloud = function(lead) {
 
 
 
+
+
+
+// === M2 BETA LAUNCH POLISH V1: clean onboarding + demo + backup + pricing ===
+const M2_BETA_POLISH_VERSION = 'beta_polish_v1';
+
+(function injectM2BetaPolishStyles(){
+  if (document.getElementById('m2-beta-polish-styles')) return;
+  const st = document.createElement('style');
+  st.id = 'm2-beta-polish-styles';
+  st.textContent = `
+    .m2-beta-polish{background:linear-gradient(135deg,#071322,#0d3f4a);border:1px solid rgba(100,255,218,.24);border-radius:22px;padding:16px;margin:12px;box-shadow:0 16px 44px rgba(0,0,0,.25);color:#fff;}
+    .m2-beta-polish h3{margin:0 0 6px;font-size:20px;}
+    .m2-beta-polish .sub{color:#bfe7e7;font-size:13px;line-height:1.35;margin-bottom:12px;}
+    .m2-polish-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0;}
+    .m2-polish-tile{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:11px;min-height:70px;}
+    .m2-polish-tile b{display:block;font-size:13px;margin-bottom:4px;}
+    .m2-polish-tile span{display:block;font-size:11px;line-height:1.3;color:#caeeee;}
+    .m2-action-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+    .m2-action-row button,.m2-beta-btn{border:0;border-radius:14px;padding:10px 12px;font-weight:800;background:#55ffd7;color:#03151d;cursor:pointer;}
+    .m2-action-row button.secondary{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.18);}
+    .m2-action-row button.gold{background:#ffc72c;color:#231700;}
+    .m2-action-row button.danger{background:#ff5f7c;color:#fff;}
+    .m2-launch-modal{position:fixed;inset:0;background:rgba(1,7,16,.75);z-index:999999;display:none;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(8px);}
+    .m2-launch-modal.open{display:flex;}
+    .m2-launch-box{width:min(560px,96vw);max-height:88vh;overflow:auto;background:linear-gradient(180deg,#081522,#102e3b);border:1px solid rgba(100,255,218,.28);border-radius:26px;padding:18px;color:#fff;box-shadow:0 24px 70px rgba(0,0,0,.45);}
+    .m2-launch-box h2{margin:0 0 6px;font-size:24px;}
+    .m2-launch-box p{color:#c8eeee;font-size:13px;line-height:1.4;}
+    .m2-choice-grid{display:grid;gap:10px;margin:14px 0;}
+    .m2-choice-card{text-align:left;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);color:#fff;border-radius:18px;padding:13px;cursor:pointer;}
+    .m2-choice-card b{display:block;font-size:16px;margin-bottom:4px;}.m2-choice-card span{font-size:12px;color:#c8eeee;line-height:1.35;}
+    .m2-setup-panel{display:none;margin-top:12px;padding:12px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);}
+    .m2-setup-panel.open{display:block;}
+    .m2-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .m2-form-grid label{display:block;font-size:11px;color:#bdeeee;margin:0 0 4px;}
+    .m2-form-grid input,.m2-form-grid select{width:100%;box-sizing:border-box;border:1px solid rgba(255,255,255,.16);border-radius:12px;background:#07111d;color:#fff;padding:10px;font-size:13px;}
+    .m2-plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0;}
+    .m2-plan{background:#fff;color:#071322;border-radius:16px;padding:12px;}.m2-plan b{display:block;font-size:14px}.m2-plan .price{font-size:22px;font-weight:900;margin:4px 0}.m2-plan span{font-size:11px;color:#3d6266;line-height:1.3;display:block;}
+    @media(max-width:520px){.m2-polish-grid,.m2-form-grid,.m2-plan-grid{grid-template-columns:1fr}.m2-launch-box{padding:15px}.m2-action-row button{width:100%;}}
+  `;
+  document.head.appendChild(st);
+})();
+
+function m2DownloadTextFile(filename, text) {
+  const blob = new Blob([text], { type:'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function exportM2FullBackup() {
+  const payload = {
+    app:'M2 Energy CRM',
+    version:M2_BETA_POLISH_VERSION,
+    exported_at:new Date().toISOString(),
+    account:getAccountAccess?.() || {},
+    session:getCurrentSession?.() || {},
+    settings:getSettings?.() || {},
+    leads:state?.leads || []
+  };
+  m2DownloadTextFile('m2-crm-backup-' + new Date().toISOString().slice(0,10) + '.json', JSON.stringify(payload,null,2));
+  showToast('✓ Backup exported');
+}
+function importM2FullBackup(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data || !Array.isArray(data.leads)) throw new Error('Backup file missing leads');
+      if (!confirm(`Import ${data.leads.length} leads from backup? This will replace current local leads on this browser.`)) return;
+      state.leads = data.leads;
+      if (data.account) saveAccountAccess(data.account);
+      if (data.settings) saveSettings(data.settings);
+      saveState(); renderMarkers(); renderFilterBar(); renderList(); renderStats();
+      showToast('✓ Backup imported');
+    } catch(e) { alert('Import failed: ' + e.message); }
+  };
+  reader.readAsText(file);
+}
+
+function openM2LaunchModal() {
+  let modal = document.getElementById('m2-launch-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'm2-launch-modal';
+    modal.className = 'm2-launch-modal';
+    modal.innerHTML = `
+      <div class="m2-launch-box">
+        <h2>Welcome to M2 Energy CRM</h2>
+        <p>Built for solar, HVAC, and clean heat sales teams. Choose how you want to enter.</p>
+        <div class="m2-choice-grid">
+          <button class="m2-choice-card" id="m2-owner-login-choice"><b>👑 Owner / Master Login</b><span>For managers who control teams, leads, assignment, sync, and reporting.</span></button>
+          <button class="m2-choice-card" id="m2-agent-login-choice"><b>👥 Agent / Rep Login</b><span>For reps using assigned leads, map view, follow-ups, and appointments.</span></button>
+          <button class="m2-choice-card" id="m2-demo-choice"><b>🚀 Try Demo Mode</b><span>Use sample solar/HVAC leads so you can show the CRM without exposing real data.</span></button>
+          <button class="m2-choice-card" id="m2-new-team-choice"><b>🏢 New Team Setup</b><span>Create a clean owner profile for beta customers and save it locally before cloud sync.</span></button>
+        </div>
+        <div class="m2-setup-panel" id="m2-new-team-panel">
+          <h3 style="margin:0 0 8px;">New Team Setup Wizard</h3>
+          <div class="m2-form-grid">
+            <div><label>Business Name</label><input id="m2-team-business" placeholder="Example Solar Office" /></div>
+            <div><label>Main Territory</label><input id="m2-team-territory" placeholder="Queens / Long Island" /></div>
+            <div><label>Owner Name</label><input id="m2-owner-name" placeholder="Owner name" /></div>
+            <div><label>Owner Email</label><input id="m2-owner-email" placeholder="owner@email.com" /></div>
+            <div><label>Master PIN</label><input id="m2-owner-pin" placeholder="4+ digits" /></div>
+            <div><label>Plan Type</label><select id="m2-plan-type"><option>Starter Team - $99/mo</option><option>Growth Team - $199/mo</option><option>Office Plan - $299/mo</option></select></div>
+          </div>
+          <div class="m2-action-row"><button id="m2-save-team-setup">Save Team Setup</button><button class="secondary" id="m2-cancel-team-setup">Cancel</button></div>
+          <p>After saving, go to Account Access and click <b>Sync Master to Cloud</b>.</p>
+        </div>
+        <div class="m2-plan-grid">
+          <div class="m2-plan"><b>Starter Team</b><div class="price">$99</div><span>Small team beta, core CRM, map, agents.</span></div>
+          <div class="m2-plan"><b>Growth Team</b><div class="price">$199</div><span>More reps, cloud sync, assignment, pipeline.</span></div>
+          <div class="m2-plan"><b>Office Plan</b><div class="price">$299</div><span>Manager dashboard, onboarding, priority setup.</span></div>
+        </div>
+        <div class="m2-action-row"><button class="secondary" id="m2-close-launch-modal">Close</button></div>
+        <p style="margin-top:10px;">Need access? Contact your manager.</p>
+      </div>`;
+    document.body.appendChild(modal);
+    document.getElementById('m2-close-launch-modal')?.addEventListener('click', () => modal.classList.remove('open'));
+    modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('open'); });
+    document.getElementById('m2-owner-login-choice')?.addEventListener('click', () => { modal.classList.remove('open'); openLoginOverlay(); setTimeout(()=>document.querySelector('[data-login-role="master"]')?.click(),100); });
+    document.getElementById('m2-agent-login-choice')?.addEventListener('click', () => { modal.classList.remove('open'); openLoginOverlay(); setTimeout(()=>document.querySelector('[data-login-role="agent"]')?.click(),100); });
+    document.getElementById('m2-demo-choice')?.addEventListener('click', () => { startM2DemoMode(); modal.classList.remove('open'); });
+    document.getElementById('m2-new-team-choice')?.addEventListener('click', () => document.getElementById('m2-new-team-panel')?.classList.add('open'));
+    document.getElementById('m2-cancel-team-setup')?.addEventListener('click', () => document.getElementById('m2-new-team-panel')?.classList.remove('open'));
+    document.getElementById('m2-save-team-setup')?.addEventListener('click', () => {
+      const business = document.getElementById('m2-team-business').value.trim();
+      const terr = document.getElementById('m2-team-territory').value.trim();
+      const name = document.getElementById('m2-owner-name').value.trim();
+      const email = document.getElementById('m2-owner-email').value.trim().toLowerCase();
+      const pin = document.getElementById('m2-owner-pin').value.trim();
+      const plan = document.getElementById('m2-plan-type').value;
+      if (!business || !name || !email || !pin) return showToast('Fill business, owner, email, and PIN');
+      if (pin.length < 4) return showToast('PIN should be 4+ digits');
+      const acc = getAccountAccess() || {};
+      const teamId = acc.team_id || ('team_' + Date.now());
+      saveAccountAccess({ ...acc, team_id:teamId, crm_name:business, company_name:business, master_name:name, master_email:email, master_pin:pin, territory:terr, plan_type:plan, created_at:acc.created_at || new Date().toISOString(), updated_at:new Date().toISOString() });
+      saveCurrentSession({ role:'master', name, email, team_id:teamId });
+      const s = getSettings(); saveSettings({ ...s, agent_name:name, default_territory:terr || s.default_territory || '' });
+      modal.classList.remove('open'); renderSettings(); renderStats(); showToast('✓ Team setup saved. Now Sync Master to Cloud.');
+    });
+  }
+  modal.classList.add('open');
+}
+
+const _m2PolishOldRenderBetaLaunchCenter = renderBetaLaunchCenter;
+renderBetaLaunchCenter = function() {
+  _m2PolishOldRenderBetaLaunchCenter();
+  const card = document.getElementById('m2-beta-launch-card');
+  if (!card) return;
+  const demoOn = localStorage.getItem('m2_demo_mode_v1') === '1';
+  const acc = getAccountAccess?.() || {};
+  const leadCount = (state.leads || []).length;
+  const agentCount = (acc.agents || []).length;
+  const safeHtml = `
+    <div class="m2-beta-polish">
+      <h3>✨ Beta Launch Polish <span class="demo-badge">${M2_BETA_POLISH_VERSION}</span></h3>
+      <div class="sub">This is the cleaner sellable-product layer: onboarding, demo, pricing, backup, and beta team setup.</div>
+      <div class="m2-polish-grid">
+        <div class="m2-polish-tile"><b>👋 Clean Welcome</b><span>Owner, agent, demo, and new team setup in one launch screen.</span></div>
+        <div class="m2-polish-tile"><b>🏢 Setup Wizard</b><span>Save business name, owner, territory, plan, and master PIN.</span></div>
+        <div class="m2-polish-tile"><b>🎬 Demo Ready</b><span>${demoOn ? 'Demo mode is currently on.' : 'Load sample leads for selling without exposing real customers.'}</span></div>
+        <div class="m2-polish-tile"><b>🛟 Backup Safety</b><span>${leadCount} leads · ${agentCount} agents. Export before big changes.</span></div>
+      </div>
+      <div class="m2-action-row">
+        <button id="m2-open-launch-screen">Open Launch Screen</button>
+        <button class="gold" id="m2-export-backup">Export Backup</button>
+        <button class="secondary" id="m2-import-backup-btn">Import Backup</button>
+        <input id="m2-import-backup-file" type="file" accept="application/json,.json" style="display:none" />
+      </div>
+    </div>`;
+  if (!document.getElementById('m2-beta-polish-wrap')) {
+    const wrap = document.createElement('div');
+    wrap.id = 'm2-beta-polish-wrap';
+    card.insertAdjacentElement('afterend', wrap);
+  }
+  const wrap = document.getElementById('m2-beta-polish-wrap');
+  wrap.innerHTML = safeHtml;
+  document.getElementById('m2-open-launch-screen')?.addEventListener('click', openM2LaunchModal);
+  document.getElementById('m2-export-backup')?.addEventListener('click', exportM2FullBackup);
+  document.getElementById('m2-import-backup-btn')?.addEventListener('click', () => document.getElementById('m2-import-backup-file')?.click());
+  document.getElementById('m2-import-backup-file')?.addEventListener('change', e => importM2FullBackup(e.target.files && e.target.files[0]));
+};
 
 // === M2 SECURITY STARTER ===
 // Front-end guardrails. Real protection comes from the Supabase RLS SQL file.
