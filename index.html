@@ -424,9 +424,35 @@
 
 
 
-/* === M2 Sales Ready + Collapsible Stats Menu === */
-.m2-stats-toolbar.m2-stats-collapsed{padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:30;background:rgba(10,16,28,.94);backdrop-filter:blur(10px);border:1px solid rgba(120,140,170,.22);border-radius:14px;margin:8px 0 12px}.m2-stats-reopen{border:0;border-radius:12px;padding:10px 14px;background:linear-gradient(135deg,#55ffd8,#2d7cff);color:#06131d;font-weight:900;cursor:pointer}.m2-stats-mini-left{display:flex;align-items:center;gap:10px;min-width:0}.m2-stats-mini-title{font-weight:900;color:#fff}.m2-stats-mini-sub{font-size:12px;color:#9aa7b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
-.m2-sales-card{background:linear-gradient(180deg,rgba(18,29,49,.98),rgba(10,16,28,.98));border:1px solid rgba(95,255,215,.20);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 8px 26px rgba(0,0,0,.22)}.m2-sales-card h3{margin:0 0 8px;font-size:18px;color:#fff}.m2-sales-sub{color:#aeb9c8;font-size:13px;line-height:1.35;margin-bottom:12px}.m2-sales-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.m2-sales-tile{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:12px;min-height:80px}.m2-sales-tile b{display:block;color:#fff;margin-bottom:6px;font-size:13px}.m2-sales-tile span{display:block;color:#9aa7b8;font-size:12px;line-height:1.3}.m2-sales-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}.m2-sales-actions button,.m2-calc-modal button{border:0;border-radius:12px;padding:12px;background:#202832;color:#eaf3ff;font-weight:900;cursor:pointer}.m2-sales-actions button.primary,.m2-calc-modal button.primary{background:linear-gradient(135deg,#55ffd8,#2d7cff);color:#05141e}.m2-sales-actions button.gold,.m2-calc-modal button.gold{background:#f7c948;color:#201600}.m2-sales-actions button.danger{background:#b8304e;color:#fff}.m2-checklist{display:grid;gap:8px;margin-top:8px}.m2-checkitem{display:flex;gap:9px;align-items:flex-start;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px;color:#dce8f5;font-size:13px}.m2-checkitem input{margin-top:2px;accent-color:#55ffd8}.m2-calc-modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:99999;padding:18px}.m2-calc-modal.open{display:flex}.m2-calc-box{background:#101722;border:1px solid rgba(95,255,215,.22);border-radius:22px;padding:18px;max-width:620px;width:100%;color:#fff;box-shadow:0 20px 60px rgba(0,0,0,.5)}.m2-calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.m2-calc-grid label{font-size:12px;color:#aeb9c8;font-weight:800;text-transform:uppercase;letter-spacing:.04em}.m2-calc-grid input{width:100%;box-sizing:border-box;margin-top:5px;background:#0b111b;border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#fff;padding:12px;font-size:15px}.m2-calc-result{background:rgba(85,255,216,.08);border:1px solid rgba(85,255,216,.2);border-radius:14px;padding:12px;color:#dffff8;font-size:14px;line-height:1.45;margin-top:10px}@media(max-width:760px){.m2-sales-grid,.m2-sales-actions,.m2-calc-grid{grid-template-columns:1fr}.m2-stats-toolbar.m2-stats-collapsed{margin:8px 8px 12px}.m2-stats-mini-sub{max-width:42vw}.m2-sales-card{margin-left:8px;margin-right:8px}}
+/* === M2 Sales Ready + Collapsible Stats Command Center === */
+.m2-stats-toolbar.m2-stats-collapsed{padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;position:sticky;top:0;z-index:30;background:rgba(10,16,28,.92);backdrop-filter:blur(10px);border:1px solid rgba(120,140,170,.22);border-radius:14px;margin:8px 0 12px;}
+.m2-stats-mini-left{display:flex;align-items:center;gap:10px;min-width:0;}
+.m2-stats-mini-title{font-weight:900;color:#fff;white-space:nowrap;}
+.m2-stats-mini-sub{font-size:12px;color:#9aa7b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw;}
+.m2-stats-reopen{border:0;border-radius:12px;padding:10px 14px;background:linear-gradient(135deg,#55ffd8,#2d7cff);color:#06131d;font-weight:900;cursor:pointer;}
+.m2-sales-card{background:linear-gradient(180deg,rgba(18,29,49,.98),rgba(10,16,28,.98));border:1px solid rgba(95,255,215,.20);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 8px 26px rgba(0,0,0,.22);}
+.m2-sales-card h3{margin:0 0 8px;font-size:18px;color:#fff;}
+.m2-sales-sub{color:#aeb9c8;font-size:13px;line-height:1.35;margin-bottom:12px;}
+.m2-sales-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;}
+.m2-sales-tile{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:12px;min-height:80px;}
+.m2-sales-tile b{display:block;color:#fff;margin-bottom:6px;font-size:13px;}
+.m2-sales-tile span{display:block;color:#9aa7b8;font-size:12px;line-height:1.3;}
+.m2-sales-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px;}
+.m2-sales-actions button,.m2-calc-modal button{border:0;border-radius:12px;padding:12px 12px;background:#202832;color:#eaf3ff;font-weight:900;cursor:pointer;}
+.m2-sales-actions button.primary,.m2-calc-modal button.primary{background:linear-gradient(135deg,#55ffd8,#2d7cff);color:#05141e;}
+.m2-sales-actions button.gold,.m2-calc-modal button.gold{background:#f7c948;color:#201600;}
+.m2-sales-actions button.danger{background:#b8304e;color:#fff;}
+.m2-checklist{display:grid;gap:8px;margin-top:8px;}
+.m2-checkitem{display:flex;gap:9px;align-items:flex-start;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px;color:#dce8f5;font-size:13px;}
+.m2-checkitem input{margin-top:2px;accent-color:#55ffd8;}
+.m2-calc-modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:99999;padding:18px;}
+.m2-calc-modal.open{display:flex;}
+.m2-calc-box{background:#101722;border:1px solid rgba(95,255,215,.22);border-radius:22px;padding:18px;max-width:620px;width:100%;color:#fff;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.m2-calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0;}
+.m2-calc-grid label{font-size:12px;color:#aeb9c8;font-weight:800;text-transform:uppercase;letter-spacing:.04em;}
+.m2-calc-grid input{width:100%;box-sizing:border-box;margin-top:5px;background:#0b111b;border:1px solid rgba(255,255,255,.12);border-radius:12px;color:#fff;padding:12px;font-size:15px;}
+.m2-calc-result{background:rgba(85,255,216,.08);border:1px solid rgba(85,255,216,.2);border-radius:14px;padding:12px;color:#dffff8;font-size:14px;line-height:1.45;margin-top:10px;}
+@media(max-width:760px){.m2-sales-grid,.m2-sales-actions,.m2-calc-grid{grid-template-columns:1fr}.m2-stats-toolbar.m2-stats-collapsed{margin:8px 8px 12px}.m2-stats-mini-sub{max-width:42vw}.m2-sales-card{margin-left:8px;margin-right:8px}}
 
 </style>
 </head>
@@ -643,8 +669,208 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+
+// === M2 SALES-READY LAYER + COLLAPSIBLE STATS MENU v1 ===
+const M2_STATS_COLLAPSED_KEY = 'm2_stats_menu_collapsed_v1';
+function m2StatsMenuCollapsed(){ return localStorage.getItem(M2_STATS_COLLAPSED_KEY) === '1'; }
+function m2SetStatsMenuCollapsed(v){ localStorage.setItem(M2_STATS_COLLAPSED_KEY, v ? '1':'0'); }
+function m2ActiveStatsLabel(){ const m={overview:'Overview',activity:'Activity',team:'Team',settings:'Settings',admin:'Admin',all:'All'}; try{return m[m2StatsView?.()]||'Overview';}catch(e){return 'Overview';} }
+if (typeof m2SetStatsView === 'function') {
+  const _m2OldSetStatsView = m2SetStatsView;
+  m2SetStatsView = function(v){ m2SetStatsMenuCollapsed(true); _m2OldSetStatsView(v); };
+}
+if (typeof m2EnsureStatsToolbar === 'function') {
+  m2EnsureStatsToolbar = function(){
+    const statsView=document.getElementById('stats-view'); if(!statsView) return null;
+    let bar=document.getElementById('m2-stats-toolbar');
+    if(!bar){ bar=document.createElement('div'); bar.id='m2-stats-toolbar'; bar.className='m2-stats-toolbar'; statsView.insertBefore(bar,statsView.firstChild); }
+    const leads=(typeof m2VisibleLeadSet==='function'?m2VisibleLeadSet():state.leads||[]);
+    if(m2StatsMenuCollapsed()){
+      bar.className='m2-stats-toolbar m2-stats-collapsed';
+      bar.innerHTML=`<div class="m2-stats-mini-left"><button class="m2-stats-reopen" id="m2-reopen-stats-menu">☰ Stats Menu</button><div><div class="m2-stats-mini-title">${m2ActiveStatsLabel()} View</div><div class="m2-stats-mini-sub">${leads.length} leads · tap Stats Menu to switch sections</div></div></div><button id="m2-mini-backup" class="m2-stats-reopen" style="background:#f7c948;color:#1d1600;">Backup</button>`;
+      bar.querySelector('#m2-reopen-stats-menu')?.addEventListener('click',()=>{m2SetStatsMenuCollapsed(false); applyM2StatsPolish?.();});
+      bar.querySelector('#m2-mini-backup')?.addEventListener('click',()=>{ if(typeof exportM2FullBackup==='function') exportM2FullBackup(); else document.getElementById('export-btn')?.click(); });
+      return bar;
+    }
+    bar.className='m2-stats-toolbar';
+    const today=typeof todayLeads==='function' ? todayLeads() : [];
+    const hot=leads.filter(l=>['interested','callback','set','sat'].includes(l.status)).length;
+    const sun=leads.filter(l=>{ try{return getLeadSunScore(l).score>=75;}catch(e){return false;} }).length;
+    const due=leads.filter(l=>{ try{return (isDueToday(l.callback_due)||isDueToday(l.appt_time))&&!['closed','do_not_knock','not_qualified'].includes(l.status);}catch(e){return false;} }).length;
+    const tab=typeof m2StatsView==='function' ? m2StatsView() : 'overview';
+    const tabs=[['overview','📊 Overview'],['activity','✅ Activity'],['team','👥 Team'],['settings','⚙️ Settings'],['admin','🧱 Admin'],['all','🧩 All']];
+    bar.innerHTML=`<div class="m2-stats-head"><div><h2>CRM Command Center</h2><span>Choose a section. This menu collapses after you select one.</span></div><span>${leads.length} leads</span></div><div class="m2-quick-summary"><div class="m2-quick-stat"><div class="k">Today doors</div><div class="v">${today.filter(l=>isDoorTouched(l.status)).length}</div></div><div class="m2-quick-stat"><div class="k">Hot pipeline</div><div class="v">${hot}</div></div><div class="m2-quick-stat"><div class="k">Follow-ups</div><div class="v">${due}</div></div><div class="m2-quick-stat"><div class="k">High sun</div><div class="v">${sun}</div></div></div><div class="m2-stats-tabs">${tabs.map(([k,label])=>`<button class="m2-stat-tab ${tab===k?'active':''}" data-m2-tab="${k}">${label}</button>`).join('')}</div><div class="m2-stats-actions"><button class="gold" id="m2-quick-backup">Export Full Backup</button><button id="m2-quick-launch">Open Launch Screen</button><button id="m2-collapse-command">Collapse Menu</button></div>`;
+    bar.querySelectorAll('[data-m2-tab]').forEach(btn=>btn.addEventListener('click',()=>m2SetStatsView(btn.dataset.m2Tab)));
+    bar.querySelector('#m2-quick-backup')?.addEventListener('click',()=>{ if(typeof exportM2FullBackup==='function') exportM2FullBackup(); else document.getElementById('export-btn')?.click(); });
+    bar.querySelector('#m2-quick-launch')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); });
+    bar.querySelector('#m2-collapse-command')?.addEventListener('click',()=>{m2SetStatsMenuCollapsed(true); applyM2StatsPolish?.();});
+    return bar;
+  };
+}
+function m2OpenValueCalculator(){
+  let modal=document.getElementById('m2-value-calc-modal');
+  if(!modal){
+    modal=document.createElement('div'); modal.id='m2-value-calc-modal'; modal.className='m2-calc-modal';
+    modal.innerHTML=`<div class="m2-calc-box"><h2 style="margin:0 0 6px;">CRM Value Calculator</h2><div class="m2-sales-sub">Use this in sales demos to show a team why the CRM pays for itself.</div><div class="m2-calc-grid"><div><label>Reps</label><input id="m2-calc-reps" type="number" value="5"></div><div><label>Extra appointments / rep / month</label><input id="m2-calc-appts" type="number" value="2"></div><div><label>Close rate %</label><input id="m2-calc-close" type="number" value="25"></div><div><label>Profit per closed deal</label><input id="m2-calc-profit" type="number" value="1200"></div></div><button class="primary" id="m2-run-calc">Calculate Value</button><div id="m2-calc-result" class="m2-calc-result">Example: even one extra closed deal can cover the CRM for months.</div><div class="m2-sales-actions" style="grid-template-columns:1fr 1fr;margin-top:12px;"><button class="gold" id="m2-copy-calc-pitch">Copy Pitch</button><button id="m2-close-calc">Close</button></div></div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('open'); });
+    modal.querySelector('#m2-close-calc')?.addEventListener('click',()=>modal.classList.remove('open'));
+    modal.querySelector('#m2-run-calc')?.addEventListener('click',()=>{
+      const reps=+document.getElementById('m2-calc-reps').value||0, appts=+document.getElementById('m2-calc-appts').value||0, close=+document.getElementById('m2-calc-close').value||0, profit=+document.getElementById('m2-calc-profit').value||0;
+      const extraAppts=reps*appts; const deals=extraAppts*(close/100); const value=deals*profit;
+      document.getElementById('m2-calc-result').innerHTML=`<b>Estimated monthly upside:</b> ${extraAppts.toFixed(0)} extra appointments → ${deals.toFixed(1)} closed deals → <b>$${Math.round(value).toLocaleString()}</b> possible gross profit/month.<br><br>If the CRM helps produce even a small lift, the $99–$299/mo plan is easy to justify.`;
+    });
+    modal.querySelector('#m2-copy-calc-pitch')?.addEventListener('click',()=>m2Copy?.('M2 Energy CRM helps field teams get more value from their existing reps: better map targeting, high-sun homes, lead assignment, follow-up tracking, and cloud sync. Even one extra closed deal can pay for months of CRM use.','Calculator pitch copied'));
+  }
+  modal.classList.add('open');
+}
+function m2CopyBookDemoText(){
+  const s=typeof getSettings==='function'?getSettings():{};
+  const msg=`Want to see M2 Energy CRM?
+
+Built for solar, HVAC, and clean heat door-to-door teams.
+Features: smart lead map, Sun Score, agent assignment, follow-up pipeline, cloud sync, and app-style mobile access.
+
+Book a demo / beta test: ${s.support_email||'shaquilleregis23@gmail.com'}`;
+  if(typeof m2Copy==='function') m2Copy(msg,'Book demo text copied'); else navigator.clipboard?.writeText(msg);
+}
+function renderM2SalesReadyCenter(){
+  const statsView=document.getElementById('stats-view'); if(!statsView) return;
+  let card=document.getElementById('m2-sales-ready-center');
+  if(!card){ card=document.createElement('div'); card.id='m2-sales-ready-center'; card.dataset.m2StatsGroup='admin'; const anchor=document.getElementById('m2-demo-sales-workflow')||document.getElementById('m2-hardening-center')||statsView.lastChild; if(anchor) anchor.insertAdjacentElement('afterend',card); else statsView.appendChild(card); }
+  card.innerHTML=`<div class="m2-sales-card"><h3>💼 Sell This CRM Center</h3><div class="m2-sales-sub">Sales-ready tools for demos, beta customers, pricing, and customer onboarding.</div><div class="m2-sales-grid"><div class="m2-sales-tile"><b>🎬 Guided Demo</b><span>Walk prospects through map, Sun Score, lead cards, agent assignment, and pricing.</span></div><div class="m2-sales-tile"><b>💰 Value Calculator</b><span>Show how one extra closed deal can pay for the CRM.</span></div><div class="m2-sales-tile"><b>📅 Book Demo</b><span>Copy a clean message for prospects and beta teams.</span></div><div class="m2-sales-tile"><b>🧾 Beta Notes</b><span>Track what to show, test, and improve before Stripe.</span></div></div><div class="m2-sales-actions"><button class="primary" id="m2-sales-guided-demo">Start Guided Demo</button><button class="gold" id="m2-sales-value-calc">Open Value Calculator</button><button id="m2-sales-book-demo">Copy Book Demo Text</button><button id="m2-sales-pricing">Open Pricing</button></div></div>`;
+  card.querySelector('#m2-sales-guided-demo')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); if(typeof m2Copy==='function') m2Copy('Guided Demo Flow:
+1. Open Launch Screen
+2. Try Demo Mode
+3. Show Smart Map + Sun Icons
+4. Open a Lead Card
+5. Show Team tab and Invite Agent
+6. Show Agent-only access
+7. Open Pricing
+8. Ask: Want to beta test this for 7 days?','Guided demo steps copied'); });
+  card.querySelector('#m2-sales-value-calc')?.addEventListener('click',m2OpenValueCalculator);
+  card.querySelector('#m2-sales-book-demo')?.addEventListener('click',m2CopyBookDemoText);
+  card.querySelector('#m2-sales-pricing')?.addEventListener('click',()=>{ if(typeof openM2PricingModal==='function') openM2PricingModal(); });
+}
+function renderM2TrialChecklist(){
+  const statsView=document.getElementById('stats-view'); if(!statsView) return;
+  let card=document.getElementById('m2-trial-onboarding-checklist');
+  if(!card){ card=document.createElement('div'); card.id='m2-trial-onboarding-checklist'; card.dataset.m2StatsGroup='admin'; const anchor=document.getElementById('m2-sales-ready-center')||statsView.lastChild; if(anchor) anchor.insertAdjacentElement('afterend',card); else statsView.appendChild(card); }
+  const items=['Set business name and support email','Create/confirm master cloud login','Import or load customer leads','Create first agent login','Assign test leads to agent','Confirm agent only sees assigned leads','Export full backup','Show pricing and offer 7-day beta'];
+  const checked=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}');
+  card.innerHTML=`<div class="m2-sales-card"><h3>🚀 Trial Onboarding Checklist</h3><div class="m2-sales-sub">Use this when setting up a beta customer or testing your own account before a demo.</div><div class="m2-checklist">${items.map((it,i)=>`<label class="m2-checkitem"><input type="checkbox" data-m2-trial-check="${i}" ${checked[i]?'checked':''}> <span>${it}</span></label>`).join('')}</div><div class="m2-sales-actions" style="grid-template-columns:1fr 1fr;"><button id="m2-copy-onboarding-list">Copy Checklist</button><button class="danger" id="m2-reset-onboarding-list">Reset Checklist</button></div></div>`;
+  card.querySelectorAll('[data-m2-trial-check]').forEach(cb=>cb.addEventListener('change',()=>{ const c=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}'); c[cb.dataset.m2TrialCheck]=cb.checked; localStorage.setItem('m2_trial_checklist_v1',JSON.stringify(c)); }));
+  card.querySelector('#m2-copy-onboarding-list')?.addEventListener('click',()=>m2Copy?.('M2 CRM Beta Setup Checklist:
+- '+items.join('
+- '),'Checklist copied'));
+  card.querySelector('#m2-reset-onboarding-list')?.addEventListener('click',()=>{ localStorage.removeItem('m2_trial_checklist_v1'); renderStats(); });
+}
+const _m2SalesReadyRenderStats = renderStats;
+renderStats = function(){ _m2SalesReadyRenderStats(); renderM2SalesReadyCenter(); renderM2TrialChecklist(); applyM2StatsPolish?.(); };
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+
+// === M2 SALES-READY LAYER + COLLAPSIBLE STATS MENU v1 ===
+const M2_STATS_COLLAPSED_KEY = 'm2_stats_menu_collapsed_v1';
+function m2StatsMenuCollapsed(){ return localStorage.getItem(M2_STATS_COLLAPSED_KEY) === '1'; }
+function m2SetStatsMenuCollapsed(v){ localStorage.setItem(M2_STATS_COLLAPSED_KEY, v ? '1':'0'); }
+function m2ActiveStatsLabel(){ const m={overview:'Overview',activity:'Activity',team:'Team',settings:'Settings',admin:'Admin',all:'All'}; try{return m[m2StatsView?.()]||'Overview';}catch(e){return 'Overview';} }
+if (typeof m2SetStatsView === 'function') {
+  const _m2OldSetStatsView = m2SetStatsView;
+  m2SetStatsView = function(v){ m2SetStatsMenuCollapsed(true); _m2OldSetStatsView(v); };
+}
+if (typeof m2EnsureStatsToolbar === 'function') {
+  m2EnsureStatsToolbar = function(){
+    const statsView=document.getElementById('stats-view'); if(!statsView) return null;
+    let bar=document.getElementById('m2-stats-toolbar');
+    if(!bar){ bar=document.createElement('div'); bar.id='m2-stats-toolbar'; bar.className='m2-stats-toolbar'; statsView.insertBefore(bar,statsView.firstChild); }
+    const leads=(typeof m2VisibleLeadSet==='function'?m2VisibleLeadSet():state.leads||[]);
+    if(m2StatsMenuCollapsed()){
+      bar.className='m2-stats-toolbar m2-stats-collapsed';
+      bar.innerHTML=`<div class="m2-stats-mini-left"><button class="m2-stats-reopen" id="m2-reopen-stats-menu">☰ Stats Menu</button><div><div class="m2-stats-mini-title">${m2ActiveStatsLabel()} View</div><div class="m2-stats-mini-sub">${leads.length} leads · tap Stats Menu to switch sections</div></div></div><button id="m2-mini-backup" class="m2-stats-reopen" style="background:#f7c948;color:#1d1600;">Backup</button>`;
+      bar.querySelector('#m2-reopen-stats-menu')?.addEventListener('click',()=>{m2SetStatsMenuCollapsed(false); applyM2StatsPolish?.();});
+      bar.querySelector('#m2-mini-backup')?.addEventListener('click',()=>{ if(typeof exportM2FullBackup==='function') exportM2FullBackup(); else document.getElementById('export-btn')?.click(); });
+      return bar;
+    }
+    bar.className='m2-stats-toolbar';
+    const today=typeof todayLeads==='function' ? todayLeads() : [];
+    const hot=leads.filter(l=>['interested','callback','set','sat'].includes(l.status)).length;
+    const sun=leads.filter(l=>{ try{return getLeadSunScore(l).score>=75;}catch(e){return false;} }).length;
+    const due=leads.filter(l=>{ try{return (isDueToday(l.callback_due)||isDueToday(l.appt_time))&&!['closed','do_not_knock','not_qualified'].includes(l.status);}catch(e){return false;} }).length;
+    const tab=typeof m2StatsView==='function' ? m2StatsView() : 'overview';
+    const tabs=[['overview','📊 Overview'],['activity','✅ Activity'],['team','👥 Team'],['settings','⚙️ Settings'],['admin','🧱 Admin'],['all','🧩 All']];
+    bar.innerHTML=`<div class="m2-stats-head"><div><h2>CRM Command Center</h2><span>Choose a section. This menu collapses after you select one.</span></div><span>${leads.length} leads</span></div><div class="m2-quick-summary"><div class="m2-quick-stat"><div class="k">Today doors</div><div class="v">${today.filter(l=>isDoorTouched(l.status)).length}</div></div><div class="m2-quick-stat"><div class="k">Hot pipeline</div><div class="v">${hot}</div></div><div class="m2-quick-stat"><div class="k">Follow-ups</div><div class="v">${due}</div></div><div class="m2-quick-stat"><div class="k">High sun</div><div class="v">${sun}</div></div></div><div class="m2-stats-tabs">${tabs.map(([k,label])=>`<button class="m2-stat-tab ${tab===k?'active':''}" data-m2-tab="${k}">${label}</button>`).join('')}</div><div class="m2-stats-actions"><button class="gold" id="m2-quick-backup">Export Full Backup</button><button id="m2-quick-launch">Open Launch Screen</button><button id="m2-collapse-command">Collapse Menu</button></div>`;
+    bar.querySelectorAll('[data-m2-tab]').forEach(btn=>btn.addEventListener('click',()=>m2SetStatsView(btn.dataset.m2Tab)));
+    bar.querySelector('#m2-quick-backup')?.addEventListener('click',()=>{ if(typeof exportM2FullBackup==='function') exportM2FullBackup(); else document.getElementById('export-btn')?.click(); });
+    bar.querySelector('#m2-quick-launch')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); });
+    bar.querySelector('#m2-collapse-command')?.addEventListener('click',()=>{m2SetStatsMenuCollapsed(true); applyM2StatsPolish?.();});
+    return bar;
+  };
+}
+function m2OpenValueCalculator(){
+  let modal=document.getElementById('m2-value-calc-modal');
+  if(!modal){
+    modal=document.createElement('div'); modal.id='m2-value-calc-modal'; modal.className='m2-calc-modal';
+    modal.innerHTML=`<div class="m2-calc-box"><h2 style="margin:0 0 6px;">CRM Value Calculator</h2><div class="m2-sales-sub">Use this in sales demos to show a team why the CRM pays for itself.</div><div class="m2-calc-grid"><div><label>Reps</label><input id="m2-calc-reps" type="number" value="5"></div><div><label>Extra appointments / rep / month</label><input id="m2-calc-appts" type="number" value="2"></div><div><label>Close rate %</label><input id="m2-calc-close" type="number" value="25"></div><div><label>Profit per closed deal</label><input id="m2-calc-profit" type="number" value="1200"></div></div><button class="primary" id="m2-run-calc">Calculate Value</button><div id="m2-calc-result" class="m2-calc-result">Example: even one extra closed deal can cover the CRM for months.</div><div class="m2-sales-actions" style="grid-template-columns:1fr 1fr;margin-top:12px;"><button class="gold" id="m2-copy-calc-pitch">Copy Pitch</button><button id="m2-close-calc">Close</button></div></div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('open'); });
+    modal.querySelector('#m2-close-calc')?.addEventListener('click',()=>modal.classList.remove('open'));
+    modal.querySelector('#m2-run-calc')?.addEventListener('click',()=>{
+      const reps=+document.getElementById('m2-calc-reps').value||0, appts=+document.getElementById('m2-calc-appts').value||0, close=+document.getElementById('m2-calc-close').value||0, profit=+document.getElementById('m2-calc-profit').value||0;
+      const extraAppts=reps*appts; const deals=extraAppts*(close/100); const value=deals*profit;
+      document.getElementById('m2-calc-result').innerHTML=`<b>Estimated monthly upside:</b> ${extraAppts.toFixed(0)} extra appointments → ${deals.toFixed(1)} closed deals → <b>$${Math.round(value).toLocaleString()}</b> possible gross profit/month.<br><br>If the CRM helps produce even a small lift, the $99–$299/mo plan is easy to justify.`;
+    });
+    modal.querySelector('#m2-copy-calc-pitch')?.addEventListener('click',()=>m2Copy?.('M2 Energy CRM helps field teams get more value from their existing reps: better map targeting, high-sun homes, lead assignment, follow-up tracking, and cloud sync. Even one extra closed deal can pay for months of CRM use.','Calculator pitch copied'));
+  }
+  modal.classList.add('open');
+}
+function m2CopyBookDemoText(){
+  const s=typeof getSettings==='function'?getSettings():{};
+  const msg=`Want to see M2 Energy CRM?
+
+Built for solar, HVAC, and clean heat door-to-door teams.
+Features: smart lead map, Sun Score, agent assignment, follow-up pipeline, cloud sync, and app-style mobile access.
+
+Book a demo / beta test: ${s.support_email||'shaquilleregis23@gmail.com'}`;
+  if(typeof m2Copy==='function') m2Copy(msg,'Book demo text copied'); else navigator.clipboard?.writeText(msg);
+}
+function renderM2SalesReadyCenter(){
+  const statsView=document.getElementById('stats-view'); if(!statsView) return;
+  let card=document.getElementById('m2-sales-ready-center');
+  if(!card){ card=document.createElement('div'); card.id='m2-sales-ready-center'; card.dataset.m2StatsGroup='admin'; const anchor=document.getElementById('m2-demo-sales-workflow')||document.getElementById('m2-hardening-center')||statsView.lastChild; if(anchor) anchor.insertAdjacentElement('afterend',card); else statsView.appendChild(card); }
+  card.innerHTML=`<div class="m2-sales-card"><h3>💼 Sell This CRM Center</h3><div class="m2-sales-sub">Sales-ready tools for demos, beta customers, pricing, and customer onboarding.</div><div class="m2-sales-grid"><div class="m2-sales-tile"><b>🎬 Guided Demo</b><span>Walk prospects through map, Sun Score, lead cards, agent assignment, and pricing.</span></div><div class="m2-sales-tile"><b>💰 Value Calculator</b><span>Show how one extra closed deal can pay for the CRM.</span></div><div class="m2-sales-tile"><b>📅 Book Demo</b><span>Copy a clean message for prospects and beta teams.</span></div><div class="m2-sales-tile"><b>🧾 Beta Notes</b><span>Track what to show, test, and improve before Stripe.</span></div></div><div class="m2-sales-actions"><button class="primary" id="m2-sales-guided-demo">Start Guided Demo</button><button class="gold" id="m2-sales-value-calc">Open Value Calculator</button><button id="m2-sales-book-demo">Copy Book Demo Text</button><button id="m2-sales-pricing">Open Pricing</button></div></div>`;
+  card.querySelector('#m2-sales-guided-demo')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); if(typeof m2Copy==='function') m2Copy('Guided Demo Flow:
+1. Open Launch Screen
+2. Try Demo Mode
+3. Show Smart Map + Sun Icons
+4. Open a Lead Card
+5. Show Team tab and Invite Agent
+6. Show Agent-only access
+7. Open Pricing
+8. Ask: Want to beta test this for 7 days?','Guided demo steps copied'); });
+  card.querySelector('#m2-sales-value-calc')?.addEventListener('click',m2OpenValueCalculator);
+  card.querySelector('#m2-sales-book-demo')?.addEventListener('click',m2CopyBookDemoText);
+  card.querySelector('#m2-sales-pricing')?.addEventListener('click',()=>{ if(typeof openM2PricingModal==='function') openM2PricingModal(); });
+}
+function renderM2TrialChecklist(){
+  const statsView=document.getElementById('stats-view'); if(!statsView) return;
+  let card=document.getElementById('m2-trial-onboarding-checklist');
+  if(!card){ card=document.createElement('div'); card.id='m2-trial-onboarding-checklist'; card.dataset.m2StatsGroup='admin'; const anchor=document.getElementById('m2-sales-ready-center')||statsView.lastChild; if(anchor) anchor.insertAdjacentElement('afterend',card); else statsView.appendChild(card); }
+  const items=['Set business name and support email','Create/confirm master cloud login','Import or load customer leads','Create first agent login','Assign test leads to agent','Confirm agent only sees assigned leads','Export full backup','Show pricing and offer 7-day beta'];
+  const checked=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}');
+  card.innerHTML=`<div class="m2-sales-card"><h3>🚀 Trial Onboarding Checklist</h3><div class="m2-sales-sub">Use this when setting up a beta customer or testing your own account before a demo.</div><div class="m2-checklist">${items.map((it,i)=>`<label class="m2-checkitem"><input type="checkbox" data-m2-trial-check="${i}" ${checked[i]?'checked':''}> <span>${it}</span></label>`).join('')}</div><div class="m2-sales-actions" style="grid-template-columns:1fr 1fr;"><button id="m2-copy-onboarding-list">Copy Checklist</button><button class="danger" id="m2-reset-onboarding-list">Reset Checklist</button></div></div>`;
+  card.querySelectorAll('[data-m2-trial-check]').forEach(cb=>cb.addEventListener('change',()=>{ const c=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}'); c[cb.dataset.m2TrialCheck]=cb.checked; localStorage.setItem('m2_trial_checklist_v1',JSON.stringify(c)); }));
+  card.querySelector('#m2-copy-onboarding-list')?.addEventListener('click',()=>m2Copy?.('M2 CRM Beta Setup Checklist:
+- '+items.join('
+- '),'Checklist copied'));
+  card.querySelector('#m2-reset-onboarding-list')?.addEventListener('click',()=>{ localStorage.removeItem('m2_trial_checklist_v1'); renderStats(); });
+}
+const _m2SalesReadyRenderStats = renderStats;
+renderStats = function(){ _m2SalesReadyRenderStats(); renderM2SalesReadyCenter(); renderM2TrialChecklist(); applyM2StatsPolish?.(); };
+
+</script>
 <script>
 const NEIGHBORHOODS = {
   queens: [
@@ -2890,14 +3116,7 @@ function setCloudEnabled(v) { localStorage.setItem(CLOUD_SYNC_ENABLED_KEY, v ? '
 function cloudEmail() { return (sbUser && sbUser.email) || ''; }
 
 async function refreshCloudSession() {
-  const sb = initSupabaseClient();
-  if (!sb) return null;
-  const { data } = await sb.auth.getUser();
-  sbUser = data && data.user ? data.user : null;
-  if (sbUser) await ensureCloudProfile();
-  renderCloudPanel();
-  return sbUser;
-}
+  const sb = 
 
 // === M2 SETTINGS + PLAN + INVITE + SALES POLISH ===
 const M2_PRODUCT_POLISH_VERSION = 'settings_plan_invite_v1';
@@ -2978,6 +3197,15 @@ function applyM2ProductVisibility(){ const s=getSettings?.()||{}; document.body.
 const _m2ProductPolishRenderStats = renderStats;
 renderStats = function(){ _m2ProductPolishRenderStats(); renderM2SettingsPro(); renderM2PlanStatus(); renderM2InviteAgentCard(); renderM2DemoSalesWorkflow(); applyM2StatsPolish?.(); applyM2ProductVisibility(); };
 
+
+initSupabaseClient();
+  if (!sb) return null;
+  const { data } = await sb.auth.getUser();
+  sbUser = data && data.user ? data.user : null;
+  if (sbUser) await ensureCloudProfile();
+  renderCloudPanel();
+  return sbUser;
+}
 
 async function ensureCloudProfile() {
   if (!sbClient || !sbUser) return null;
@@ -4223,6 +4451,106 @@ refreshCloudSession().catch(e => console.warn('Supabase session error', e));
 
 setupFilterDropdown(); renderFilterBar(); renderMarkers(); renderTopStats(); updateRoute(); renderNeighborhoods();
 if (state.leads.length === 0) showInfo('Tap "📍 Neighborhoods" to load homes. Tap a pin to knock.');
+
+
+// === M2 SALES-READY LAYER + COLLAPSIBLE STATS MENU v1 ===
+const M2_STATS_COLLAPSED_KEY = 'm2_stats_menu_collapsed_v1';
+function m2StatsMenuCollapsed(){ return localStorage.getItem(M2_STATS_COLLAPSED_KEY) === '1'; }
+function m2SetStatsMenuCollapsed(v){ localStorage.setItem(M2_STATS_COLLAPSED_KEY, v ? '1':'0'); }
+function m2ActiveStatsLabel(){ const m={overview:'Overview',activity:'Activity',team:'Team',settings:'Settings',admin:'Admin',all:'All'}; try{return m[m2StatsView?.()]||'Overview';}catch(e){return 'Overview';} }
+if (typeof m2SetStatsView === 'function') {
+  const _m2OldSetStatsView = m2SetStatsView;
+  m2SetStatsView = function(v){ m2SetStatsMenuCollapsed(true); _m2OldSetStatsView(v); };
+}
+if (typeof m2EnsureStatsToolbar === 'function') {
+  m2EnsureStatsToolbar = function(){
+    const statsView=document.getElementById('stats-view'); if(!statsView) return null;
+    let bar=document.getElementById('m2-stats-toolbar');
+    if(!bar){ bar=document.createElement('div'); bar.id='m2-stats-toolbar'; bar.className='m2-stats-toolbar'; statsView.insertBefore(bar,statsView.firstChild); }
+    const leads=(typeof m2VisibleLeadSet==='function'?m2VisibleLeadSet():state.leads||[]);
+    if(m2StatsMenuCollapsed()){
+      bar.className='m2-stats-toolbar m2-stats-collapsed';
+      bar.innerHTML=`<div class="m2-stats-mini-left"><button class="m2-stats-reopen" id="m2-reopen-stats-menu">☰ Stats Menu</button><div><div class="m2-stats-mini-title">${m2ActiveStatsLabel()} View</div><div class="m2-stats-mini-sub">${leads.length} leads · tap Stats Menu to switch sections</div></div></div><button id="m2-mini-backup" class="m2-stats-reopen" style="background:#f7c948;color:#1d1600;">Backup</button>`;
+      bar.querySelector('#m2-reopen-stats-menu')?.addEventListener('click',()=>{m2SetStatsMenuCollapsed(false); applyM2StatsPolish?.();});
+      bar.querySelector('#m2-mini-backup')?.addEventListener('click',()=>{ if(typeof exportM2FullBackup==='function') exportM2FullBackup(); else document.getElementById('export-btn')?.click(); });
+      return bar;
+    }
+    bar.className='m2-stats-toolbar';
+    const today=typeof todayLeads==='function' ? todayLeads() : [];
+    const hot=leads.filter(l=>['interested','callback','set','sat'].includes(l.status)).length;
+    const sun=leads.filter(l=>{ try{return getLeadSunScore(l).score>=75;}catch(e){return false;} }).length;
+    const due=leads.filter(l=>{ try{return (isDueToday(l.callback_due)||isDueToday(l.appt_time))&&!['closed','do_not_knock','not_qualified'].includes(l.status);}catch(e){return false;} }).length;
+    const tab=typeof m2StatsView==='function' ? m2StatsView() : 'overview';
+    const tabs=[['overview','📊 Overview'],['activity','✅ Activity'],['team','👥 Team'],['settings','⚙️ Settings'],['admin','🧱 Admin'],['all','🧩 All']];
+    bar.innerHTML=`<div class="m2-stats-head"><div><h2>CRM Command Center</h2><span>Choose a section. This menu collapses after you select one.</span></div><span>${leads.length} leads</span></div><div class="m2-quick-summary"><div class="m2-quick-stat"><div class="k">Today doors</div><div class="v">${today.filter(l=>isDoorTouched(l.status)).length}</div></div><div class="m2-quick-stat"><div class="k">Hot pipeline</div><div class="v">${hot}</div></div><div class="m2-quick-stat"><div class="k">Follow-ups</div><div class="v">${due}</div></div><div class="m2-quick-stat"><div class="k">High sun</div><div class="v">${sun}</div></div></div><div class="m2-stats-tabs">${tabs.map(([k,label])=>`<button class="m2-stat-tab ${tab===k?'active':''}" data-m2-tab="${k}">${label}</button>`).join('')}</div><div class="m2-stats-actions"><button class="gold" id="m2-quick-backup">Export Full Backup</button><button id="m2-quick-launch">Open Launch Screen</button><button id="m2-collapse-command">Collapse Menu</button></div>`;
+    bar.querySelectorAll('[data-m2-tab]').forEach(btn=>btn.addEventListener('click',()=>m2SetStatsView(btn.dataset.m2Tab)));
+    bar.querySelector('#m2-quick-backup')?.addEventListener('click',()=>{ if(typeof exportM2FullBackup==='function') exportM2FullBackup(); else document.getElementById('export-btn')?.click(); });
+    bar.querySelector('#m2-quick-launch')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); });
+    bar.querySelector('#m2-collapse-command')?.addEventListener('click',()=>{m2SetStatsMenuCollapsed(true); applyM2StatsPolish?.();});
+    return bar;
+  };
+}
+function m2OpenValueCalculator(){
+  let modal=document.getElementById('m2-value-calc-modal');
+  if(!modal){
+    modal=document.createElement('div'); modal.id='m2-value-calc-modal'; modal.className='m2-calc-modal';
+    modal.innerHTML=`<div class="m2-calc-box"><h2 style="margin:0 0 6px;">CRM Value Calculator</h2><div class="m2-sales-sub">Use this in sales demos to show a team why the CRM pays for itself.</div><div class="m2-calc-grid"><div><label>Reps</label><input id="m2-calc-reps" type="number" value="5"></div><div><label>Extra appointments / rep / month</label><input id="m2-calc-appts" type="number" value="2"></div><div><label>Close rate %</label><input id="m2-calc-close" type="number" value="25"></div><div><label>Profit per closed deal</label><input id="m2-calc-profit" type="number" value="1200"></div></div><button class="primary" id="m2-run-calc">Calculate Value</button><div id="m2-calc-result" class="m2-calc-result">Example: even one extra closed deal can cover the CRM for months.</div><div class="m2-sales-actions" style="grid-template-columns:1fr 1fr;margin-top:12px;"><button class="gold" id="m2-copy-calc-pitch">Copy Pitch</button><button id="m2-close-calc">Close</button></div></div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('open'); });
+    modal.querySelector('#m2-close-calc')?.addEventListener('click',()=>modal.classList.remove('open'));
+    modal.querySelector('#m2-run-calc')?.addEventListener('click',()=>{
+      const reps=+document.getElementById('m2-calc-reps').value||0, appts=+document.getElementById('m2-calc-appts').value||0, close=+document.getElementById('m2-calc-close').value||0, profit=+document.getElementById('m2-calc-profit').value||0;
+      const extraAppts=reps*appts; const deals=extraAppts*(close/100); const value=deals*profit;
+      document.getElementById('m2-calc-result').innerHTML=`<b>Estimated monthly upside:</b> ${extraAppts.toFixed(0)} extra appointments → ${deals.toFixed(1)} closed deals → <b>$${Math.round(value).toLocaleString()}</b> possible gross profit/month.<br><br>If the CRM helps produce even a small lift, the $99–$299/mo plan is easy to justify.`;
+    });
+    modal.querySelector('#m2-copy-calc-pitch')?.addEventListener('click',()=>m2Copy?.('M2 Energy CRM helps field teams get more value from their existing reps: better map targeting, high-sun homes, lead assignment, follow-up tracking, and cloud sync. Even one extra closed deal can pay for months of CRM use.','Calculator pitch copied'));
+  }
+  modal.classList.add('open');
+}
+function m2CopyBookDemoText(){
+  const s=typeof getSettings==='function'?getSettings():{};
+  const msg=`Want to see M2 Energy CRM?
+
+Built for solar, HVAC, and clean heat door-to-door teams.
+Features: smart lead map, Sun Score, agent assignment, follow-up pipeline, cloud sync, and app-style mobile access.
+
+Book a demo / beta test: ${s.support_email||'shaquilleregis23@gmail.com'}`;
+  if(typeof m2Copy==='function') m2Copy(msg,'Book demo text copied'); else navigator.clipboard?.writeText(msg);
+}
+function renderM2SalesReadyCenter(){
+  const statsView=document.getElementById('stats-view'); if(!statsView) return;
+  let card=document.getElementById('m2-sales-ready-center');
+  if(!card){ card=document.createElement('div'); card.id='m2-sales-ready-center'; card.dataset.m2StatsGroup='admin'; const anchor=document.getElementById('m2-demo-sales-workflow')||document.getElementById('m2-hardening-center')||statsView.lastChild; if(anchor) anchor.insertAdjacentElement('afterend',card); else statsView.appendChild(card); }
+  card.innerHTML=`<div class="m2-sales-card"><h3>💼 Sell This CRM Center</h3><div class="m2-sales-sub">Sales-ready tools for demos, beta customers, pricing, and customer onboarding.</div><div class="m2-sales-grid"><div class="m2-sales-tile"><b>🎬 Guided Demo</b><span>Walk prospects through map, Sun Score, lead cards, agent assignment, and pricing.</span></div><div class="m2-sales-tile"><b>💰 Value Calculator</b><span>Show how one extra closed deal can pay for the CRM.</span></div><div class="m2-sales-tile"><b>📅 Book Demo</b><span>Copy a clean message for prospects and beta teams.</span></div><div class="m2-sales-tile"><b>🧾 Beta Notes</b><span>Track what to show, test, and improve before Stripe.</span></div></div><div class="m2-sales-actions"><button class="primary" id="m2-sales-guided-demo">Start Guided Demo</button><button class="gold" id="m2-sales-value-calc">Open Value Calculator</button><button id="m2-sales-book-demo">Copy Book Demo Text</button><button id="m2-sales-pricing">Open Pricing</button></div></div>`;
+  card.querySelector('#m2-sales-guided-demo')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); if(typeof m2Copy==='function') m2Copy('Guided Demo Flow:
+1. Open Launch Screen
+2. Try Demo Mode
+3. Show Smart Map + Sun Icons
+4. Open a Lead Card
+5. Show Team tab and Invite Agent
+6. Show Agent-only access
+7. Open Pricing
+8. Ask: Want to beta test this for 7 days?','Guided demo steps copied'); });
+  card.querySelector('#m2-sales-value-calc')?.addEventListener('click',m2OpenValueCalculator);
+  card.querySelector('#m2-sales-book-demo')?.addEventListener('click',m2CopyBookDemoText);
+  card.querySelector('#m2-sales-pricing')?.addEventListener('click',()=>{ if(typeof openM2PricingModal==='function') openM2PricingModal(); });
+}
+function renderM2TrialChecklist(){
+  const statsView=document.getElementById('stats-view'); if(!statsView) return;
+  let card=document.getElementById('m2-trial-onboarding-checklist');
+  if(!card){ card=document.createElement('div'); card.id='m2-trial-onboarding-checklist'; card.dataset.m2StatsGroup='admin'; const anchor=document.getElementById('m2-sales-ready-center')||statsView.lastChild; if(anchor) anchor.insertAdjacentElement('afterend',card); else statsView.appendChild(card); }
+  const items=['Set business name and support email','Create/confirm master cloud login','Import or load customer leads','Create first agent login','Assign test leads to agent','Confirm agent only sees assigned leads','Export full backup','Show pricing and offer 7-day beta'];
+  const checked=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}');
+  card.innerHTML=`<div class="m2-sales-card"><h3>🚀 Trial Onboarding Checklist</h3><div class="m2-sales-sub">Use this when setting up a beta customer or testing your own account before a demo.</div><div class="m2-checklist">${items.map((it,i)=>`<label class="m2-checkitem"><input type="checkbox" data-m2-trial-check="${i}" ${checked[i]?'checked':''}> <span>${it}</span></label>`).join('')}</div><div class="m2-sales-actions" style="grid-template-columns:1fr 1fr;"><button id="m2-copy-onboarding-list">Copy Checklist</button><button class="danger" id="m2-reset-onboarding-list">Reset Checklist</button></div></div>`;
+  card.querySelectorAll('[data-m2-trial-check]').forEach(cb=>cb.addEventListener('change',()=>{ const c=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}'); c[cb.dataset.m2TrialCheck]=cb.checked; localStorage.setItem('m2_trial_checklist_v1',JSON.stringify(c)); }));
+  card.querySelector('#m2-copy-onboarding-list')?.addEventListener('click',()=>m2Copy?.('M2 CRM Beta Setup Checklist:
+- '+items.join('
+- '),'Checklist copied'));
+  card.querySelector('#m2-reset-onboarding-list')?.addEventListener('click',()=>{ localStorage.removeItem('m2_trial_checklist_v1'); renderStats(); });
+}
+const _m2SalesReadyRenderStats = renderStats;
+renderStats = function(){ _m2SalesReadyRenderStats(); renderM2SalesReadyCenter(); renderM2TrialChecklist(); applyM2StatsPolish?.(); };
+
 </script>
 
 <script>
@@ -4274,28 +4602,181 @@ if (state.leads.length === 0) showInfo('Tap "📍 Neighborhoods" to load homes. 
 
 
 // === M2 SALES-READY LAYER + COLLAPSIBLE STATS MENU v1 ===
-var M2_STATS_COLLAPSED_KEY = 'm2_stats_menu_collapsed_v1';
+const M2_STATS_COLLAPSED_KEY = 'm2_stats_menu_collapsed_v1';
 function m2StatsMenuCollapsed(){ return localStorage.getItem(M2_STATS_COLLAPSED_KEY) === '1'; }
 function m2SetStatsMenuCollapsed(v){ localStorage.setItem(M2_STATS_COLLAPSED_KEY, v ? '1':'0'); }
 function m2ActiveStatsLabel(){ const m={overview:'Overview',activity:'Activity',team:'Team',settings:'Settings',admin:'Admin',all:'All'}; try{return m[m2StatsView?.()]||'Overview';}catch(e){return 'Overview';} }
-if (typeof m2SetStatsView === 'function') { const _m2OldSetStatsView = m2SetStatsView; m2SetStatsView = function(v){ m2SetStatsMenuCollapsed(true); _m2OldSetStatsView(v); }; }
-if (typeof m2EnsureStatsToolbar === 'function') { m2EnsureStatsToolbar = function(){
-  const statsView=document.getElementById('stats-view'); if(!statsView) return null; let bar=document.getElementById('m2-stats-toolbar'); if(!bar){ bar=document.createElement('div'); bar.id='m2-stats-toolbar'; bar.className='m2-stats-toolbar'; statsView.insertBefore(bar,statsView.firstChild); }
-  const leads=(typeof m2VisibleLeadSet==='function'?m2VisibleLeadSet():state.leads||[]);
-  if(m2StatsMenuCollapsed()){
-    bar.className='m2-stats-toolbar m2-stats-collapsed'; bar.innerHTML=`<div class="m2-stats-mini-left"><button class="m2-stats-reopen" id="m2-reopen-stats-menu">☰ Stats Menu</button><div><div class="m2-stats-mini-title">${m2ActiveStatsLabel()} View</div><div class="m2-stats-mini-sub">${leads.length} leads · tap Stats Menu to switch sections</div></div></div><button id="m2-mini-backup" class="m2-stats-reopen" style="background:#f7c948;color:#1d1600;">Backup</button>`;
-    bar.querySelector('#m2-reopen-stats-menu')?.addEventListener('click',()=>{m2SetStatsMenuCollapsed(false); applyM2StatsPolish?.();}); bar.querySelector('#m2-mini-backup')?.addEventListener('click',()=>{ if(typeof exportM2FullBackup==='function') exportM2FullBackup(); else document.getElementById('export-btn')?.click(); }); return bar;
+if (typeof m2SetStatsView === 'function') {
+  const _m2OldSetStatsView = m2SetStatsView;
+  m2SetStatsView = function(v){ m2SetStatsMenuCollapsed(true); _m2OldSetStatsView(v); };
+}
+if (typeof m2EnsureStatsToolbar === 'function') {
+  m2EnsureStatsToolbar = function(){
+    const statsView=document.getElementById('stats-view'); if(!statsView) return null;
+    let bar=document.getElementById('m2-stats-toolbar');
+    if(!bar){ bar=document.createElement('div'); bar.id='m2-stats-toolbar'; bar.className='m2-stats-toolbar'; statsView.insertBefore(bar,statsView.firstChild); }
+    const leads=(typeof m2VisibleLeadSet==='function'?m2VisibleLeadSet():state.leads||[]);
+    if(m2StatsMenuCollapsed()){
+      bar.className='m2-stats-toolbar m2-stats-collapsed';
+      bar.innerHTML=`<div class="m2-stats-mini-left"><button class="m2-stats-reopen" id="m2-reopen-stats-menu">☰ Stats Menu</button><div><div class="m2-stats-mini-title">${m2ActiveStatsLabel()} View</div><div class="m2-stats-mini-sub">${leads.length} leads · tap Stats Menu to switch sections</div></div></div><button id="m2-mini-backup" class="m2-stats-reopen" style="background:#f7c948;color:#1d1600;">Backup</button>`;
+      bar.querySelector('#m2-reopen-stats-menu')?.addEventListener('click',()=>{m2SetStatsMenuCollapsed(false); applyM2StatsPolish?.();});
+      bar.querySelector('#m2-mini-backup')?.addEventListener('click',()=>{ if(typeof exportM2FullBackup==='function') exportM2FullBackup(); else document.getElementById('export-btn')?.click(); });
+      return bar;
+    }
+    bar.className='m2-stats-toolbar';
+    const today=typeof todayLeads==='function' ? todayLeads() : [];
+    const hot=leads.filter(l=>['interested','callback','set','sat'].includes(l.status)).length;
+    const sun=leads.filter(l=>{ try{return getLeadSunScore(l).score>=75;}catch(e){return false;} }).length;
+    const due=leads.filter(l=>{ try{return (isDueToday(l.callback_due)||isDueToday(l.appt_time))&&!['closed','do_not_knock','not_qualified'].includes(l.status);}catch(e){return false;} }).length;
+    const tab=typeof m2StatsView==='function' ? m2StatsView() : 'overview';
+    const tabs=[['overview','📊 Overview'],['activity','✅ Activity'],['team','👥 Team'],['settings','⚙️ Settings'],['admin','🧱 Admin'],['all','🧩 All']];
+    bar.innerHTML=`<div class="m2-stats-head"><div><h2>CRM Command Center</h2><span>Choose a section. This menu collapses after you select one.</span></div><span>${leads.length} leads</span></div><div class="m2-quick-summary"><div class="m2-quick-stat"><div class="k">Today doors</div><div class="v">${today.filter(l=>isDoorTouched(l.status)).length}</div></div><div class="m2-quick-stat"><div class="k">Hot pipeline</div><div class="v">${hot}</div></div><div class="m2-quick-stat"><div class="k">Follow-ups</div><div class="v">${due}</div></div><div class="m2-quick-stat"><div class="k">High sun</div><div class="v">${sun}</div></div></div><div class="m2-stats-tabs">${tabs.map(([k,label])=>`<button class="m2-stat-tab ${tab===k?'active':''}" data-m2-tab="${k}">${label}</button>`).join('')}</div><div class="m2-stats-actions"><button class="gold" id="m2-quick-backup">Export Full Backup</button><button id="m2-quick-launch">Open Launch Screen</button><button id="m2-collapse-command">Collapse Menu</button></div>`;
+    bar.querySelectorAll('[data-m2-tab]').forEach(btn=>btn.addEventListener('click',()=>m2SetStatsView(btn.dataset.m2Tab)));
+    bar.querySelector('#m2-quick-backup')?.addEventListener('click',()=>{ if(typeof exportM2FullBackup==='function') exportM2FullBackup(); else document.getElementById('export-btn')?.click(); });
+    bar.querySelector('#m2-quick-launch')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); });
+    bar.querySelector('#m2-collapse-command')?.addEventListener('click',()=>{m2SetStatsMenuCollapsed(true); applyM2StatsPolish?.();});
+    return bar;
+  };
+}
+function m2OpenValueCalculator(){
+  let modal=document.getElementById('m2-value-calc-modal');
+  if(!modal){
+    modal=document.createElement('div'); modal.id='m2-value-calc-modal'; modal.className='m2-calc-modal';
+    modal.innerHTML=`<div class="m2-calc-box"><h2 style="margin:0 0 6px;">CRM Value Calculator</h2><div class="m2-sales-sub">Use this in sales demos to show a team why the CRM pays for itself.</div><div class="m2-calc-grid"><div><label>Reps</label><input id="m2-calc-reps" type="number" value="5"></div><div><label>Extra appointments / rep / month</label><input id="m2-calc-appts" type="number" value="2"></div><div><label>Close rate %</label><input id="m2-calc-close" type="number" value="25"></div><div><label>Profit per closed deal</label><input id="m2-calc-profit" type="number" value="1200"></div></div><button class="primary" id="m2-run-calc">Calculate Value</button><div id="m2-calc-result" class="m2-calc-result">Example: even one extra closed deal can cover the CRM for months.</div><div class="m2-sales-actions" style="grid-template-columns:1fr 1fr;margin-top:12px;"><button class="gold" id="m2-copy-calc-pitch">Copy Pitch</button><button id="m2-close-calc">Close</button></div></div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('open'); });
+    modal.querySelector('#m2-close-calc')?.addEventListener('click',()=>modal.classList.remove('open'));
+    modal.querySelector('#m2-run-calc')?.addEventListener('click',()=>{
+      const reps=+document.getElementById('m2-calc-reps').value||0, appts=+document.getElementById('m2-calc-appts').value||0, close=+document.getElementById('m2-calc-close').value||0, profit=+document.getElementById('m2-calc-profit').value||0;
+      const extraAppts=reps*appts; const deals=extraAppts*(close/100); const value=deals*profit;
+      document.getElementById('m2-calc-result').innerHTML=`<b>Estimated monthly upside:</b> ${extraAppts.toFixed(0)} extra appointments → ${deals.toFixed(1)} closed deals → <b>$${Math.round(value).toLocaleString()}</b> possible gross profit/month.<br><br>If the CRM helps produce even a small lift, the $99–$299/mo plan is easy to justify.`;
+    });
+    modal.querySelector('#m2-copy-calc-pitch')?.addEventListener('click',()=>m2Copy?.('M2 Energy CRM helps field teams get more value from their existing reps: better map targeting, high-sun homes, lead assignment, follow-up tracking, and cloud sync. Even one extra closed deal can pay for months of CRM use.','Calculator pitch copied'));
   }
-  bar.className='m2-stats-toolbar'; const today=typeof todayLeads==='function'?todayLeads():[]; const hot=leads.filter(l=>['interested','callback','set','sat'].includes(l.status)).length; const sun=leads.filter(l=>{try{return getLeadSunScore(l).score>=75;}catch(e){return false;}}).length; const due=leads.filter(l=>{try{return (isDueToday(l.callback_due)||isDueToday(l.appt_time))&&!['closed','do_not_knock','not_qualified'].includes(l.status);}catch(e){return false;}}).length; const tab=typeof m2StatsView==='function'?m2StatsView():'overview'; const tabs=[['overview','📊 Overview'],['activity','✅ Activity'],['team','👥 Team'],['settings','⚙️ Settings'],['admin','🧱 Admin'],['all','🧩 All']];
-  bar.innerHTML=`<div class="m2-stats-head"><div><h2>CRM Command Center</h2><span>Choose a section. This menu collapses after you select one.</span></div><span>${leads.length} leads</span></div><div class="m2-quick-summary"><div class="m2-quick-stat"><div class="k">Today doors</div><div class="v">${today.filter(l=>isDoorTouched(l.status)).length}</div></div><div class="m2-quick-stat"><div class="k">Hot pipeline</div><div class="v">${hot}</div></div><div class="m2-quick-stat"><div class="k">Follow-ups</div><div class="v">${due}</div></div><div class="m2-quick-stat"><div class="k">High sun</div><div class="v">${sun}</div></div></div><div class="m2-stats-tabs">${tabs.map(([k,label])=>`<button class="m2-stat-tab ${tab===k?'active':''}" data-m2-tab="${k}">${label}</button>`).join('')}</div><div class="m2-stats-actions"><button class="gold" id="m2-quick-backup">Export Full Backup</button><button id="m2-quick-launch">Open Launch Screen</button><button id="m2-collapse-command">Collapse Menu</button></div>`;
-  bar.querySelectorAll('[data-m2-tab]').forEach(btn=>btn.addEventListener('click',()=>m2SetStatsView(btn.dataset.m2Tab))); bar.querySelector('#m2-quick-backup')?.addEventListener('click',()=>{ if(typeof exportM2FullBackup==='function') exportM2FullBackup(); else document.getElementById('export-btn')?.click(); }); bar.querySelector('#m2-quick-launch')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); }); bar.querySelector('#m2-collapse-command')?.addEventListener('click',()=>{m2SetStatsMenuCollapsed(true); applyM2StatsPolish?.();}); return bar;
-}; }
-function m2OpenValueCalculator(){ let modal=document.getElementById('m2-value-calc-modal'); if(!modal){ modal=document.createElement('div'); modal.id='m2-value-calc-modal'; modal.className='m2-calc-modal'; modal.innerHTML=`<div class="m2-calc-box"><h2 style="margin:0 0 6px;">CRM Value Calculator</h2><div class="m2-sales-sub">Use this in sales demos to show a team why the CRM pays for itself.</div><div class="m2-calc-grid"><div><label>Reps</label><input id="m2-calc-reps" type="number" value="5"></div><div><label>Extra appointments / rep / month</label><input id="m2-calc-appts" type="number" value="2"></div><div><label>Close rate %</label><input id="m2-calc-close" type="number" value="25"></div><div><label>Profit per closed deal</label><input id="m2-calc-profit" type="number" value="1200"></div></div><button class="primary" id="m2-run-calc">Calculate Value</button><div id="m2-calc-result" class="m2-calc-result">Example: even one extra closed deal can cover the CRM for months.</div><div class="m2-sales-actions" style="grid-template-columns:1fr 1fr;margin-top:12px;"><button class="gold" id="m2-copy-calc-pitch">Copy Pitch</button><button id="m2-close-calc">Close</button></div></div>`; document.body.appendChild(modal); modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('open'); }); modal.querySelector('#m2-close-calc')?.addEventListener('click',()=>modal.classList.remove('open')); modal.querySelector('#m2-run-calc')?.addEventListener('click',()=>{ const reps=+document.getElementById('m2-calc-reps').value||0, appts=+document.getElementById('m2-calc-appts').value||0, close=+document.getElementById('m2-calc-close').value||0, profit=+document.getElementById('m2-calc-profit').value||0; const extraAppts=reps*appts, deals=extraAppts*(close/100), value=deals*profit; document.getElementById('m2-calc-result').innerHTML=`<b>Estimated monthly upside:</b> ${extraAppts.toFixed(0)} extra appointments → ${deals.toFixed(1)} closed deals → <b>$${Math.round(value).toLocaleString()}</b> possible gross profit/month.<br><br>If the CRM helps produce even a small lift, the $99–$299/mo plan is easy to justify.`; }); modal.querySelector('#m2-copy-calc-pitch')?.addEventListener('click',()=>m2Copy?.('M2 Energy CRM helps field teams get more value from their existing reps: better map targeting, high-sun homes, lead assignment, follow-up tracking, and cloud sync. Even one extra closed deal can pay for months of CRM use.','Calculator pitch copied')); } modal.classList.add('open'); }
-function m2CopyBookDemoText(){ const s=typeof getSettings==='function'?getSettings():{}; const msg=`Want to see M2 Energy CRM?\n\nBuilt for solar, HVAC, and clean heat door-to-door teams.\nFeatures: smart lead map, Sun Score, agent assignment, follow-up pipeline, cloud sync, and app-style mobile access.\n\nBook a demo / beta test: ${s.support_email||'shaquilleregis23@gmail.com'}`; if(typeof m2Copy==='function') m2Copy(msg,'Book demo text copied'); else navigator.clipboard?.writeText(msg); }
-function renderM2SalesReadyCenter(){ const statsView=document.getElementById('stats-view'); if(!statsView) return; let card=document.getElementById('m2-sales-ready-center'); if(!card){ card=document.createElement('div'); card.id='m2-sales-ready-center'; card.dataset.m2StatsGroup='admin'; const anchor=document.getElementById('m2-demo-sales-workflow')||document.getElementById('m2-hardening-center')||statsView.lastChild; if(anchor) anchor.insertAdjacentElement('afterend',card); else statsView.appendChild(card); } card.innerHTML=`<div class="m2-sales-card"><h3>💼 Sell This CRM Center</h3><div class="m2-sales-sub">Sales-ready tools for demos, beta customers, pricing, and customer onboarding.</div><div class="m2-sales-grid"><div class="m2-sales-tile"><b>🎬 Guided Demo</b><span>Walk prospects through map, Sun Score, lead cards, agent assignment, and pricing.</span></div><div class="m2-sales-tile"><b>💰 Value Calculator</b><span>Show how one extra closed deal can pay for the CRM.</span></div><div class="m2-sales-tile"><b>📅 Book Demo</b><span>Copy a clean message for prospects and beta teams.</span></div><div class="m2-sales-tile"><b>🧾 Beta Notes</b><span>Track what to show, test, and improve before Stripe.</span></div></div><div class="m2-sales-actions"><button class="primary" id="m2-sales-guided-demo">Start Guided Demo</button><button class="gold" id="m2-sales-value-calc">Open Value Calculator</button><button id="m2-sales-book-demo">Copy Book Demo Text</button><button id="m2-sales-pricing">Open Pricing</button></div></div>`; card.querySelector('#m2-sales-guided-demo')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); if(typeof m2Copy==='function') m2Copy(`Guided Demo Flow:\n1. Open Launch Screen\n2. Try Demo Mode\n3. Show Smart Map + Sun Icons\n4. Open a Lead Card\n5. Show Team tab and Invite Agent\n6. Show Agent-only access\n7. Open Pricing\n8. Ask: Want to beta test this for 7 days?`,'Guided demo steps copied'); }); card.querySelector('#m2-sales-value-calc')?.addEventListener('click',m2OpenValueCalculator); card.querySelector('#m2-sales-book-demo')?.addEventListener('click',m2CopyBookDemoText); card.querySelector('#m2-sales-pricing')?.addEventListener('click',()=>{ if(typeof openM2PricingModal==='function') openM2PricingModal(); }); }
-function renderM2TrialChecklist(){ const statsView=document.getElementById('stats-view'); if(!statsView) return; let card=document.getElementById('m2-trial-onboarding-checklist'); if(!card){ card=document.createElement('div'); card.id='m2-trial-onboarding-checklist'; card.dataset.m2StatsGroup='admin'; const anchor=document.getElementById('m2-sales-ready-center')||statsView.lastChild; if(anchor) anchor.insertAdjacentElement('afterend',card); else statsView.appendChild(card); } const items=['Set business name and support email','Create/confirm master cloud login','Import or load customer leads','Create first agent login','Assign test leads to agent','Confirm agent only sees assigned leads','Export full backup','Show pricing and offer 7-day beta']; const checked=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}'); card.innerHTML=`<div class="m2-sales-card"><h3>🚀 Trial Onboarding Checklist</h3><div class="m2-sales-sub">Use this when setting up a beta customer or testing your own account before a demo.</div><div class="m2-checklist">${items.map((it,i)=>`<label class="m2-checkitem"><input type="checkbox" data-m2-trial-check="${i}" ${checked[i]?'checked':''}> <span>${it}</span></label>`).join('')}</div><div class="m2-sales-actions" style="grid-template-columns:1fr 1fr;"><button id="m2-copy-onboarding-list">Copy Checklist</button><button class="danger" id="m2-reset-onboarding-list">Reset Checklist</button></div></div>`; card.querySelectorAll('[data-m2-trial-check]').forEach(cb=>cb.addEventListener('change',()=>{ const c=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}'); c[cb.dataset.m2TrialCheck]=cb.checked; localStorage.setItem('m2_trial_checklist_v1',JSON.stringify(c)); })); card.querySelector('#m2-copy-onboarding-list')?.addEventListener('click',()=>m2Copy?.(`M2 CRM Beta Setup Checklist:\n- ${items.join('\n- ')}`,'Checklist copied')); card.querySelector('#m2-reset-onboarding-list')?.addEventListener('click',()=>{ localStorage.removeItem('m2_trial_checklist_v1'); renderStats(); }); }
-const _m2SalesReadyRenderStats = renderStats; renderStats = function(){ _m2SalesReadyRenderStats(); renderM2SalesReadyCenter(); renderM2TrialChecklist(); applyM2StatsPolish?.(); };
+  modal.classList.add('open');
+}
+function m2CopyBookDemoText(){
+  const s=typeof getSettings==='function'?getSettings():{};
+  const msg=`Want to see M2 Energy CRM?
+
+Built for solar, HVAC, and clean heat door-to-door teams.
+Features: smart lead map, Sun Score, agent assignment, follow-up pipeline, cloud sync, and app-style mobile access.
+
+Book a demo / beta test: ${s.support_email||'shaquilleregis23@gmail.com'}`;
+  if(typeof m2Copy==='function') m2Copy(msg,'Book demo text copied'); else navigator.clipboard?.writeText(msg);
+}
+function renderM2SalesReadyCenter(){
+  const statsView=document.getElementById('stats-view'); if(!statsView) return;
+  let card=document.getElementById('m2-sales-ready-center');
+  if(!card){ card=document.createElement('div'); card.id='m2-sales-ready-center'; card.dataset.m2StatsGroup='admin'; const anchor=document.getElementById('m2-demo-sales-workflow')||document.getElementById('m2-hardening-center')||statsView.lastChild; if(anchor) anchor.insertAdjacentElement('afterend',card); else statsView.appendChild(card); }
+  card.innerHTML=`<div class="m2-sales-card"><h3>💼 Sell This CRM Center</h3><div class="m2-sales-sub">Sales-ready tools for demos, beta customers, pricing, and customer onboarding.</div><div class="m2-sales-grid"><div class="m2-sales-tile"><b>🎬 Guided Demo</b><span>Walk prospects through map, Sun Score, lead cards, agent assignment, and pricing.</span></div><div class="m2-sales-tile"><b>💰 Value Calculator</b><span>Show how one extra closed deal can pay for the CRM.</span></div><div class="m2-sales-tile"><b>📅 Book Demo</b><span>Copy a clean message for prospects and beta teams.</span></div><div class="m2-sales-tile"><b>🧾 Beta Notes</b><span>Track what to show, test, and improve before Stripe.</span></div></div><div class="m2-sales-actions"><button class="primary" id="m2-sales-guided-demo">Start Guided Demo</button><button class="gold" id="m2-sales-value-calc">Open Value Calculator</button><button id="m2-sales-book-demo">Copy Book Demo Text</button><button id="m2-sales-pricing">Open Pricing</button></div></div>`;
+  card.querySelector('#m2-sales-guided-demo')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); if(typeof m2Copy==='function') m2Copy('Guided Demo Flow:
+1. Open Launch Screen
+2. Try Demo Mode
+3. Show Smart Map + Sun Icons
+4. Open a Lead Card
+5. Show Team tab and Invite Agent
+6. Show Agent-only access
+7. Open Pricing
+8. Ask: Want to beta test this for 7 days?','Guided demo steps copied'); });
+  card.querySelector('#m2-sales-value-calc')?.addEventListener('click',m2OpenValueCalculator);
+  card.querySelector('#m2-sales-book-demo')?.addEventListener('click',m2CopyBookDemoText);
+  card.querySelector('#m2-sales-pricing')?.addEventListener('click',()=>{ if(typeof openM2PricingModal==='function') openM2PricingModal(); });
+}
+function renderM2TrialChecklist(){
+  const statsView=document.getElementById('stats-view'); if(!statsView) return;
+  let card=document.getElementById('m2-trial-onboarding-checklist');
+  if(!card){ card=document.createElement('div'); card.id='m2-trial-onboarding-checklist'; card.dataset.m2StatsGroup='admin'; const anchor=document.getElementById('m2-sales-ready-center')||statsView.lastChild; if(anchor) anchor.insertAdjacentElement('afterend',card); else statsView.appendChild(card); }
+  const items=['Set business name and support email','Create/confirm master cloud login','Import or load customer leads','Create first agent login','Assign test leads to agent','Confirm agent only sees assigned leads','Export full backup','Show pricing and offer 7-day beta'];
+  const checked=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}');
+  card.innerHTML=`<div class="m2-sales-card"><h3>🚀 Trial Onboarding Checklist</h3><div class="m2-sales-sub">Use this when setting up a beta customer or testing your own account before a demo.</div><div class="m2-checklist">${items.map((it,i)=>`<label class="m2-checkitem"><input type="checkbox" data-m2-trial-check="${i}" ${checked[i]?'checked':''}> <span>${it}</span></label>`).join('')}</div><div class="m2-sales-actions" style="grid-template-columns:1fr 1fr;"><button id="m2-copy-onboarding-list">Copy Checklist</button><button class="danger" id="m2-reset-onboarding-list">Reset Checklist</button></div></div>`;
+  card.querySelectorAll('[data-m2-trial-check]').forEach(cb=>cb.addEventListener('change',()=>{ const c=JSON.parse(localStorage.getItem('m2_trial_checklist_v1')||'{}'); c[cb.dataset.m2TrialCheck]=cb.checked; localStorage.setItem('m2_trial_checklist_v1',JSON.stringify(c)); }));
+  card.querySelector('#m2-copy-onboarding-list')?.addEventListener('click',()=>m2Copy?.('M2 CRM Beta Setup Checklist:
+- '+items.join('
+- '),'Checklist copied'));
+  card.querySelector('#m2-reset-onboarding-list')?.addEventListener('click',()=>{ localStorage.removeItem('m2_trial_checklist_v1'); renderStats(); });
+}
+const _m2SalesReadyRenderStats = renderStats;
+renderStats = function(){ _m2SalesReadyRenderStats(); renderM2SalesReadyCenter(); renderM2TrialChecklist(); applyM2StatsPolish?.(); };
 
 </script>
+
+
+<!-- === M2 SALES DEMO QUICK ACCESS FIX v2 === -->
+<style>
+#m2-sales-quick-panel{position:relative;margin:10px 16px 14px;padding:14px;border-radius:18px;background:linear-gradient(135deg,rgba(8,22,40,.96),rgba(12,48,58,.96));border:1px solid rgba(85,255,216,.26);box-shadow:0 10px 30px rgba(0,0,0,.28);color:#eaf8ff;z-index:5}
+#m2-sales-quick-panel h3{margin:0 0 6px;font-size:18px;color:#fff}#m2-sales-quick-panel p{margin:0 0 12px;color:#aeb9c8;font-size:13px;line-height:1.35}.m2-sales-quick-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.m2-sales-quick-actions button{border:0;border-radius:13px;padding:12px;font-weight:900;cursor:pointer;background:#222b35;color:#eaf3ff}.m2-sales-quick-actions button.primary{background:linear-gradient(135deg,#55ffd8,#2d7cff);color:#06141c}.m2-sales-quick-actions button.gold{background:#f7c948;color:#211600}.m2-sales-demo-modal{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:100000;display:none;align-items:center;justify-content:center;padding:18px}.m2-sales-demo-modal.open{display:flex}.m2-sales-demo-box{width:min(680px,96vw);max-height:88vh;overflow:auto;background:#101722;border:1px solid rgba(85,255,216,.28);border-radius:24px;box-shadow:0 24px 80px rgba(0,0,0,.55);padding:20px;color:#fff}.m2-sales-demo-box h2{margin:0 0 8px}.m2-sales-demo-box .sub{color:#aeb9c8;font-size:14px;line-height:1.45;margin-bottom:14px}.m2-demo-steps{display:grid;gap:10px}.m2-demo-step{display:grid;grid-template-columns:42px 1fr;gap:10px;align-items:start;padding:12px;border-radius:14px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08)}.m2-demo-step b{display:block;color:#fff;margin-bottom:3px}.m2-demo-step span{color:#aeb9c8;font-size:13px;line-height:1.35}.m2-step-num{width:36px;height:36px;border-radius:12px;background:#55ffd8;color:#06141c;display:grid;place-items:center;font-weight:1000}.m2-sales-demo-footer{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px}.m2-sales-demo-footer button{border:0;border-radius:12px;padding:12px;background:#222b35;color:#eaf3ff;font-weight:900;cursor:pointer}.m2-sales-demo-footer button.primary{background:#55ffd8;color:#06141c}.m2-sales-demo-footer button.gold{background:#f7c948;color:#211600}@media(max-width:760px){#m2-sales-quick-panel{margin:8px}.m2-sales-quick-actions,.m2-sales-demo-footer{grid-template-columns:1fr}.m2-sales-demo-box{padding:16px}}
+</style>
+<script>
+(function(){
+  const PANEL_ID='m2-sales-quick-panel';
+  const MODAL_ID='m2-guided-demo-modal-v2';
+  function copyText(txt,msg){
+    try{ if(typeof m2Copy==='function') return m2Copy(txt,msg||'Copied'); }catch(e){}
+    try{ navigator.clipboard && navigator.clipboard.writeText(txt); }catch(e){}
+    try{ if(typeof showToast==='function') showToast(msg||'Copied'); else alert(msg||'Copied'); }catch(e){}
+  }
+  function openPricing(){ try{ if(typeof openM2PricingModal==='function') return openM2PricingModal(); }catch(e){} copyText('Starter Team — $99/mo\nGrowth Team — $199/mo\nOffice Plan — $299/mo','Pricing copied'); }
+  function openValueCalc(){ try{ if(typeof m2OpenValueCalculator==='function') return m2OpenValueCalculator(); }catch(e){} copyText('Use the value calculator pitch: one extra closed deal can pay for months of CRM use.','Value pitch copied'); }
+  function bookDemoText(){
+    let support='shaquilleregis23@gmail.com'; try{ const s=typeof getSettings==='function'?getSettings():{}; support=s.support_email||support; }catch(e){}
+    copyText('Want to see M2 Energy CRM?\n\nBuilt for solar, HVAC, and clean heat door-to-door teams.\nFeatures: smart lead map, Sun Score, agent assignment, follow-up pipeline, cloud sync, and app-style mobile access.\n\nBook a demo / beta test: '+support,'Book demo text copied');
+  }
+  function showGuidedDemo(){
+    let modal=document.getElementById(MODAL_ID);
+    if(!modal){
+      modal=document.createElement('div'); modal.id=MODAL_ID; modal.className='m2-sales-demo-modal';
+      modal.innerHTML=`<div class="m2-sales-demo-box"><h2>🎬 Guided Demo Flow</h2><div class="sub">Use this script when showing M2 Energy CRM to a solar, HVAC, or clean heat team. Walk them through value first, then price.</div><div class="m2-demo-steps">
+        <div class="m2-demo-step"><div class="m2-step-num">1</div><div><b>Open Launch Screen</b><span>Show Owner login, Agent login, and Demo Mode. Explain that new teams get a clean onboarding flow.</span></div></div>
+        <div class="m2-demo-step"><div class="m2-step-num">2</div><div><b>Smart Map</b><span>Show how reps see homeowner leads by neighborhood instead of guessing where to knock.</span></div></div>
+        <div class="m2-demo-step"><div class="m2-step-num">3</div><div><b>High Sun Homes</b><span>Point out the sun icons and Sun Score so solar reps can prioritize better homes first.</span></div></div>
+        <div class="m2-demo-step"><div class="m2-step-num">4</div><div><b>Lead Cards</b><span>Open a lead and show notes, status, roof info, bill fields, follow-ups, appointments, and HVAC/solar opportunity tracking.</span></div></div>
+        <div class="m2-demo-step"><div class="m2-step-num">5</div><div><b>Agent Assignment</b><span>Go to Team, show Invite Agent, assign filtered leads, and explain that agents only see assigned leads.</span></div></div>
+        <div class="m2-demo-step"><div class="m2-step-num">6</div><div><b>Cloud Sync + App Feel</b><span>Show sync/load, backup, and install-to-phone option. This makes it usable in the field.</span></div></div>
+        <div class="m2-demo-step"><div class="m2-step-num">7</div><div><b>Close with Pricing</b><span>Show Starter/Growth/Office plans and ask: “Want to beta test this with 1–2 reps this week?”</span></div></div>
+      </div><div class="m2-sales-demo-footer"><button class="primary" id="m2-demo-open-launch">Open Launch Screen</button><button class="gold" id="m2-demo-open-pricing">Open Pricing</button><button id="m2-demo-copy">Copy Script</button><button id="m2-demo-close" style="grid-column:1/-1;">Close</button></div></div>`;
+      document.body.appendChild(modal);
+      modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('open'); });
+      modal.querySelector('#m2-demo-close').addEventListener('click',()=>modal.classList.remove('open'));
+      modal.querySelector('#m2-demo-open-pricing').addEventListener('click',openPricing);
+      modal.querySelector('#m2-demo-open-launch').addEventListener('click',()=>{ try{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); }catch(e){} });
+      modal.querySelector('#m2-demo-copy').addEventListener('click',()=>copyText('Guided Demo Flow:\n1. Open Launch Screen\n2. Show Smart Map\n3. Show High Sun Homes / Sun Score\n4. Open Lead Card\n5. Show Team + Invite Agent + Assignment\n6. Show Cloud Sync + Backup + App Install\n7. Show Pricing\n8. Ask: Want to beta test this with 1–2 reps this week?','Guided demo script copied'));
+    }
+    modal.classList.add('open');
+  }
+  function injectSalesPanel(){
+    const statsView=document.getElementById('stats-view'); if(!statsView) return;
+    let panel=document.getElementById(PANEL_ID);
+    if(!panel){ panel=document.createElement('div'); panel.id=PANEL_ID; panel.setAttribute('data-m2-stats-group','admin'); panel.innerHTML=`<h3>💼 Sell This CRM</h3><p>Quick sales tools that stay easy to find: guided demo, pricing, value calculator, and demo message.</p><div class="m2-sales-quick-actions"><button class="primary" id="m2-quick-guided-demo">Start Guided Demo</button><button class="gold" id="m2-quick-pricing">Open Pricing</button><button id="m2-quick-value">Value Calculator</button><button id="m2-quick-book-demo">Copy Demo Text</button></div>`; }
+    const security=document.getElementById('m2-security-center') || Array.from(statsView.querySelectorAll('*')).find(el=>(el.textContent||'').includes('SECURITY CENTER'));
+    const toolbar=document.getElementById('m2-stats-toolbar');
+    if(security && security.parentElement===statsView && security.previousElementSibling!==panel) statsView.insertBefore(panel, security);
+    else if(toolbar && toolbar.nextElementSibling!==panel && !panel.parentNode) toolbar.insertAdjacentElement('afterend',panel);
+    else if(!panel.parentNode) statsView.insertBefore(panel, statsView.firstChild);
+    panel.querySelector('#m2-quick-guided-demo')?.addEventListener('click',showGuidedDemo);
+    panel.querySelector('#m2-quick-pricing')?.addEventListener('click',openPricing);
+    panel.querySelector('#m2-quick-value')?.addEventListener('click',openValueCalc);
+    panel.querySelector('#m2-quick-book-demo')?.addEventListener('click',bookDemoText);
+    try{ if(typeof m2StatsView==='function' && m2StatsView()!=='admin' && m2StatsView()!=='all') panel.style.display='none'; else panel.style.display='block'; }catch(e){ panel.style.display='block'; }
+  }
+  function addMiniButton(){
+    const bar=document.getElementById('m2-stats-toolbar'); if(!bar) return;
+    if(!document.getElementById('m2-mini-guided-demo')){
+      const btn=document.createElement('button'); btn.id='m2-mini-guided-demo'; btn.className='m2-stats-reopen'; btn.style.background='linear-gradient(135deg,#55ffd8,#2d7cff)'; btn.style.color='#06141c'; btn.textContent='Guided Demo'; btn.addEventListener('click',showGuidedDemo); bar.appendChild(btn);
+    }
+  }
+  function tick(){ injectSalesPanel(); addMiniButton(); }
+  const oldRender=window.renderStats;
+  if(typeof oldRender==='function' && !oldRender.__m2SalesQuickWrapped){
+    const wrapped=function(){ const r=oldRender.apply(this,arguments); setTimeout(tick,50); return r; };
+    wrapped.__m2SalesQuickWrapped=true; window.renderStats=wrapped;
+  }
+  document.addEventListener('DOMContentLoaded',()=>{ setTimeout(tick,300); setTimeout(tick,1200); });
+  window.addEventListener('load',()=>{ setTimeout(tick,300); setTimeout(tick,1500); });
+  setInterval(tick,2000);
+  window.openM2GuidedDemoFlow=showGuidedDemo;
+})();
+</script>
+
 </body>
 </html>
