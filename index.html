@@ -2482,7 +2482,7 @@ function createLoginOverlay() {
     div.querySelectorAll('[data-login-role]').forEach(b => b.classList.toggle('active', b === btn));
   }));
   document.getElementById('login-close').addEventListener('click', () => div.classList.remove('open'));
-  document.getElementById('login-submit').addEventListener('click', () => {
+  document.getElementById('login-submit').addEventListener('click', async () => {
     const email = document.getElementById('login-email').value.trim().toLowerCase();
     const pin = document.getElementById('login-pin').value.trim();
     const acc = getAccountAccess();
@@ -2491,9 +2491,12 @@ function createLoginOverlay() {
       if ((email && acc.master_email && email !== acc.master_email.toLowerCase()) || pin !== acc.master_pin) { showToast('Login not matched'); return; }
       saveCurrentSession({ role:'master', name: acc.master_name || 'Master', email: acc.master_email || email });
     } else {
-      const agent = (acc.agents || []).find(a => a.email.toLowerCase() === email && a.pin === pin);
-      if (!agent) { showToast('Agent login not found'); return; }
-      saveCurrentSession({ role:'agent', name: agent.name, email: agent.email, territory: agent.territory || '', id: agent.id });
+      let agent = (acc.agents || []).find(a => String(a.email || '').toLowerCase() === email && String(a.pin || '') === pin);
+      if (!agent && typeof cloudAgentLoginByPin === 'function') {
+        agent = await cloudAgentLoginByPin(email, pin);
+      }
+      if (!agent) { showToast('Agent login not found. Master may need to Sync Agents to Cloud.'); return; }
+      saveCurrentSession({ role:'agent', name: agent.name, email: agent.email, territory: agent.territory || '', id: agent.id, team_id: agent.team_id || '' });
       const s = getSettings(); saveSettings({ ...s, agent_name: agent.name, default_territory: agent.territory || s.default_territory || '' });
     }
     div.classList.remove('open');
@@ -2898,6 +2901,10 @@ async function pushLeadsToCloud({ silent=false }={}) {
   if (!sb || !sbUser) { if (!silent) setCloudStatus('Log in before syncing.', 'warn'); return; }
   if (!sbProfile) await ensureCloudProfile();
   if (!sbProfile?.team_id) { if (!silent) setCloudStatus('Cloud profile/team not ready. Log out and log back in.', 'warn'); return; }
+  if ((sbProfile.role || '').toLowerCase() === 'agent') {
+    if (!silent) setCloudStatus('Security: agents cannot sync or overwrite the full lead database. Master only.', 'warn');
+    return;
+  }
 
   cloudSyncBusy = true;
   try {
@@ -3199,6 +3206,10 @@ async function syncAgentAccountsToCloud({ silent=false }={}) {
     if (!silent) showToast('Log into Supabase first');
     return;
   }
+  if ((sbProfile.role || '').toLowerCase() !== 'master') {
+    if (!silent) setCloudStatus('Security: only master can sync agent accounts.', 'warn');
+    return;
+  }
   const acc = getAccountAccess();
   const agents = (acc.agents || []).map(normalizeAgentForCloud).filter(a => a.email && a.name);
   cloudAgentSyncBusy = true;
@@ -3216,6 +3227,41 @@ async function syncAgentAccountsToCloud({ silent=false }={}) {
     if (!silent) setCloudStatus(e.message || 'Agent cloud sync failed. Run the agent_accounts SQL.', 'warn');
   } finally {
     cloudAgentSyncBusy = false;
+  }
+}
+
+async function cloudAgentLoginByPin(email, pin) {
+  const sb = initSupabaseClient();
+  email = String(email || '').trim().toLowerCase();
+  pin = String(pin || '').trim();
+  if (!sb || !email || !pin) return null;
+  try {
+    showToast('Checking cloud agent login...');
+    const { data, error } = await sb.rpc('m2_agent_login_by_pin', { p_email: email, p_pin: pin });
+    if (error) throw error;
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row || !row.id) return null;
+    const agent = {
+      id: row.id,
+      team_id: row.team_id || '',
+      name: row.name || email,
+      email: String(row.email || email).toLowerCase(),
+      pin,
+      territory: row.territory || '',
+      active: true,
+      created_at: row.created_at || new Date().toISOString()
+    };
+    const acc = getAccountAccess();
+    acc.agents = acc.agents || [];
+    const idx = acc.agents.findIndex(a => String(a.email || '').toLowerCase() === agent.email);
+    if (idx >= 0) acc.agents[idx] = { ...acc.agents[idx], ...agent };
+    else acc.agents.push(agent);
+    _m2CloudOldSaveAccountAccess ? _m2CloudOldSaveAccountAccess(acc) : localStorage.setItem(ACCOUNT_KEY, JSON.stringify(acc));
+    return agent;
+  } catch(e) {
+    console.error(e);
+    showToast(e.message || 'Cloud agent login failed');
+    return null;
   }
 }
 
@@ -3307,6 +3353,48 @@ leadPayloadForCloud = function(lead) {
   return row;
 };
 
+
+
+
+// === M2 SECURITY STARTER ===
+// Front-end guardrails. Real protection comes from the Supabase RLS SQL file.
+const M2_SECURITY_VERSION = 'rls_starter_v1';
+
+function renderSecurityCenter() {
+  const statsView = document.getElementById('stats-view');
+  if (!statsView) return;
+  let panel = document.getElementById('m2-security-center');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'm2-security-center';
+    const afterCloud = document.getElementById('cloud-dashboard');
+    if (afterCloud && afterCloud.parentNode) afterCloud.insertAdjacentElement('afterend', panel);
+    else statsView.insertBefore(panel, statsView.firstChild);
+  }
+  const role = (sbProfile?.role || activeUserRole?.() || 'local').toString();
+  const email = cloudEmail?.() || 'Not logged into cloud';
+  const team = sbProfile?.team_id ? String(sbProfile.team_id).slice(0, 8) + '…' : 'No cloud team yet';
+  panel.innerHTML = `
+    <div class="cloud-card">
+      <h3>🔐 Security Center</h3>
+      <div class="cloud-sub">Starter security is active in the app. Run the RLS SQL in Supabase to make the database enforce it too.</div>
+      <div class="phase4-grid">
+        <div class="phase4-metric"><div class="k">Security Version</div><div class="v">${escapeHtml(M2_SECURITY_VERSION)}</div></div>
+        <div class="phase4-metric"><div class="k">Cloud User</div><div class="v" style="font-size:13px;line-height:1.2;">${escapeHtml(email)}</div></div>
+        <div class="phase4-metric"><div class="k">Role</div><div class="v ${role.toLowerCase()==='master' ? 'good' : 'warn'}">${escapeHtml(role)}</div></div>
+        <div class="phase4-metric"><div class="k">Team</div><div class="v" style="font-size:13px;">${escapeHtml(team)}</div></div>
+      </div>
+      <div class="phase5-script" style="margin-top:10px;">
+        ✅ Master-only full lead sync<br>
+        ✅ Master-only agent cloud sync<br>
+        ✅ Agents blocked from overwriting the full database<br>
+        ⚠️ Next: run the Supabase RLS SQL so this is protected at the database level.
+      </div>
+    </div>`;
+}
+
+const _m2SecurityOldRenderCloudPanel = renderCloudPanel;
+renderCloudPanel = function() { _m2SecurityOldRenderCloudPanel(); renderSecurityCenter(); };
 
 initSupabaseClient();
 refreshCloudSession().catch(e => console.warn('Supabase session error', e));
