@@ -378,6 +378,29 @@
   .sun-score-reason { font-size:11px; color:var(--muted); line-height:1.45; }
   .sun-score-mini { color:#f8c34d; font-weight:800; }
 
+
+/* === M2 Product Hardening v1 === */
+.m2-hardening-card{background:rgba(10,18,32,.94);border:1px solid rgba(132,255,218,.25);border-radius:18px;padding:16px;margin:14px 0;box-shadow:0 0 0 1px rgba(255,255,255,.03),0 14px 35px rgba(0,0,0,.22)}
+.m2-hardening-card h3{margin:0 0 8px;font-size:18px}
+.m2-hardening-sub{color:#9aa6b2;font-size:13px;line-height:1.35;margin-bottom:12px}
+.m2-hardening-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.m2-hardening-tile{background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;min-height:80px}
+.m2-hardening-tile b{display:block;color:#fff;margin-bottom:6px;font-size:13px}
+.m2-hardening-tile span{display:block;color:#aab6c4;font-size:12px;line-height:1.25}
+.m2-hardening-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.m2-hardening-actions button,.m2-price-modal button{border:0;border-radius:12px;padding:12px 14px;font-weight:800;background:#2677e8;color:#fff;cursor:pointer}
+.m2-hardening-actions button.secondary,.m2-price-modal button.secondary{background:#202832;color:#e7edf5;border:1px solid rgba(255,255,255,.08)}
+.m2-hardening-actions button.gold{background:#f5b82e;color:#171102}
+.m2-hardening-actions button.danger{background:#bb3148;color:#fff}
+.m2-price-modal{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:10006;display:none;align-items:center;justify-content:center;padding:20px}
+.m2-price-modal.open{display:flex}
+.m2-price-box{width:min(760px,96vw);background:#101823;border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:20px;color:#fff;box-shadow:0 20px 80px rgba(0,0,0,.45)}
+.m2-price-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0}
+.m2-price-plan{background:linear-gradient(180deg,rgba(255,255,255,.09),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:16px}
+.m2-price-plan .price{font-size:30px;font-weight:900;margin:8px 0;color:#5dffd7}
+.m2-price-plan span{display:block;color:#aeb9c8;font-size:12px;line-height:1.35}
+@media(max-width:720px){.m2-hardening-grid,.m2-hardening-actions,.m2-price-grid{grid-template-columns:1fr}.m2-price-box{max-height:88vh;overflow:auto}}
+
 </style>
 </head>
 <body>
@@ -3761,6 +3784,187 @@ function renderSecurityCenter() {
 
 const _m2SecurityOldRenderCloudPanel = renderCloudPanel;
 renderCloudPanel = function() { _m2SecurityOldRenderCloudPanel(); renderSecurityCenter(); };
+
+
+
+// === M2 PRODUCT HARDENING v1: backup, team separation, demo polish, pricing ===
+const M2_HARDENING_VERSION = 'beta_product_hardening_v1';
+
+function m2ActiveTeamId() {
+  try {
+    const acc = (typeof getAccountAccess === 'function') ? getAccountAccess() : {};
+    const sess = (typeof getCurrentSession === 'function') ? getCurrentSession() : {};
+    return String((typeof sbProfile !== 'undefined' && sbProfile?.team_id) || sess.team_id || acc.team_id || 'local_team').trim();
+  } catch(e) { return 'local_team'; }
+}
+function m2ActiveTeamName() {
+  try {
+    const acc = getAccountAccess?.() || {};
+    return acc.company_name || acc.crm_name || acc.business_name || 'M2 Energy Team';
+  } catch(e) { return 'M2 Energy Team'; }
+}
+function m2IsMasterLike() {
+  try { return (typeof activeUserRole === 'function' ? activeUserRole() : (getCurrentSession?.().role || 'master')) !== 'agent'; }
+  catch(e) { return true; }
+}
+function m2BackupChecksum(payload) {
+  const s = JSON.stringify({ leads:payload.leads || [], account:payload.account || {}, exported_at:payload.exported_at || '' });
+  let h = 0; for (let i=0;i<s.length;i++) h = ((h<<5)-h + s.charCodeAt(i)) | 0;
+  return 'm2_' + Math.abs(h).toString(16);
+}
+function m2CreateBackupPayload(reason='manual') {
+  const payload = {
+    app:'M2 Energy CRM',
+    version:M2_HARDENING_VERSION,
+    reason,
+    exported_at:new Date().toISOString(),
+    team_id:m2ActiveTeamId(),
+    team_name:m2ActiveTeamName(),
+    cloud_user:(typeof cloudEmail === 'function' ? cloudEmail() : ''),
+    account:getAccountAccess?.() || {},
+    session:getCurrentSession?.() || {},
+    settings:getSettings?.() || {},
+    leads:state?.leads || []
+  };
+  payload.checksum = m2BackupChecksum(payload);
+  return payload;
+}
+function m2AutoLocalBackup(reason='auto') {
+  try {
+    const payload = m2CreateBackupPayload(reason);
+    localStorage.setItem('m2_last_auto_backup_v1', JSON.stringify(payload));
+    localStorage.setItem('m2_last_auto_backup_at_v1', new Date().toISOString());
+    return payload;
+  } catch(e) { console.warn('Auto backup failed', e); return null; }
+}
+function exportM2FullBackup() {
+  const payload = m2CreateBackupPayload('manual_export');
+  m2DownloadTextFile('m2-crm-backup-' + (payload.team_name || 'team').replace(/[^a-z0-9]+/gi,'-').toLowerCase() + '-' + new Date().toISOString().slice(0,10) + '.json', JSON.stringify(payload,null,2));
+  localStorage.setItem('m2_last_manual_backup_at_v1', new Date().toISOString());
+  showToast('✓ Full backup exported');
+}
+function importM2FullBackup(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data || !Array.isArray(data.leads)) throw new Error('Backup file missing leads');
+      const currentTeam = m2ActiveTeamId();
+      const incomingTeam = String(data.team_id || data.account?.team_id || '').trim();
+      let msg = `Import ${data.leads.length} leads from backup? This will replace current local leads on this browser.`;
+      if (incomingTeam && currentTeam && incomingTeam !== currentTeam) msg += `\n\nWarning: backup team (${incomingTeam}) does not match current team (${currentTeam}).`;
+      if (!confirm(msg)) return;
+      m2AutoLocalBackup('before_import');
+      state.leads = data.leads;
+      if (data.account) saveAccountAccess(data.account);
+      if (data.settings) saveSettings(data.settings);
+      if (data.session) saveCurrentSession(data.session);
+      saveState(); renderMarkers(); renderFilterBar(); renderList(); renderStats();
+      showToast('✓ Backup imported');
+    } catch(e) { alert('Import failed: ' + e.message); }
+  };
+  reader.readAsText(file);
+}
+function m2TagCurrentLeadsToTeam(force=false) {
+  if (!m2IsMasterLike()) return showToast('Only master can tag team leads');
+  const tid = m2ActiveTeamId();
+  const tname = m2ActiveTeamName();
+  const leads = state.leads || [];
+  const need = leads.filter(l => force || !l.team_id || String(l.team_id) === 'local_team');
+  if (!need.length) return showToast('All local leads already have a team tag');
+  if (!confirm(`Tag ${need.length} local leads to team: ${tname}?`)) return;
+  m2AutoLocalBackup('before_team_tag');
+  const now = new Date().toISOString();
+  need.forEach(l => { l.team_id = tid; l.team_name = tname; l.updated_at = now; });
+  saveState(); renderMarkers(); renderFilterBar(); renderList(); renderStats();
+  showToast(`✓ Tagged ${need.length} leads to this team`);
+}
+function m2RestoreLastAutoBackup() {
+  try {
+    const raw = localStorage.getItem('m2_last_auto_backup_v1');
+    if (!raw) return showToast('No local auto-backup found');
+    const data = JSON.parse(raw);
+    if (!data || !Array.isArray(data.leads)) throw new Error('Bad auto backup');
+    if (!confirm(`Restore local auto-backup with ${data.leads.length} leads?`)) return;
+    state.leads = data.leads;
+    if (data.account) saveAccountAccess(data.account);
+    if (data.settings) saveSettings(data.settings);
+    if (data.session) saveCurrentSession(data.session);
+    saveState(); renderMarkers(); renderFilterBar(); renderList(); renderStats();
+    showToast('✓ Auto-backup restored');
+  } catch(e) { alert('Restore failed: ' + e.message); }
+}
+function m2LoadPremiumDemoData() {
+  m2AutoLocalBackup('before_demo');
+  const now = new Date().toISOString();
+  const agents = [
+    { id:'demo_rep_1', name:'Demo Rep Ava', email:'ava@m2demo.com', pin:'1111', territory:'Queens', active:true },
+    { id:'demo_rep_2', name:'Demo Rep Jay', email:'jay@m2demo.com', pin:'2222', territory:'Long Island', active:true }
+  ];
+  const acc = getAccountAccess?.() || {};
+  saveAccountAccess({ ...acc, team_id:'demo_team_m2', crm_name:'M2 Demo Solar + HVAC', company_name:'M2 Demo Solar + HVAC', master_name:'Demo Owner', master_email:'owner@m2demo.com', master_pin:'9999', territory:'Queens / Long Island', plan_type:'Growth Team - $199/mo', agents });
+  const rows = [
+    ['High Sun Home','42-15 Sample Ave','Queens',40.728,-73.794,'hot',95,'No solar visible. Clean roof line. High bill.','Demo Rep Ava'],
+    ['Boiler + Solar Lead','88-20 Demo Blvd','Queens',40.706,-73.821,'callback',88,'Oil heat. Good roof. Wants estimate tomorrow.','Demo Rep Ava'],
+    ['Mini Split Opportunity','120 Sample Street','Queens',40.681,-73.835,'set',82,'Old boiler. Asked about rebates and monthly payment.','Demo Rep Ava'],
+    ['Bill Uploaded Lead','77-31 Sample Ct','Queens',40.735,-73.742,'interested',79,'Uploaded bill. $280 electric. Good follow-up.','Demo Rep Ava'],
+    ['Long Island High Sun','14 Demo Harbor Rd','Long Island',40.761,-73.610,'hot',91,'Large roof. No shade notes. Good solar candidate.','Demo Rep Jay'],
+    ['HVAC Estimate Set','55 Clean Heat Way','Long Island',40.730,-73.560,'set',76,'Gas boiler replacement. Mini split estimate scheduled.','Demo Rep Jay'],
+    ['Follow-up Needed','15-44 Prospect Rd','Brooklyn',40.667,-73.941,'callback',74,'Spoke to homeowner. Send solar + HVAC breakdown.',''],
+    ['Already Has Solar','230 Demo Lane','Long Island',40.781,-73.590,'not_qualified',28,'Panels visible. Marked as existing solar.',''],
+    ['Doorknock Later','99 Sample Parkway','Queens',40.715,-73.800,'new',68,'No answer. Good roof from street.',''],
+    ['Appointment Tomorrow','31-10 Demo Place','Queens',40.701,-73.812,'appt',84,'Homeowner wants 10-15 minute estimate.','Demo Rep Ava']
+  ];
+  state.leads = rows.map((r,i)=>({
+    id:'demo_'+Date.now()+'_'+i, first:r[0], last:'', addr:r[1], city:r[2], boro:r[2], zip:'', lat:r[3], lng:r[4], status:r[5],
+    source:'Premium Demo', territory:r[2], notes:r[7], monthly_bill:i<6?'250':'', heating_bill:i===1||i===5?'300':'',
+    heating_type:i===1?'oil':(i===5?'gas':''), hvac_opportunity:i===1||i===2||i===5?'yes':'', solar_status:i===7?'has_solar':'no_solar_visible',
+    sun_score:r[6], sun_level:r[6]>=75?'High':'Medium', assigned_agent:r[8], assigned_user_email:r[8].includes('Ava')?'ava@m2demo.com':(r[8].includes('Jay')?'jay@m2demo.com':''),
+    assigned_user_id:r[8].includes('Ava')?'demo_rep_1':(r[8].includes('Jay')?'demo_rep_2':''), team_id:'demo_team_m2', team_name:'M2 Demo Solar + HVAC',
+    callback_due:i===1||i===6?new Date(Date.now()+86400000).toISOString().slice(0,10):'', appt_time:i===2||i===5||i===9?new Date(Date.now()+86400000).toISOString().slice(0,16):'',
+    created_at:now, updated_at:now, demo:true
+  }));
+  state.filter = 'all'; saveState(); saveCurrentSession({ role:'master', name:'Demo Owner', email:'owner@m2demo.com', team_id:'demo_team_m2', demo:true });
+  localStorage.setItem('m2_demo_mode_v1','1'); renderMarkers(); renderFilterBar(); renderList(); renderStats(); switchView('map'); showToast('✓ Premium demo loaded');
+}
+function startM2DemoMode() { m2LoadPremiumDemoData(); }
+function clearM2DemoMode() {
+  if (!confirm('Clear demo leads from this browser? You can restore your pre-demo local backup from Product Hardening if needed.')) return;
+  state.leads = (state.leads || []).filter(l => !l.demo);
+  localStorage.removeItem('m2_demo_mode_v1');
+  saveState(); renderMarkers(); renderFilterBar(); renderList(); renderStats(); showToast('Demo mode cleared');
+}
+function openM2PricingModal() {
+  let modal = document.getElementById('m2-pricing-modal');
+  if (!modal) {
+    modal = document.createElement('div'); modal.id='m2-pricing-modal'; modal.className='m2-price-modal';
+    modal.innerHTML = `<div class="m2-price-box"><h2 style="margin:0 0 8px;">M2 Energy CRM Pricing</h2><p style="color:#aeb9c8;margin:0 0 12px;">Use this as your beta sales screen when showing outside solar, HVAC, and clean heat teams.</p><div class="m2-price-grid"><div class="m2-price-plan"><b>Starter Team</b><div class="price">$99/mo</div><span>Small team beta. Map CRM, lead cards, basic agents, backup.</span></div><div class="m2-price-plan"><b>Growth Team</b><div class="price">$199/mo</div><span>Cloud sync, agent assignment, Sun Score, pipeline, demo support.</span></div><div class="m2-price-plan"><b>Office Plan</b><div class="price">$299/mo</div><span>Manager command center, onboarding help, priority setup, team workflow.</span></div></div><div class="m2-hardening-actions"><button id="m2-copy-pricing-text">Copy Sales Text</button><button class="secondary" id="m2-close-pricing-modal">Close</button></div></div>`;
+    document.body.appendChild(modal);
+    document.getElementById('m2-close-pricing-modal')?.addEventListener('click',()=>modal.classList.remove('open'));
+    document.getElementById('m2-copy-pricing-text')?.addEventListener('click',()=>{ navigator.clipboard?.writeText('M2 Energy CRM: field sales CRM for solar, HVAC, and clean heat teams. Starter $99/mo, Growth $199/mo, Office $299/mo. Includes map leads, agent assignment, Sun Score, follow-up pipeline, cloud sync, and app-style mobile access.'); showToast('Pricing text copied'); });
+    modal.addEventListener('click',e=>{ if(e.target===modal) modal.classList.remove('open'); });
+  }
+  modal.classList.add('open');
+}
+function renderM2HardeningCenter() {
+  const statsView = document.getElementById('stats-view'); if (!statsView) return;
+  let card = document.getElementById('m2-hardening-center');
+  if (!card) { card = document.createElement('div'); card.id='m2-hardening-center'; const anchor=document.getElementById('m2-beta-polish-wrap')||document.getElementById('m2-beta-launch-card')||statsView.firstChild; if(anchor&&anchor.parentNode) anchor.insertAdjacentElement('afterend',card); else statsView.insertBefore(card,statsView.firstChild); }
+  const leads = state.leads || []; const acc=getAccountAccess?.()||{}; const tid=m2ActiveTeamId();
+  const tagged = leads.filter(l=>String(l.team_id||'')===tid).length;
+  const untagged = leads.filter(l=>!l.team_id || String(l.team_id)==='local_team').length;
+  const lastAuto = localStorage.getItem('m2_last_auto_backup_at_v1'); const lastManual = localStorage.getItem('m2_last_manual_backup_at_v1');
+  card.innerHTML = `<div class="m2-hardening-card"><h3>🧱 Beta Product Hardening <span class="demo-badge">${M2_HARDENING_VERSION}</span></h3><div class="m2-hardening-sub">Next serious layer: safer backups, team separation prep, polished demo flow, and pricing screen.</div><div class="m2-hardening-grid"><div class="m2-hardening-tile"><b>🛟 Backup Safety</b><span>${leads.length} local leads. Manual: ${lastManual?new Date(lastManual).toLocaleString():'not yet'}</span></div><div class="m2-hardening-tile"><b>🏢 Team Separation</b><span>Team: ${escapeHtml((acc.company_name||acc.crm_name||'M2 Team'))}<br>${tagged} tagged · ${untagged} untagged</span></div><div class="m2-hardening-tile"><b>🎬 Demo Polish</b><span>Premium sample leads, agents, high-sun markers, follow-ups, and pricing.</span></div><div class="m2-hardening-tile"><b>🔐 SaaS Prep</b><span>Use team tags before syncing leads for outside beta customers.</span></div></div><div class="m2-hardening-actions"><button class="gold" id="m2-hard-export">Export Full Backup</button><button class="secondary" id="m2-hard-restore">Restore Last Auto-Backup</button><button id="m2-hard-team-tag">Tag Leads to Team</button><button class="secondary" id="m2-hard-demo">Load Premium Demo</button><button class="secondary" id="m2-hard-pricing">Open Pricing Screen</button><button class="danger" id="m2-hard-clear-demo">Clear Demo</button></div><div class="m2-hardening-sub" style="margin-top:10px;">Auto-backup: ${lastAuto?new Date(lastAuto).toLocaleString():'not yet'} · Active team ID: ${escapeHtml(tid)}</div></div>`;
+  document.getElementById('m2-hard-export')?.addEventListener('click', exportM2FullBackup);
+  document.getElementById('m2-hard-restore')?.addEventListener('click', m2RestoreLastAutoBackup);
+  document.getElementById('m2-hard-team-tag')?.addEventListener('click', () => m2TagCurrentLeadsToTeam(false));
+  document.getElementById('m2-hard-demo')?.addEventListener('click', startM2DemoMode);
+  document.getElementById('m2-hard-pricing')?.addEventListener('click', openM2PricingModal);
+  document.getElementById('m2-hard-clear-demo')?.addEventListener('click', clearM2DemoMode);
+}
+const _m2HardeningRenderStats = renderStats;
+renderStats = function() { _m2HardeningRenderStats(); renderM2HardeningCenter(); };
 
 initSupabaseClient();
 refreshCloudSession().catch(e => console.warn('Supabase session error', e));
