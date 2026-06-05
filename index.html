@@ -768,6 +768,44 @@ function renderM2TrialChecklist(){
 var _m2SalesReadyRenderStats = renderStats;
 renderStats = function(){ _m2SalesReadyRenderStats(); renderM2SalesReadyCenter(); renderM2TrialChecklist(); applyM2StatsPolish?.(); };
 
+
+
+/* === M2 OPEN SETTINGS BUTTON FIX v1 ===
+   Fixes Customer Onboarding > Open Settings so it actually switches to the Settings tab,
+   rebuilds the settings cards, hides the command center, and scrolls the settings panel into view. */
+(function(){
+  function m2OpenSettingsClean(){
+    try{
+      localStorage.setItem('m2_stats_clean_view_v1','settings');
+      if (typeof m2SetStatsMenuCollapsed === 'function') m2SetStatsMenuCollapsed(true);
+      if (typeof switchView === 'function') switchView('stats');
+      if (typeof renderSettings === 'function') renderSettings();
+      if (typeof renderStats === 'function') renderStats();
+      if (typeof applyM2StatsPolish === 'function') applyM2StatsPolish();
+      setTimeout(function(){
+        try{
+          localStorage.setItem('m2_stats_clean_view_v1','settings');
+          if (typeof renderSettings === 'function') renderSettings();
+          if (typeof applyM2StatsPolish === 'function') applyM2StatsPolish();
+          var target = document.getElementById('m2-settings-pro') || document.getElementById('m2-plan-status-card') || document.querySelector('.settings-card');
+          if (target && target.scrollIntoView) target.scrollIntoView({behavior:'smooth', block:'start'});
+          if (typeof showToast === 'function') showToast('Settings opened');
+        }catch(e){}
+      },80);
+    }catch(e){
+      try{ if (typeof showToast === 'function') showToast('Could not open settings'); }catch(_e){}
+    }
+  }
+  window.m2OpenSettingsClean = m2OpenSettingsClean;
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('#m2-onboard-settings, [data-m2-open-settings]') : null;
+    if(!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    m2OpenSettingsClean();
+  }, true);
+})();
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
