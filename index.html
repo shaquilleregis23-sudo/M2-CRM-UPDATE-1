@@ -401,6 +401,13 @@
 .m2-price-plan span{display:block;color:#aeb9c8;font-size:12px;line-height:1.35}
 @media(max-width:720px){.m2-hardening-grid,.m2-hardening-actions,.m2-price-grid{grid-template-columns:1fr}.m2-price-box{max-height:88vh;overflow:auto}}
 
+
+
+/* === M2 STATS CLEANUP / SETTINGS TABS === */
+.m2-stats-toolbar{position:sticky;top:0;z-index:20;margin:-20px -20px 14px;padding:12px 16px 14px;background:linear-gradient(180deg,rgba(13,17,23,.98),rgba(13,17,23,.9));border-bottom:1px solid var(--border);backdrop-filter:blur(14px)}
+.m2-stats-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}.m2-stats-head h2{font-size:18px;margin:0}.m2-stats-head span{color:var(--muted);font-size:11px}.m2-stats-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.m2-stat-tab{border:1px solid var(--border);background:#161b22;color:var(--text);border-radius:14px;padding:10px 8px;font-weight:800;font-size:12px}.m2-stat-tab.active{background:linear-gradient(135deg,#2f81f7,#00ffc2);color:#07111d;border-color:#58a6ff}.m2-stats-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.m2-stats-actions button{border:1px solid var(--border);background:#21262d;color:var(--text);border-radius:12px;padding:10px;font-weight:800;font-size:12px}.m2-stats-actions .gold{background:#f9c74f;color:#151000;border-color:#f9c74f}.m2-stats-hidden{display:none!important}.m2-quick-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.m2-quick-stat{background:#161b22;border:1px solid var(--border);border-radius:14px;padding:10px}.m2-quick-stat .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}.m2-quick-stat .v{font-size:20px;font-weight:900;color:var(--green);margin-top:2px}.m2-settings-compact .settings-card{border-color:#a371f7;box-shadow:0 0 0 1px rgba(163,113,247,.15)}
+@media(max-width:720px){.m2-stats-tabs{grid-template-columns:repeat(2,1fr)}.m2-quick-summary{grid-template-columns:repeat(2,1fr)}.m2-stats-toolbar{margin:-20px -20px 12px;padding:10px 12px 12px}.m2-stat-tab{font-size:11px;padding:9px 6px}}
+
 </style>
 </head>
 <body>
@@ -3965,6 +3972,66 @@ function renderM2HardeningCenter() {
 }
 const _m2HardeningRenderStats = renderStats;
 renderStats = function() { _m2HardeningRenderStats(); renderM2HardeningCenter(); };
+
+// === M2 STATS CLEANUP / SETTINGS TABS ===
+const M2_STATS_VIEW_KEY = 'm2_stats_clean_view_v1';
+function m2StatsView(){ return localStorage.getItem(M2_STATS_VIEW_KEY) || 'overview'; }
+function m2SetStatsView(v){ localStorage.setItem(M2_STATS_VIEW_KEY, v || 'overview'); applyM2StatsPolish(); }
+function m2StatsText(el){ return (el?.textContent || '').toLowerCase(); }
+function m2VisibleLeadSet(){ try { return scopedLeadsForCurrentUser(state.leads || []); } catch(e){ return state.leads || []; } }
+function m2EnsureStatsToolbar(){
+  const statsView=document.getElementById('stats-view'); if(!statsView) return null;
+  let bar=document.getElementById('m2-stats-toolbar');
+  if(!bar){
+    bar=document.createElement('div'); bar.id='m2-stats-toolbar'; bar.className='m2-stats-toolbar';
+    statsView.insertBefore(bar, statsView.firstChild);
+  }
+  const leads=m2VisibleLeadSet();
+  const today=todayLeads?.() || [];
+  const hot=leads.filter(l=>['interested','callback','set','sat'].includes(l.status)).length;
+  const sun=leads.filter(l=>{ try{return getLeadSunScore(l).score>=75;}catch(e){return false;} }).length;
+  const due=leads.filter(l=>{ try{return (isDueToday(l.callback_due)||isDueToday(l.appt_time))&&!['closed','do_not_knock','not_qualified'].includes(l.status);}catch(e){return false;} }).length;
+  const tab=m2StatsView();
+  const tabs=[['overview','📊 Overview'],['activity','✅ Activity'],['team','👥 Team'],['settings','⚙️ Settings'],['admin','🧱 Admin'],['all','🧩 All']];
+  bar.innerHTML=`<div class="m2-stats-head"><div><h2>CRM Command Center</h2><span>Clean dashboard view · choose what you want to manage</span></div><span>${leads.length} leads</span></div><div class="m2-quick-summary"><div class="m2-quick-stat"><div class="k">Today doors</div><div class="v">${today.filter(l=>isDoorTouched(l.status)).length}</div></div><div class="m2-quick-stat"><div class="k">Hot pipeline</div><div class="v">${hot}</div></div><div class="m2-quick-stat"><div class="k">Follow-ups</div><div class="v">${due}</div></div><div class="m2-quick-stat"><div class="k">High sun</div><div class="v">${sun}</div></div></div><div class="m2-stats-tabs">${tabs.map(([k,label])=>`<button class="m2-stat-tab ${tab===k?'active':''}" data-m2-tab="${k}">${label}</button>`).join('')}</div><div class="m2-stats-actions"><button class="gold" id="m2-quick-backup">Export Full Backup</button><button id="m2-quick-launch">Open Launch Screen</button></div>`;
+  bar.querySelectorAll('[data-m2-tab]').forEach(btn=>btn.addEventListener('click',()=>m2SetStatsView(btn.dataset.m2Tab)));
+  bar.querySelector('#m2-quick-backup')?.addEventListener('click',()=>{ if(typeof exportM2FullBackup==='function') exportM2FullBackup(); else document.getElementById('export-btn')?.click(); });
+  bar.querySelector('#m2-quick-launch')?.addEventListener('click',()=>{ if(typeof openM2LaunchModal==='function') openM2LaunchModal(); else document.getElementById('m2-open-launch-screen')?.click(); });
+  return bar;
+}
+function m2AssignStatsGroups(){
+  const statsView=document.getElementById('stats-view'); if(!statsView) return;
+  const idGroup={
+    'phase5-dashboard':'activity','phase3-dashboard':'activity','m2-team-dashboard':'activity',
+    'm2-access-card':'team','phase4-dashboard':'team',
+    'cloud-dashboard':'admin','m2-security-center':'admin','m2-beta-polish-wrap':'admin','m2-beta-launch-card':'admin','m2-hardening-center':'admin'
+  };
+  Object.entries(idGroup).forEach(([id,g])=>{ const el=document.getElementById(id); if(el) el.dataset.m2StatsGroup=g; });
+  statsView.querySelectorAll('.stat-card,.settings-card').forEach(el=>{
+    const txt=m2StatsText(el);
+    if(txt.includes('today')||txt.includes('all-time')) el.dataset.m2StatsGroup='overview';
+    else if(txt.includes('data')) el.dataset.m2StatsGroup='settings';
+  });
+  const settings=document.querySelector('.settings-card'); if(settings) settings.dataset.m2StatsGroup='settings';
+}
+function applyM2StatsPolish(){
+  const statsView=document.getElementById('stats-view'); if(!statsView) return;
+  m2EnsureStatsToolbar();
+  m2AssignStatsGroups();
+  const view=m2StatsView();
+  statsView.classList.toggle('m2-settings-compact', view==='settings');
+  const groups=['overview','activity','team','settings','admin'];
+  groups.forEach(g=>{
+    statsView.querySelectorAll(`[data-m2-stats-group="${g}"]`).forEach(el=>{
+      el.classList.toggle('m2-stats-hidden', view!=='all' && view!==g);
+    });
+  });
+  // Keep toolbar visible no matter what.
+  document.getElementById('m2-stats-toolbar')?.classList.remove('m2-stats-hidden');
+}
+const _m2StatsPolishRenderStats = renderStats;
+renderStats = function(){ _m2StatsPolishRenderStats(); applyM2StatsPolish(); };
+
 
 initSupabaseClient();
 refreshCloudSession().catch(e => console.warn('Supabase session error', e));
