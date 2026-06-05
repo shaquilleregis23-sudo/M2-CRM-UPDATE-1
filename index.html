@@ -2512,7 +2512,7 @@ async function refreshCloudSession() {
 async function ensureCloudProfile() {
   if (!sbClient || !sbUser) return null;
   const session = getCurrentSession ? getCurrentSession() : null;
-  const access = loadAccountAccess ? loadAccountAccess() : {};
+  const access = typeof getAccountAccess === 'function' ? getAccountAccess() : {};
   const fullName = (session && session.name) || access.master_name || sbUser.email.split('@')[0];
   const territory = (session && session.territory) || getDefaultTerritory?.() || 'Unassigned';
   const role = (session && session.role === 'agent') ? 'agent' : 'master';
@@ -2590,7 +2590,7 @@ function leadPayloadForCloud(lead) {
     team_id: sbProfile?.team_id || null,
     owner_id: sbUser?.id || null,
     assigned_user_id: lead.assigned_user_id || null,
-    assigned_agent: lead.assigned_agent || session?.name || getDefaultAgent?.() || '',
+    assigned_agent: lead.assigned_agent || session?.name || getAgentName?.() || '',
     territory: lead.territory || session?.territory || getDefaultTerritory?.() || '',
     status: lead.status || 'fresh',
     homeowner_name: [lead.first, lead.last].filter(Boolean).join(' ') || lead.last || '',
