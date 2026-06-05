@@ -2605,6 +2605,55 @@ function leadPayloadForCloud(lead) {
 
 async function pushLeadsToCloud({ silent=false }={}) {
   if (cloudSyncBusy) return;
+
+  const sb = initSupabaseClient();
+
+  if (!sb || !sbUser) {
+    if (!silent) setCloudStatus('Log in before syncing.', 'warn');
+    return;
+  }
+
+  if (!sbProfile) await ensureCloudProfile();
+
+  cloudSyncBusy = true;
+
+  try {
+    const rows = state.leads.map(leadPayloadForCloud);
+
+    if (!rows.length) {
+      if (!silent) setCloudStatus('No leads to sync yet.', 'warn');
+      return;
+    }
+
+    const batchSize = 100;
+    let synced = 0;
+
+    for (let i = 0; i < rows.length; i += batchSize) {
+      const batch = rows.slice(i, i + batchSize);
+
+      setCloudStatus(`Syncing ${Math.min(i + batchSize, rows.length)} of ${rows.length} leads...`, 'warn');
+
+      const { error } = await sb
+        .from('leads')
+        .upsert(batch, { onConflict: 'id' });
+
+      if (error) throw error;
+
+      synced += batch.length;
+    }
+
+    setCloudStatus(`Synced ${synced} leads to Supabase.`, 'good');
+
+  } catch (e) {
+    console.error(e);
+    setCloudStatus(e.message || 'Cloud sync failed. Check Supabase columns/RLS.', 'warn');
+
+  } finally {
+    cloudSyncBusy = false;
+    renderCloudPanel();
+  }
+}
+  if (cloudSyncBusy) return;
   const sb = initSupabaseClient();
   if (!sb || !sbUser) { if (!silent) setCloudStatus('Log in before syncing.', 'warn'); return; }
   if (!sbProfile) await ensureCloudProfile();
