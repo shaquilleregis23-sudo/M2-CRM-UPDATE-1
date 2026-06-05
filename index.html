@@ -4989,6 +4989,177 @@ renderStats = function(){ _m2SalesReadyRenderStats(); renderM2SalesReadyCenter()
 })();
 </script>
 
+
+
+<script>
+/* === M2 UNIVERSAL STATS BUTTON REPAIR v2 ===
+   Fixes all Stats/Settings/Admin/Team navigation buttons without using blocking modals. */
+(function(){
+  if(window.__M2_UNIVERSAL_BUTTON_REPAIR_V2__) return;
+  window.__M2_UNIVERSAL_BUTTON_REPAIR_V2__=true;
+
+  const VIEW_KEY='m2_stats_clean_view_v1';
+  const MENU_KEY='m2_stats_menu_collapsed_v1';
+  function toast(msg){ try{ if(typeof showToast==='function') showToast(msg); }catch(e){} }
+  function removeBlockingOverlays(){
+    try{
+      ['m2-hard-settings-modal'].forEach(id=>{ const el=document.getElementById(id); if(el) el.remove(); });
+      document.querySelectorAll('.m2-hard-settings-modal,[data-m2-blocking-settings]').forEach(el=>el.remove());
+    }catch(e){}
+  }
+  function ensureStatsViewVisible(){
+    try{ if(typeof switchView==='function') switchView('stats'); }catch(e){}
+    try{ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById('stats-view')?.classList.add('active'); }catch(e){}
+  }
+  function setMenuCollapsed(collapsed){
+    try{ localStorage.setItem(MENU_KEY, collapsed?'1':'0'); }catch(e){}
+    try{ if(typeof m2SetStatsMenuCollapsed==='function') m2SetStatsMenuCollapsed(!!collapsed); }catch(e){}
+  }
+  function applyGroups(view){
+    const stats=document.getElementById('stats-view'); if(!stats) return;
+    const groups=['overview','activity','team','settings','admin'];
+    groups.forEach(g=>{
+      stats.querySelectorAll('[data-m2-stats-group="'+g+'"], [data-m2StatsGroup="'+g+'"]').forEach(el=>{
+        if(view==='all' || view===g){ el.classList.remove('m2-stats-hidden'); el.style.display=''; el.style.pointerEvents=''; }
+        else { el.classList.add('m2-stats-hidden'); el.style.display='none'; }
+      });
+    });
+    stats.querySelectorAll('.m2-stat-tab').forEach(btn=>btn.classList.toggle('active', btn.dataset.m2Tab===view));
+    stats.style.pointerEvents='auto';
+  }
+  function rebuildAndApply(view, collapsed){
+    removeBlockingOverlays();
+    try{ localStorage.setItem(VIEW_KEY, view||'overview'); }catch(e){}
+    setMenuCollapsed(!!collapsed);
+    ensureStatsViewVisible();
+    try{ if(typeof renderSettings==='function') renderSettings(); }catch(e){}
+    try{ if(typeof renderStats==='function') renderStats(); }catch(e){}
+    try{ if(typeof applyM2StatsPolish==='function') applyM2StatsPolish(); }catch(e){}
+    setTimeout(()=>{ removeBlockingOverlays(); applyGroups(view||'overview'); ensureSafeQuickBar(); scrollToView(view||'overview'); },80);
+    setTimeout(()=>{ removeBlockingOverlays(); applyGroups(view||'overview'); ensureSafeQuickBar(); },350);
+  }
+  function scrollToView(view){
+    let target=null;
+    if(view==='settings') target=document.getElementById('m2-settings-pro') || document.getElementById('m2-plan-status-card') || document.querySelector('[data-m2-stats-group="settings"]');
+    else if(view==='team') target=document.getElementById('m2-invite-agent-flow') || document.querySelector('[data-m2-stats-group="team"]');
+    else if(view==='admin') target=document.getElementById('m2-sales-quick-panel') || document.getElementById('m2-security-center') || document.querySelector('[data-m2-stats-group="admin"]');
+    else target=document.getElementById('m2-stats-safe-bar') || document.getElementById('m2-stats-mini-bar') || document.getElementById('stats-view');
+    try{ target?.scrollIntoView({behavior:'smooth', block:'start'}); }catch(e){}
+  }
+  function go(view){ rebuildAndApply(view||'overview', true); }
+
+  function loadDemoDirect(){
+    removeBlockingOverlays();
+    try{
+      if(typeof loadM2PremiumDemo==='function'){ loadM2PremiumDemo(); return; }
+      if(typeof m2HardLoadDemo==='function'){ m2HardLoadDemo(); return; }
+      if(typeof openM2LaunchModal==='function'){ openM2LaunchModal(); return; }
+      toast('Demo tools are not available in this build');
+    }catch(e){ console.error(e); toast('Demo error: '+(e.message||e)); }
+  }
+  function backupDirect(){
+    removeBlockingOverlays();
+    try{ if(typeof exportM2FullBackup==='function') exportM2FullBackup(); else document.getElementById('export-btn')?.click(); }catch(e){ toast('Backup error'); }
+  }
+  function pricingDirect(){
+    removeBlockingOverlays();
+    try{ if(typeof openM2PricingScreen==='function') openM2PricingScreen(); else if(typeof m2OpenPricingScreen==='function') m2OpenPricingScreen(); else document.getElementById('m2-open-pricing')?.click(); }catch(e){ toast('Pricing error'); }
+  }
+  function guidedDirect(){
+    removeBlockingOverlays();
+    try{ if(typeof startM2GuidedDemo==='function') startM2GuidedDemo(); else if(typeof m2StartGuidedDemo==='function') m2StartGuidedDemo(); else document.getElementById('m2-start-guided-demo')?.click(); }catch(e){ toast('Guided demo error'); }
+  }
+  function calcDirect(){
+    removeBlockingOverlays();
+    try{ if(typeof m2OpenValueCalculator==='function') m2OpenValueCalculator(); else document.getElementById('m2-open-value-calc')?.click(); }catch(e){ toast('Calculator error'); }
+  }
+  function inviteDirect(){
+    removeBlockingOverlays();
+    go('team');
+    setTimeout(()=>{ try{ document.getElementById('m2-open-invite-agent')?.click(); }catch(e){} },250);
+  }
+
+  function ensureSafeQuickBar(){
+    const stats=document.getElementById('stats-view'); if(!stats) return;
+    let bar=document.getElementById('m2-stats-safe-bar');
+    if(!bar){
+      bar=document.createElement('div');
+      bar.id='m2-stats-safe-bar';
+      bar.innerHTML=`
+        <div class="m2-safe-title"><b>Quick Switch</b><span>Use these if any section button acts weird.</span></div>
+        <div class="m2-safe-grid">
+          <button data-m2-safe-view="overview">📊 Overview</button>
+          <button data-m2-safe-view="team">👥 Team</button>
+          <button data-m2-safe-view="settings">⚙️ Settings</button>
+          <button data-m2-safe-view="admin">🧱 Admin</button>
+          <button data-m2-safe-view="all">🧩 All</button>
+          <button data-m2-safe-action="backup">Backup</button>
+        </div>`;
+      const anchor=document.getElementById('m2-stats-toolbar') || document.getElementById('m2-stats-mini-bar') || stats.firstChild;
+      if(anchor) anchor.insertAdjacentElement('afterend', bar); else stats.prepend(bar);
+    }
+    bar.style.display=''; bar.style.pointerEvents='auto';
+  }
+
+  const css=document.createElement('style');
+  css.textContent=`
+    #m2-hard-settings-modal{display:none!important;pointer-events:none!important;}
+    #m2-stats-safe-bar{background:#0f1725;border:1px solid var(--border);border-radius:16px;padding:12px;margin:10px 0 14px;box-shadow:0 10px 24px rgba(0,0,0,.18);pointer-events:auto!important;position:relative;z-index:20;}
+    #m2-stats-safe-bar .m2-safe-title{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:10px;color:var(--text);font-size:13px;}
+    #m2-stats-safe-bar .m2-safe-title span{font-size:11px;color:var(--muted);font-weight:500;}
+    #m2-stats-safe-bar .m2-safe-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+    #m2-stats-safe-bar button{border:1px solid var(--border);background:#21262d;color:var(--text);border-radius:12px;padding:10px 8px;font-weight:900;font-size:12px;}
+    #m2-stats-safe-bar button:active{transform:scale(.98);}
+    #stats-view{pointer-events:auto!important;}
+    #stats-view button,#stats-view input,#stats-view select,#stats-view textarea{pointer-events:auto!important;}
+    @media(max-width:520px){#m2-stats-safe-bar .m2-safe-grid{grid-template-columns:repeat(2,1fr);}#m2-stats-safe-bar .m2-safe-title{display:block;}#m2-stats-safe-bar .m2-safe-title span{display:block;margin-top:3px;}}
+  `;
+  document.head.appendChild(css);
+
+  // Capture on window BEFORE old document-level handlers. This prevents the old Settings modal from trapping clicks.
+  window.addEventListener('click',function(e){
+    const t=e.target;
+    if(!t || !t.closest) return;
+    const safeView=t.closest('[data-m2-safe-view]');
+    if(safeView){ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); go(safeView.dataset.m2SafeView); return false; }
+    const safeAction=t.closest('[data-m2-safe-action]');
+    if(safeAction){
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+      const a=safeAction.dataset.m2SafeAction;
+      if(a==='backup') backupDirect();
+      if(a==='demo') loadDemoDirect();
+      if(a==='pricing') pricingDirect();
+      if(a==='guided') guidedDirect();
+      if(a==='calc') calcDirect();
+      if(a==='invite') inviteDirect();
+      return false;
+    }
+    const tab=t.closest('[data-m2-tab], .m2-stat-tab');
+    if(tab && tab.dataset && tab.dataset.m2Tab){ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); go(tab.dataset.m2Tab); return false; }
+    const settings=t.closest('#m2-onboard-settings,[data-m2-open-settings],#m2-open-settings,#open-settings,.m2-open-settings');
+    if(settings){ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); go('settings'); return false; }
+    const demo=t.closest('#m2-onboard-demo,#m2-demo-load-premium,#m2-hard-demo,#m2-start-demo-mode,[data-m2-load-demo],.m2-load-demo');
+    if(demo){ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); loadDemoDirect(); return false; }
+    const invite=t.closest('#m2-onboard-invite,#m2-open-invite-agent,[data-m2-invite-agent]');
+    if(invite){ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); inviteDirect(); return false; }
+    const admin=t.closest('#m2-open-admin,[data-m2-open-admin]');
+    if(admin){ e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); go('admin'); return false; }
+  },true);
+
+  // Keep repair active after CRM re-renders.
+  const oldRenderStats=window.renderStats;
+  if(typeof oldRenderStats==='function' && !oldRenderStats.__m2UniversalRepairWrapped){
+    const wrapped=function(){ const r=oldRenderStats.apply(this,arguments); setTimeout(()=>{ removeBlockingOverlays(); ensureSafeQuickBar(); applyGroups((localStorage.getItem(VIEW_KEY)||'overview')); },80); return r; };
+    wrapped.__m2UniversalRepairWrapped=true;
+    window.renderStats=wrapped;
+  }
+  window.m2StatsGo=go;
+  window.m2RemoveBlockingOverlays=removeBlockingOverlays;
+  window.addEventListener('load',()=>setTimeout(()=>{removeBlockingOverlays(); ensureSafeQuickBar();},400));
+  setInterval(()=>{ removeBlockingOverlays(); const stats=document.getElementById('stats-view'); if(stats && stats.classList.contains('active')) ensureSafeQuickBar(); },1200);
+})();
+</script>
+
 </body>
 </html>
 
