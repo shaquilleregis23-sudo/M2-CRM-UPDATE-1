@@ -4175,5 +4175,236 @@ if (state.leads.length === 0) showInfo('Tap "📍 Neighborhoods" to load homes. 
   });
 })();
 </script>
+
+
+<!-- === M2 Field Rep + Manager UX Upgrade v1 (old-style, clean menus) === -->
+<style>
+  .fab-row{display:none!important;}
+  .m2-field-dock{position:absolute;left:12px;right:12px;bottom:66px;z-index:540;pointer-events:none;display:flex;flex-direction:column;align-items:flex-start;gap:8px;}
+  .m2-field-toggle{pointer-events:auto;border:1px solid #3fb95088;background:linear-gradient(135deg,#1f6feb,#00ffc2);color:#06111f;border-radius:999px;padding:10px 14px;font-weight:900;font-size:13px;box-shadow:0 10px 28px rgba(0,0,0,.36);}
+  .m2-field-menu{pointer-events:auto;width:min(430px,100%);display:none;background:rgba(22,27,34,.98);border:1px solid var(--border);border-radius:18px;padding:10px;box-shadow:0 18px 45px rgba(0,0,0,.45);backdrop-filter:blur(14px);}
+  .m2-field-menu.open{display:block;animation:m2pop .13s ease-out;}
+  .m2-field-menu-head{display:flex;align-items:center;justify-content:space-between;margin:2px 4px 10px;}
+  .m2-field-menu-head b{font-size:13px}.m2-field-menu-head span{font-size:11px;color:var(--muted)}
+  .m2-field-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .m2-field-grid button,.m2-today-actions button,.m2-mgr-actions button,.m2-settings-tabs button{border:1px solid var(--border);background:#21262d;color:var(--text);border-radius:14px;padding:10px 8px;font-weight:800;font-size:11px;min-height:48px;}
+  .m2-field-grid button.gold{background:#f9c74f;color:#141007;border-color:#f9c74f}.m2-field-grid button.green{background:#238636;color:#fff;border-color:#238636}.m2-field-grid button.blue{background:#1f6feb;color:#fff;border-color:#1f6feb}
+  @keyframes m2pop{from{transform:translateY(8px);opacity:.2}to{transform:translateY(0);opacity:1}}
+  .m2-lead-command{margin:0 0 12px;padding:10px;border:1px solid #3fb95055;background:linear-gradient(135deg,rgba(63,185,80,.12),rgba(31,111,235,.10));border-radius:16px;}
+  .m2-lead-command h4{font-size:12px;color:#3fb950;margin:0 0 8px;text-transform:uppercase;letter-spacing:.5px;}
+  .m2-lead-command-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .m2-lead-command-grid a,.m2-lead-command-grid button{border:1px solid var(--border);background:#161b22;color:var(--text);border-radius:13px;text-align:center;text-decoration:none;padding:10px 6px;font-weight:900;font-size:11px;min-height:42px;display:flex;align-items:center;justify-content:center;}
+  .m2-lead-command-grid .gold{background:#f9c74f;color:#141007;border-color:#f9c74f}.m2-lead-command-grid .green{background:#238636;color:#fff;border-color:#238636}.m2-lead-command-grid .blue{background:#1f6feb;color:#fff;border-color:#1f6feb}.m2-lead-command-grid .red{background:#da3633;color:#fff;border-color:#da3633}
+  .m2-modal{position:fixed;inset:0;z-index:1200;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.48);backdrop-filter:blur(8px);}
+  .m2-modal.open{display:flex}.m2-modal-card{width:min(720px,100%);max-height:86vh;overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:22px 22px 0 0;padding:16px;box-shadow:0 -22px 60px rgba(0,0,0,.45);}
+  @media(min-width:760px){.m2-modal{align-items:center}.m2-modal-card{border-radius:22px;max-height:82vh}}
+  .m2-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px}.m2-modal-head h2{font-size:18px;margin:0}.m2-modal-head p{font-size:12px;color:var(--muted);margin:4px 0 0}.m2-close{border:1px solid var(--border);background:#21262d;color:#fff;border-radius:12px;padding:8px 12px;font-weight:900}
+  .m2-card-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}.m2-card-mini{border:1px solid var(--border);background:#0d1117;border-radius:16px;padding:12px}.m2-card-mini .k{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}.m2-card-mini .v{font-size:20px;font-weight:900;color:#3fb950;margin-top:2px}
+  .m2-list{display:grid;gap:8px}.m2-list-item{border:1px solid var(--border);background:#0d1117;border-radius:14px;padding:10px;cursor:pointer}.m2-list-item .nm{font-weight:900;font-size:13px}.m2-list-item .meta{font-size:11px;color:var(--muted);line-height:1.35;margin-top:3px}.m2-list-item .tag{display:inline-block;font-size:10px;font-weight:900;color:#07111d;background:#00ffc2;border-radius:999px;padding:3px 7px;margin-top:6px}
+  .m2-manager-card,.m2-today-card,.m2-settings-sections-card,.m2-onboard-card{background:linear-gradient(180deg,rgba(31,111,235,.10),rgba(22,27,34,.96));border:1px solid #1f6feb66;border-radius:14px;padding:16px;margin-bottom:12px;}
+  .m2-manager-card h3,.m2-today-card h3,.m2-settings-sections-card h3,.m2-onboard-card h3{font-size:12px;text-transform:uppercase;color:#58a6ff;margin-bottom:8px;letter-spacing:.45px}.m2-card-sub{color:var(--muted);font-size:12px;line-height:1.4;margin-bottom:10px}
+  .m2-mgr-actions,.m2-today-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.m2-mgr-actions .gold,.m2-today-actions .gold{background:#f9c74f;color:#151000;border-color:#f9c74f}.m2-mgr-actions .green,.m2-today-actions .green{background:#238636;color:#fff;border-color:#238636}
+  .m2-settings-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}.m2-settings-tabs button.active{background:linear-gradient(135deg,#a371f7,#58a6ff);color:#fff;border-color:#a371f7}.m2-setting-panel{display:none;border:1px solid var(--border);background:#0d1117;border-radius:14px;padding:12px;margin-top:10px}.m2-setting-panel.open{display:block}.m2-setting-panel ul{margin:8px 0 0 18px;color:var(--muted);font-size:12px;line-height:1.55}
+  .m2-onboard-list{display:grid;gap:8px}.m2-onboard-step{display:flex;gap:10px;align-items:center;border:1px solid var(--border);background:#0d1117;border-radius:13px;padding:10px}.m2-onboard-step .num{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#238636;color:#fff;font-weight:900}.m2-onboard-step b{display:block;font-size:12px}.m2-onboard-step span{display:block;font-size:11px;color:var(--muted)}
+  .m2-next-best-pill{position:absolute;right:12px;bottom:66px;z-index:541;border:1px solid #f9c74f;background:#f9c74f;color:#141007;border-radius:999px;padding:10px 12px;font-size:12px;font-weight:900;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+  @media(max-width:430px){.m2-field-grid{grid-template-columns:repeat(2,1fr)}.m2-lead-command-grid{grid-template-columns:repeat(2,1fr)}.m2-card-grid{grid-template-columns:1fr}.m2-settings-tabs{grid-template-columns:repeat(2,1fr)}.m2-next-best-pill{bottom:118px}.m2-field-dock{bottom:66px;right:84px}}
+</style>
+<script>
+(function(){
+  const PATCH='field_rep_upgrade_v1';
+  function toast(msg,type){ try{ showToast(msg,type); }catch(e){ console.log(msg); } }
+  function safeLeads(){ try{return (typeof scopedLeadsForCurrentUser==='function')?scopedLeadsForCurrentUser(state.leads||[]):(state.leads||[]);}catch(e){return state.leads||[];} }
+  function visibleFiltered(){ try{return filterLeads(safeLeads());}catch(e){return safeLeads();} }
+  function leadName(l){ return `${l.first||''} ${l.last||''}`.trim() || l.last || l.addr || 'Lead'; }
+  function scoreLead(l){
+    let s=0;
+    try{s += (getLeadSunScore(l).score||0)*1.2;}catch(e){s += +(l.sun_score||0);}
+    if(['interested','callback','set','sat'].includes(l.status)) s+=35;
+    if(l.status==='fresh') s+=8;
+    if(l.monthly_bill && +l.monthly_bill>=180) s+=18;
+    if(l.hvac_opportunity && l.hvac_opportunity!=='unknown') s+=9;
+    if(l.heating_type && ['gas','oil'].includes(String(l.heating_type).toLowerCase())) s+=8;
+    if(l.status==='closed'||l.status==='do_not_knock'||l.status==='not_interested') s-=999;
+    return s;
+  }
+  function nextBestLead(){
+    const leads=visibleFiltered().filter(l=>l.lat&&l.lng&&!['closed','do_not_knock','not_interested','not_qualified'].includes(l.status));
+    leads.sort((a,b)=>scoreLead(b)-scoreLead(a));
+    return leads[0]||null;
+  }
+  function goLead(l){
+    if(!l) return toast('No matching lead found','warning');
+    try{ switchView('map'); map.setView([l.lat,l.lng],18); setTimeout(()=>openLead(l.id),180); }catch(e){ toast('Could not open lead: '+e.message,'error'); }
+  }
+  function directionsUrl(l){ const q=encodeURIComponent(`${l.addr||''} ${l.boro||l.city||''} ${l.zip||''}`.trim() || `${l.lat},${l.lng}`); return `https://www.google.com/maps/dir/?api=1&destination=${q}`; }
+  function ensureModal(){
+    let m=document.getElementById('m2-ux-modal');
+    if(!m){ m=document.createElement('div'); m.id='m2-ux-modal'; m.className='m2-modal'; document.body.appendChild(m); }
+    return m;
+  }
+  function openModal(title,sub,body){
+    const m=ensureModal();
+    m.innerHTML=`<div class="m2-modal-card"><div class="m2-modal-head"><div><h2>${title}</h2><p>${sub||''}</p></div><button class="m2-close" data-m2-ux="close-modal">Close</button></div>${body}</div>`;
+    m.classList.add('open');
+  }
+  function closeModal(){ document.getElementById('m2-ux-modal')?.classList.remove('open'); }
+  function dueToday(l){ try{return (isDueToday(l.callback_due)||isDueToday(l.appt_time))&&!['closed','do_not_knock','not_qualified'].includes(l.status);}catch(e){return false;} }
+  function renderLeadList(leads,empty){
+    if(!leads.length) return `<div class="m2-list-item"><div class="nm">${empty||'Nothing here yet.'}</div><div class="meta">Use filters, assign leads, or load demo data to populate this view.</div></div>`;
+    return leads.slice(0,12).map(l=>`<div class="m2-list-item" data-m2-ux="open-lead" data-id="${l.id}"><div class="nm">${escapeHtml(leadName(l))}</div><div class="meta">${escapeHtml(l.addr||'No address')} · ${escapeHtml(STATUS_LABELS[l.status]||l.status||'Fresh')} · ${escapeHtml(leadAgent(l)||'Unassigned')}</div><span class="tag">☀ ${(function(){try{return getLeadSunScore(l).score}catch(e){return l.sun_score||0}})()}/100</span></div>`).join('');
+  }
+  function todayMode(){
+    const leads=safeLeads();
+    const due=leads.filter(dueToday).sort((a,b)=>new Date(a.callback_due||a.appt_time||0)-new Date(b.callback_due||b.appt_time||0));
+    const appts=leads.filter(l=>{try{return isDueToday(l.appt_time)}catch(e){return false}});
+    const hot=leads.filter(l=>['interested','callback','set','sat'].includes(l.status)).sort((a,b)=>scoreLead(b)-scoreLead(a));
+    const unknocked=visibleFiltered().filter(l=>l.status==='fresh').sort((a,b)=>scoreLead(b)-scoreLead(a));
+    openModal('⚡ Today Mode','A clean field plan for what to do next.',`
+      <div class="m2-card-grid"><div class="m2-card-mini"><div class="k">Follow-ups due</div><div class="v">${due.length}</div></div><div class="m2-card-mini"><div class="k">Appointments</div><div class="v">${appts.length}</div></div><div class="m2-card-mini"><div class="k">Hot leads</div><div class="v">${hot.length}</div></div><div class="m2-card-mini"><div class="k">Fresh nearby</div><div class="v">${unknocked.length}</div></div></div>
+      <div class="m2-today-actions"><button class="green" data-m2-ux="next-best">Open Next Best Lead</button><button data-m2-ux="fit-leads">Fit Visible Leads</button></div>
+      <h3 style="margin:14px 0 8px;font-size:12px;color:#58a6ff;text-transform:uppercase;">Today’s Follow-Ups</h3><div class="m2-list">${renderLeadList(due,'No follow-ups due today.')}</div>
+      <h3 style="margin:14px 0 8px;font-size:12px;color:#58a6ff;text-transform:uppercase;">Hot Leads</h3><div class="m2-list">${renderLeadList(hot,'No hot leads yet.')}</div>
+      <h3 style="margin:14px 0 8px;font-size:12px;color:#58a6ff;text-transform:uppercase;">Best Fresh Doors</h3><div class="m2-list">${renderLeadList(unknocked,'No fresh doors in this filter.')}</div>`);
+  }
+  function fitLeads(){
+    const arr=visibleFiltered().filter(l=>l.lat&&l.lng);
+    if(!arr.length) return toast('No visible leads on map','warning');
+    try{ const b=L.latLngBounds(arr.map(l=>[l.lat,l.lng])); map.fitBounds(b.pad(.18)); toast('✓ Fit visible leads'); }catch(e){toast('Could not fit leads: '+e.message,'error');}
+  }
+  function clearRoute(){
+    try{ routePoints.length=0; localStorage.setItem('nyc_solar_route_'+new Date().toDateString(),JSON.stringify(routePoints)); updateRoute(); toast('✓ Walk route cleared'); }catch(e){ document.getElementById('fab-route')?.click(); toast('Route reset attempted'); }
+  }
+  function fieldAction(action){
+    closeFieldMenu();
+    if(action==='satellite') return document.getElementById('fab-satellite')?.click();
+    if(action==='walk') return document.getElementById('fab-route')?.click();
+    if(action==='locate') return document.getElementById('fab-gps')?.click();
+    if(action==='fit') return fitLeads();
+    if(action==='clear-route') return clearRoute();
+    if(action==='next') return goLead(nextBestLead());
+    if(action==='today') return todayMode();
+    if(action==='add-lead') return document.getElementById('fab-create')?.click();
+    if(action==='load') return document.getElementById('fab-load')?.click();
+  }
+  function closeFieldMenu(){ document.getElementById('m2-field-menu')?.classList.remove('open'); }
+  function ensureFieldDock(){
+    if(document.getElementById('m2-field-dock')) return;
+    const main=document.querySelector('.main'); if(!main) return;
+    const dock=document.createElement('div'); dock.id='m2-field-dock'; dock.className='m2-field-dock';
+    dock.innerHTML=`<button class="m2-field-toggle" data-m2-ux="toggle-field-menu">⚡ Field Tools</button><div class="m2-field-menu" id="m2-field-menu"><div class="m2-field-menu-head"><b>Field Rep Tools</b><span>Closes after selection</span></div><div class="m2-field-grid"><button data-m2-field="today" class="gold">⚡ Today Mode</button><button data-m2-field="next" class="green">🎯 Next Best</button><button data-m2-field="locate" class="blue">📍 Locate Me</button><button data-m2-field="satellite">🛰️ Satellite</button><button data-m2-field="walk">🚶 Walk Mode</button><button data-m2-field="fit">🗺️ Fit Leads</button><button data-m2-field="clear-route">🧹 Clear Route</button><button data-m2-field="add-lead">➕ Add Lead</button><button data-m2-field="load">⬇ Load Area</button></div></div>`;
+    main.appendChild(dock);
+    const next=document.createElement('button'); next.className='m2-next-best-pill'; next.dataset.m2Ux='next-best'; next.textContent='🎯 Next Best'; main.appendChild(next);
+  }
+  function markKnocked(id){
+    const l=state.leads.find(x=>x.id===id); if(!l) return;
+    l.status='knocked'; l.updated_at=new Date().toISOString(); saveState(); renderMarkers(); renderFilterBar(); renderList(); renderTopStats(); renderStats(); toast('✓ Marked knocked'); openLead(id);
+  }
+  function setStatus(id,status){
+    const l=state.leads.find(x=>x.id===id); if(!l) return;
+    l.status=status; l.updated_at=new Date().toISOString(); saveState(); renderMarkers(); renderFilterBar(); renderList(); renderTopStats(); renderStats(); toast(`✓ ${STATUS_LABELS[status]||status}`); openLead(id);
+  }
+  function injectLeadCommand(){
+    const body=document.getElementById('sh-body'); if(!body||!currentLeadId||document.getElementById('m2-lead-command')) return;
+    const l=state.leads.find(x=>x.id===currentLeadId); if(!l) return;
+    const phone=String(l.phone||'').replace(/\D/g,'');
+    const hasPhone=phone.length>=10;
+    const div=document.createElement('div'); div.id='m2-lead-command'; div.className='m2-lead-command';
+    div.innerHTML=`<h4>Field Actions</h4><div class="m2-lead-command-grid">
+      ${hasPhone?`<a class="green" href="tel:${phone}">📞 Call</a><a class="blue" href="sms:${phone}">💬 Text</a>`:`<button data-m2-ux="no-phone">📞 No Phone</button><button data-m2-ux="no-phone">💬 No Phone</button>`}
+      <a class="gold" href="${directionsUrl(l)}" target="_blank" rel="noopener">🧭 Directions</a>
+      <button data-m2-ux="mark-knocked" data-id="${l.id}">✊ Knocked</button>
+      <button data-m2-ux="set-status" data-status="callback" data-id="${l.id}">📞 Callback</button>
+      <button data-m2-ux="set-status" data-status="set" data-id="${l.id}">🎯 Appt</button>
+      <button class="red" data-m2-ux="set-status" data-status="not_interested" data-id="${l.id}">🚫 Not Int.</button>
+      <button data-m2-ux="next-best">🎯 Next Best</button>
+      <button data-m2-ux="today-mode">⚡ Today</button>
+    </div>`;
+    body.insertBefore(div,body.firstChild);
+  }
+  function addStatsCards(){
+    const stats=document.getElementById('stats-view'); if(!stats) return;
+    if(!document.getElementById('m2-manager-daily-card')){
+      const card=document.createElement('div'); card.id='m2-manager-daily-card'; card.className='m2-manager-card'; card.dataset.m2StatsGroup='overview';
+      stats.insertBefore(card, stats.children[1]||stats.firstChild);
+    }
+    if(!document.getElementById('m2-today-card')){
+      const card=document.createElement('div'); card.id='m2-today-card'; card.className='m2-today-card'; card.dataset.m2StatsGroup='activity';
+      stats.insertBefore(card, stats.children[2]||stats.firstChild);
+    }
+    if(!document.getElementById('m2-settings-sections-card')){
+      const card=document.createElement('div'); card.id='m2-settings-sections-card'; card.className='m2-settings-sections-card'; card.dataset.m2StatsGroup='settings';
+      stats.appendChild(card);
+    }
+    if(!document.getElementById('m2-onboard-card')){
+      const card=document.createElement('div'); card.id='m2-onboard-card'; card.className='m2-onboard-card'; card.dataset.m2StatsGroup='admin';
+      stats.appendChild(card);
+    }
+    renderManagerDaily(); renderTodayStatsCard(); renderSettingsSections(); renderOnboardingChecklist();
+  }
+  function renderManagerDaily(){
+    const card=document.getElementById('m2-manager-daily-card'); if(!card) return;
+    const leads=safeLeads();
+    const hot=leads.filter(l=>['interested','callback','set','sat'].includes(l.status));
+    const due=leads.filter(dueToday); const high=leads.filter(l=>{try{return getLeadSunScore(l).score>=75}catch(e){return +l.sun_score>=75}});
+    const untouchedHigh=high.filter(l=>l.status==='fresh'); const assigned=leads.filter(l=>leadAgent(l)!=='Unassigned');
+    card.innerHTML=`<h3>👑 Manager Daily View</h3><div class="m2-card-sub">Quick look at what needs attention today.</div><div class="m2-card-grid"><div class="m2-card-mini"><div class="k">Hot not closed</div><div class="v">${hot.length}</div></div><div class="m2-card-mini"><div class="k">Due today</div><div class="v">${due.length}</div></div><div class="m2-card-mini"><div class="k">High sun untouched</div><div class="v">${untouchedHigh.length}</div></div><div class="m2-card-mini"><div class="k">Assigned leads</div><div class="v">${assigned.length}</div></div></div><div class="m2-mgr-actions"><button class="green" data-m2-ux="today-mode">Open Today Mode</button><button class="gold" data-m2-ux="next-best">Open Next Best Lead</button></div>`;
+  }
+  function renderTodayStatsCard(){
+    const card=document.getElementById('m2-today-card'); if(!card) return;
+    const leads=safeLeads(); const due=leads.filter(dueToday); const appts=leads.filter(l=>{try{return isDueToday(l.appt_time)}catch(e){return false}}); const fresh=visibleFiltered().filter(l=>l.status==='fresh');
+    card.innerHTML=`<h3>⚡ Today Mode</h3><div class="m2-card-sub">A field rep command screen: follow-ups, appointments, hot leads and fresh doors.</div><div class="m2-card-grid"><div class="m2-card-mini"><div class="k">Due follow-ups</div><div class="v">${due.length}</div></div><div class="m2-card-mini"><div class="k">Appointments</div><div class="v">${appts.length}</div></div><div class="m2-card-mini"><div class="k">Fresh in filter</div><div class="v">${fresh.length}</div></div><div class="m2-card-mini"><div class="k">Visible leads</div><div class="v">${visibleFiltered().length}</div></div></div><div class="m2-today-actions"><button class="green" data-m2-ux="today-mode">Open Today Mode</button><button data-m2-ux="fit-leads">Fit Leads</button></div>`;
+  }
+  function renderSettingsSections(){
+    const card=document.getElementById('m2-settings-sections-card'); if(!card) return;
+    card.innerHTML=`<h3>⚙️ Clean Settings Sections</h3><div class="m2-card-sub">Use one section at a time so Settings does not feel crowded.</div><div class="m2-settings-tabs"><button data-m2-setting="business" class="active">Business</button><button data-m2-setting="team">Team</button><button data-m2-setting="plan">Plan</button><button data-m2-setting="cloud">Cloud</button><button data-m2-setting="security">Security</button><button data-m2-setting="backup">Backup</button></div>
+    <div class="m2-setting-panel open" data-panel="business"><b>Business</b><ul><li>Set CRM/company name in the regular Settings card below.</li><li>Keep support email and branding clean before demos.</li></ul></div>
+    <div class="m2-setting-panel" data-panel="team"><b>Team</b><ul><li>Create agents in the Team tab.</li><li>Assign filtered or unassigned leads by territory.</li></ul></div>
+    <div class="m2-setting-panel" data-panel="plan"><b>Plan</b><ul><li>Starter $99, Growth $199, Office $299.</li><li>Use pricing screen before beta calls.</li></ul></div>
+    <div class="m2-setting-panel" data-panel="cloud"><b>Cloud</b><ul><li>Sync master and agents first.</li><li>Master should sync leads up. Agents should load assigned leads.</li></ul></div>
+    <div class="m2-setting-panel" data-panel="security"><b>Security</b><ul><li>Never paste service role keys into index.html.</li><li>Agents should only see assigned leads.</li></ul></div>
+    <div class="m2-setting-panel" data-panel="backup"><b>Backup</b><ul><li>Export full backup before every big change.</li><li>Use restore last auto-backup if an import/demo goes wrong.</li></ul></div>`;
+  }
+  function renderOnboardingChecklist(){
+    const card=document.getElementById('m2-onboard-card'); if(!card) return;
+    const steps=[['Set company name','Stats → Settings'],['Sync master login','Admin → Sync Master to Cloud'],['Create agents','Team → Invite Agent'],['Import/load leads','Map → Field Tools → Load Area or CSV import'],['Assign leads','Team → Assign Filter / Unassigned'],['Install app','Add to Home Screen on phone'],['Export backup','Admin → Export Full Backup']];
+    card.innerHTML=`<h3>🚀 Customer Onboarding Checklist</h3><div class="m2-card-sub">Use this when setting up your team or a beta customer.</div><div class="m2-onboard-list">${steps.map((s,i)=>`<div class="m2-onboard-step"><div class="num">${i+1}</div><div><b>${s[0]}</b><span>${s[1]}</span></div></div>`).join('')}</div>`;
+  }
+  const oldOpenLead=window.openLead || (typeof openLead==='function'?openLead:null);
+  if(oldOpenLead){
+    window.openLead=function(id){ oldOpenLead(id); setTimeout(injectLeadCommand,30); };
+    try{ openLead=window.openLead; }catch(e){}
+  }
+  const oldRenderStats=window.renderStats || (typeof renderStats==='function'?renderStats:null);
+  if(oldRenderStats){
+    window.renderStats=function(){ oldRenderStats(); try{ addStatsCards(); if(typeof applyM2StatsPolish==='function') applyM2StatsPolish(); }catch(e){console.warn('m2 stats add-on',e);} };
+    try{ renderStats=window.renderStats; }catch(e){}
+  }
+  document.addEventListener('click',function(e){
+    const ux=e.target.closest('[data-m2-ux]');
+    if(ux){
+      const a=ux.dataset.m2Ux;
+      try{
+        if(a==='toggle-field-menu'){ e.preventDefault(); const m=document.getElementById('m2-field-menu'); if(m)m.classList.toggle('open'); return; }
+        if(a==='close-modal'){ e.preventDefault(); closeModal(); return; }
+        if(a==='today-mode'){ e.preventDefault(); todayMode(); return; }
+        if(a==='next-best'){ e.preventDefault(); closeModal(); goLead(nextBestLead()); return; }
+        if(a==='fit-leads'){ e.preventDefault(); fitLeads(); return; }
+        if(a==='open-lead'){ e.preventDefault(); closeModal(); const l=state.leads.find(x=>x.id===ux.dataset.id); goLead(l); return; }
+        if(a==='mark-knocked'){ e.preventDefault(); markKnocked(ux.dataset.id); return; }
+        if(a==='set-status'){ e.preventDefault(); setStatus(ux.dataset.id,ux.dataset.status); return; }
+        if(a==='no-phone'){ e.preventDefault(); toast('No phone saved for this lead','warning'); return; }
+      }catch(err){ console.error(err); toast('Button error: '+err.message,'error'); return; }
+    }
+    const f=e.target.closest('[data-m2-field]'); if(f){ e.preventDefault(); try{fieldAction(f.dataset.m2Field);}catch(err){console.error(err);toast('Field tool error: '+err.message,'error');} return; }
+    const st=e.target.closest('[data-m2-setting]'); if(st){ e.preventDefault(); const box=st.closest('.m2-settings-sections-card'); if(!box)return; box.querySelectorAll('[data-m2-setting]').forEach(b=>b.classList.toggle('active',b===st)); box.querySelectorAll('.m2-setting-panel').forEach(p=>p.classList.toggle('open',p.dataset.panel===st.dataset.m2Setting)); return; }
+    if(!e.target.closest('#m2-field-dock')) closeFieldMenu();
+  },true);
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeFieldMenu(); }});
+  window.addEventListener('load',()=>{ setTimeout(()=>{ ensureFieldDock(); try{ addStatsCards(); }catch(e){} },600); });
+  if(document.readyState!=='loading') setTimeout(()=>{ ensureFieldDock(); try{ addStatsCards(); }catch(e){} },300);
+  window.M2_FIELD_REP_UPGRADE=PATCH;
+})();
+</script>
+
 </body>
 </html>
