@@ -50,9 +50,10 @@
   .chip { font-size:11px; padding:7px 10px; border-radius:12px; background:var(--bg); border:1px solid var(--border); cursor:pointer; color:var(--text); white-space:nowrap; }
   .chip.active { background:var(--accent); border-color:var(--accent); color:#fff; }
   .chip .count { opacity:0.6; margin-left:4px; }
-  .sheet { position:absolute; left:0; right:0; bottom:0; background:var(--panel); border-top:1px solid var(--border); border-radius:16px 16px 0 0; transform:translateY(100%); transition:transform .25s ease; z-index:600; max-height:90vh; max-height:90dvh; overflow-y:auto; padding-bottom:max(16px, env(safe-area-inset-bottom)); }
-  .sheet.open { transform:translateY(0); }
-  .sheet-handle { width:40px; height:4px; background:#444c56; border-radius:2px; margin:8px auto 4px; }
+  .sheet { position:absolute; left:0; right:0; bottom:0; background:var(--panel); border-top:1px solid var(--border); border-radius:16px 16px 0 0; transform:translate3d(0, calc(100% + 34px), 0); transition:transform .22s cubic-bezier(.2,.8,.2,1), opacity .18s ease; z-index:600; max-height:88vh; max-height:88dvh; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; padding-bottom:max(22px, env(safe-area-inset-bottom)); opacity:0; pointer-events:none; will-change:transform; }
+  .sheet.open { transform:translate3d(0,0,0); opacity:1; pointer-events:auto; }
+  .sheet.closing { pointer-events:none; }
+  .sheet-handle { width:48px; height:5px; background:#444c56; border-radius:999px; margin:8px auto 4px; cursor:pointer; }
   .sheet-header { padding:8px 16px 8px; display:flex; align-items:flex-start; gap:8px; border-bottom:1px solid var(--border); }
   .sheet-header .info { flex:1; min-width:0; }
   .sheet-header h2 { font-size:19px; font-weight:800; letter-spacing:-0.3px; }
@@ -1131,7 +1132,11 @@ function openLead(id) {
     });
   }
 
-  document.getElementById('sheet').classList.add('open');
+  const sheetEl = document.getElementById('sheet');
+  sheetEl.classList.remove('closing');
+  sheetEl.scrollTop = 0;
+  document.getElementById('sh-body').scrollTop = 0;
+  requestAnimationFrame(() => sheetEl.classList.add('open'));
 }
 
 function openCreateLead(latlng) {
@@ -1266,8 +1271,27 @@ function createLead() {
   showToast(`✓ Added ${first} ${last}`);
 }
 
-function closeSheet() { document.getElementById('sheet').classList.remove('open'); currentLeadId = null; createMode = false; }
+function closeSheet() {
+  const sheet = document.getElementById('sheet');
+  const body = document.getElementById('sh-body');
+  if (!sheet) return;
+  sheet.classList.add('closing');
+  // Reset scroll before sliding away so it never gets stuck halfway down on mobile.
+  sheet.scrollTop = 0;
+  if (body) body.scrollTop = 0;
+  requestAnimationFrame(() => {
+    sheet.classList.remove('open');
+    currentLeadId = null;
+    createMode = false;
+    setTimeout(() => {
+      sheet.classList.remove('closing');
+      // Clear heavy lead content after it is closed for smoother reopen.
+      if (!sheet.classList.contains('open') && body) body.innerHTML = '';
+    }, 240);
+  });
+}
 document.getElementById('sh-close').addEventListener('click', closeSheet);
+document.querySelector('.sheet-handle')?.addEventListener('click', closeSheet);
 
 function showToast(msg) {
   const t = document.getElementById('toast');
