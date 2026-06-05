@@ -4498,7 +4498,7 @@ if (state.leads.length === 0) showInfo('Tap "📍 Neighborhoods" to load homes. 
         <button class="save-btn" type="button" data-m2-login-submit style="background:#1f6feb;">Login</button>
         <button class="save-btn secondary" type="button" data-m2-login-demo style="margin-top:8px;">Try Demo Mode</button>
         <button class="save-btn secondary" type="button" data-m2-login-close style="margin-top:8px;">Close</button>
-        <p style="margin-top:10px;color:#8b949e;">Need access? Contact your manager. If Master fails on a new device, sync Master to Cloud from the main device first.</p>
+        <p style="margin-top:10px;color:#8b949e;">Need access? Contact your manager. If Master is not found, log in with your owner email/PIN and use the recovery confirmation only if you are the owner.</p>
       </div>`;
     document.body.appendChild(div);
     let role='master';
@@ -4525,7 +4525,24 @@ if (state.leads.length === 0) showInfo('Tap "📍 Neighborhoods" to load homes. 
               const cloud=await m2CloudMasterLogin(email,pin);
               if(cloud){ sess={role:'master', name:cloud.name||'Master', email:cloud.email||email, team_id:cloud.team_id||''}; ok=true; }
             }
-            if(!ok){ m2Toast('Master login not found. Check email/PIN, or Sync Master to Cloud from the main device.','error'); return; }
+            if(!ok){
+              const recover = confirm('Master login was not found in this browser or cloud. Do you want to recover this device as the Master using the email/PIN you entered? Only do this if you are the owner.');
+              if (recover) {
+                const acc2 = m2Account();
+                acc2.master_name = acc2.master_name || 'Shaquille';
+                acc2.master_email = email;
+                acc2.master_pin = pin;
+                acc2.team_id = acc2.team_id || ('team_' + (email || 'owner').replace(/[^a-z0-9]/gi,'_').toLowerCase());
+                m2SaveAccount(acc2);
+                sess = { role:'master', name:acc2.master_name || 'Master', email:email, team_id:acc2.team_id || '' };
+                ok = true;
+                try { if (typeof syncMasterAccountToCloud === 'function') setTimeout(()=>syncMasterAccountToCloud({silent:false}), 700); } catch(syncErr) { console.warn(syncErr); }
+                m2Toast('✓ Master recovered on this device. Go to Admin and Sync Master to Cloud.','success');
+              } else {
+                m2Toast('Master login not found. Check email/PIN, or Sync Master to Cloud from the main device.','error');
+                return;
+              }
+            }
             m2SaveSession(sess);
           } else {
             let agent=(acc.agents||[]).find(a=>String(a.email||'').toLowerCase()===email && String(a.pin||'')===pin);
