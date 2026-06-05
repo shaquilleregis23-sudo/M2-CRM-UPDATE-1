@@ -7,10 +7,26 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="theme-color" content="#0d1117" />
 <title>M2 Energy CRM — Solar + HVAC</title>
+<link rel="manifest" href="manifest.json">
+<meta name="application-name" content="M2 CRM">
+<meta name="apple-mobile-web-app-title" content="M2 CRM">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="msapplication-TileColor" content="#0d1117">
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
   :root { --bg:#0d1117; --panel:#161b22; --border:#30363d; --text:#e6edf3; --muted:#8b949e; --green:#3fb950; --blue:#58a6ff; --yellow:#d29922; --red:#f85149; --accent:#1f6feb; --purple:#a371f7; }
   * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+  .pwa-install-card { position:absolute; left:12px; right:12px; bottom:86px; z-index:850; background:rgba(22,27,34,.97); border:1px solid var(--border); border-radius:16px; padding:12px; box-shadow:0 10px 30px rgba(0,0,0,.45); display:none; gap:10px; align-items:center; }
+  .pwa-install-card.show { display:flex; }
+  .pwa-install-card .pwa-text { flex:1; min-width:0; }
+  .pwa-install-card .pwa-title { font-size:13px; font-weight:900; }
+  .pwa-install-card .pwa-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+  .pwa-install-card button { border:0; border-radius:12px; padding:9px 11px; font-size:12px; font-weight:900; cursor:pointer; }
+  .pwa-install-card .install { background:var(--green); color:#fff; }
+  .pwa-install-card .later { background:var(--bg); color:var(--muted); border:1px solid var(--border); }
+
   html, body { height:100%; overflow:hidden; }
   body { font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--text); }
   .app { display:grid; grid-template-rows:auto 1fr auto; height:100vh; height:100dvh; }
@@ -341,6 +357,15 @@
 </head>
 <body>
 <div class="app">
+  <div id="pwaInstallCard" class="pwa-install-card">
+    <div class="pwa-text">
+      <div class="pwa-title">Install M2 CRM</div>
+      <div class="pwa-sub">Add it to your phone like a real app — full screen, no address bar.</div>
+    </div>
+    <button id="pwaInstallBtn" class="install">Install</button>
+    <button id="pwaLaterBtn" class="later">Later</button>
+  </div>
+
   <header class="topbar">
     <div class="title">M2 Energy CRM</div>
     <button class="neighborhood-btn" id="open-nbh">📍 Neighborhoods</button>
@@ -3140,6 +3165,54 @@ refreshCloudSession().catch(e => console.warn('Supabase session error', e));
 
 setupFilterDropdown(); renderFilterBar(); renderMarkers(); renderTopStats(); updateRoute(); renderNeighborhoods();
 if (state.leads.length === 0) showInfo('Tap "📍 Neighborhoods" to load homes. Tap a pin to knock.');
+</script>
+
+<script>
+(function(){
+  let deferredPrompt = null;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  function showInstallCard(){
+    if (isStandalone || localStorage.getItem('m2_pwa_install_later') === '1') return;
+    const card = document.getElementById('pwaInstallCard');
+    if (card) card.classList.add('show');
+  }
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    });
+  }
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    showInstallCard();
+  });
+  window.addEventListener('appinstalled', () => {
+    const card = document.getElementById('pwaInstallCard');
+    if (card) card.classList.remove('show');
+    deferredPrompt = null;
+  });
+  window.addEventListener('load', () => {
+    const installBtn = document.getElementById('pwaInstallBtn');
+    const laterBtn = document.getElementById('pwaLaterBtn');
+    if (installBtn) installBtn.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice.catch(() => null);
+        deferredPrompt = null;
+      } else {
+        alert('iPhone: tap Share, then Add to Home Screen. Android: tap the browser menu, then Install app.');
+      }
+      const card = document.getElementById('pwaInstallCard');
+      if (card) card.classList.remove('show');
+    });
+    if (laterBtn) laterBtn.addEventListener('click', () => {
+      localStorage.setItem('m2_pwa_install_later','1');
+      const card = document.getElementById('pwaInstallCard');
+      if (card) card.classList.remove('show');
+    });
+    setTimeout(showInstallCard, 2500);
+  });
+})();
 </script>
 </body>
 </html>
