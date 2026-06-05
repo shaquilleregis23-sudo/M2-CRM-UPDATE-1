@@ -2768,6 +2768,156 @@ function renderCloudPanel() {
   document.getElementById('cloud-toggle')?.addEventListener('click', () => { setCloudEnabled(!cloudEnabled()); renderCloudPanel(); });
 }
 
+
+
+// === M2 PHASE 6 STARTER: TEAM + FOLLOW-UP DASHBOARD ===
+// This layer adds better sales-team controls without changing your working Supabase setup.
+const M2_PHASE6_VERSION = 'team_followups_v1';
+
+function m2MoneyLeadValue(lead) {
+  if (!lead) return 0;
+  let score = 0;
+  if (lead.status === 'closed') score += 100;
+  if (lead.status === 'sat') score += 80;
+  if (lead.status === 'set') score += 70;
+  if (lead.status === 'interested') score += 55;
+  if (lead.status === 'callback') score += 45;
+  if ((lead.solar_status || '') === 'no_solar_visible') score += 12;
+  if (['gas_boiler','oil_boiler','steam','electric_baseboard'].includes(lead.heating_type || '')) score += 12;
+  if (['wants_mini_split','boiler_replacement','high_heating_bill','window_ac','comfort_issue'].includes(lead.hvac_opportunity || '')) score += 15;
+  if (+lead.monthly_bill >= 150) score += 10;
+  if (+lead.heating_bill >= 150) score += 10;
+  if (lead.viability === 'high') score += 10;
+  return Math.min(100, score);
+}
+
+function m2StatusBucket(lead) {
+  const s = lead?.status || 'fresh';
+  if (s === 'closed') return 'closed';
+  if (s === 'sat') return 'sat';
+  if (s === 'set') return 'set';
+  if (s === 'interested') return 'interested';
+  if (s === 'callback') return 'callback';
+  if (isDoorTouched(s)) return 'worked';
+  return 'fresh';
+}
+
+function m2DueKind(lead) {
+  if (isDueToday(lead.appt_time)) return 'Appointment today';
+  if (isDueToday(lead.callback_due)) return 'Callback today';
+  const now = new Date();
+  const c = lead.callback_due ? new Date(lead.callback_due) : null;
+  const a = lead.appt_time ? new Date(lead.appt_time) : null;
+  const dates = [c, a].filter(d => d && !isNaN(d.getTime()));
+  if (dates.some(d => d < now)) return 'Overdue';
+  if (dates.length) return 'Upcoming';
+  return '';
+}
+
+function m2LeadCardHTML(lead) {
+  const name = escapeHtml(lead.first ? `${lead.first} ${lead.last}` : lead.last || 'Lead');
+  const score = m2MoneyLeadValue(lead);
+  const due = m2DueKind(lead);
+  return `<div class="followup-item" data-m2-open-lead="${escapeHtml(lead.id)}">
+    <div class="nm">${name} <span class="territory-pill">${escapeHtml(leadTerritory(lead) || 'No territory')}</span> <span class="territory-pill">${score}/100</span></div>
+    <div class="meta">${escapeHtml(lead.addr || '')} · ${escapeHtml(STATUS_LABELS[lead.status] || lead.status || 'Fresh')} · ${escapeHtml(leadAgent(lead))}</div>
+    ${due ? `<div class="due">${escapeHtml(due)}${lead.appt_time ? ': '+escapeHtml(formatShortDue(lead.appt_time)) : lead.callback_due ? ': '+escapeHtml(formatShortDue(lead.callback_due)) : ''}</div>` : ''}
+  </div>`;
+}
+
+function renderM2TeamDashboard() {
+  const statsView = document.getElementById('stats-view');
+  if (!statsView) return;
+  let panel = document.getElementById('m2-team-dashboard');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'm2-team-dashboard';
+    statsView.insertBefore(panel, statsView.firstChild);
+  }
+
+  const leads = state.leads || [];
+  const hot = leads.slice().filter(l => !['closed','do_not_knock','not_qualified','not_interested'].includes(l.status || 'fresh')).sort((a,b) => m2MoneyLeadValue(b) - m2MoneyLeadValue(a)).slice(0, 8);
+  const due = leads.slice().filter(l => m2DueKind(l)).sort((a,b) => {
+    const da = new Date(a.appt_time || a.callback_due || 0).getTime();
+    const db = new Date(b.appt_time || b.callback_due || 0).getTime();
+    return da - db;
+  }).slice(0, 8);
+
+  const buckets = leads.reduce((acc,l)=>{ const k=m2StatusBucket(l); acc[k]=(acc[k]||0)+1; return acc; }, {});
+  const knocked = leads.filter(l => isDoorTouched(l.status)).length;
+  const interested = (buckets.interested||0) + (buckets.callback||0) + (buckets.set||0) + (buckets.sat||0) + (buckets.closed||0);
+  const set = (buckets.set||0) + (buckets.sat||0) + (buckets.closed||0);
+  const sat = (buckets.sat||0) + (buckets.closed||0);
+  const closed = buckets.closed || 0;
+  const pct = (a,b) => b ? Math.round((a/b)*100) + '%' : '0%';
+
+  const agents = {};
+  leads.forEach(l => {
+    const a = leadAgent(l);
+    if (!agents[a]) agents[a] = { total:0, touched:0, set:0, sat:0, closed:0, hot:0 };
+    agents[a].total++;
+    if (isDoorTouched(l.status)) agents[a].touched++;
+    if (l.status === 'set') agents[a].set++;
+    if (l.status === 'sat') agents[a].sat++;
+    if (l.status === 'closed') agents[a].closed++;
+    if (m2MoneyLeadValue(l) >= 60) agents[a].hot++;
+  });
+  const agentRows = Object.entries(agents).sort((a,b)=>(b[1].closed*10+b[1].sat*5+b[1].set*3+b[1].hot)-(a[1].closed*10+a[1].sat*5+a[1].set*3+a[1].hot)).slice(0,8)
+    .map(([name,x]) => `<div class="leader-row"><div><div class="nm">${escapeHtml(name)}</div><div class="meta">Leads ${x.total} · Doors ${x.touched} · Set ${x.set} · Sat ${x.sat} · Closed ${x.closed} · Hot ${x.hot}</div></div><div class="score">${x.closed*10+x.sat*5+x.set*3+x.hot}</div></div>`).join('') || '<div class="access-sub">No agent activity yet.</div>';
+
+  panel.innerHTML = `
+    <div class="phase4-card">
+      <h3>🧠 Manager Command Center</h3>
+      <div class="phase4-grid">
+        <div class="phase4-metric"><div class="k">Total Leads</div><div class="v">${leads.length}</div></div>
+        <div class="phase4-metric"><div class="k">Hot Leads</div><div class="v good">${hot.length}</div></div>
+        <div class="phase4-metric"><div class="k">Follow-Ups</div><div class="v warn">${due.length}</div></div>
+        <div class="phase4-metric"><div class="k">Closed</div><div class="v good">${closed}</div></div>
+      </div>
+      <div class="phase4-pill-row">
+        <span class="phase4-pill blue">Knock → Interest ${pct(interested, knocked)}</span>
+        <span class="phase4-pill gold">Interest → Set ${pct(set, interested)}</span>
+        <span class="phase4-pill hot">Set → Sat ${pct(sat, set)}</span>
+        <span class="phase4-pill hot">Sat → Close ${pct(closed, sat)}</span>
+      </div>
+    </div>
+    <div class="phase3-card">
+      <h3>🔥 Highest Value Leads</h3>
+      ${hot.length ? hot.map(m2LeadCardHTML).join('') : '<div class="access-sub">No hot leads yet. Start marking interest, callback, bill, heating type, and HVAC opportunity.</div>'}
+    </div>
+    <div class="phase3-card">
+      <h3>📞 Follow-Ups / Appointments</h3>
+      ${due.length ? due.map(m2LeadCardHTML).join('') : '<div class="access-sub">No follow-ups due. Add callback or appointment dates inside a lead.</div>'}
+    </div>
+    <div class="phase3-card">
+      <h3>👥 Agent Production</h3>
+      ${agentRows}
+    </div>`;
+
+  panel.querySelectorAll('[data-m2-open-lead]').forEach(el => el.addEventListener('click', () => {
+    const lead = state.leads.find(l => String(l.id) === String(el.dataset.m2OpenLead));
+    if (!lead) return;
+    switchView('map');
+    map.setView([lead.lat, lead.lng], 18);
+    setTimeout(() => openLead(lead.id), 250);
+  }));
+}
+
+const _m2Phase6RenderStats = renderStats;
+renderStats = function() {
+  _m2Phase6RenderStats();
+  renderM2TeamDashboard();
+};
+
+// Cloud helper: show a visible timestamp after successful manual sync/load.
+const _m2Phase6SetCloudStatus = setCloudStatus;
+setCloudStatus = function(msg, tone='') {
+  _m2Phase6SetCloudStatus(msg, tone);
+  if (tone === 'good' && /Synced|Loaded/.test(String(msg))) {
+    localStorage.setItem('m2_last_cloud_success_v1', new Date().toLocaleString());
+  }
+};
+
 initSupabaseClient();
 refreshCloudSession().catch(e => console.warn('Supabase session error', e));
 
