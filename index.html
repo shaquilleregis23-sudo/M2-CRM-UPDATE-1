@@ -4634,5 +4634,83 @@ if (state.leads.length === 0) showInfo('Tap "📍 Neighborhoods" to load homes. 
 })();
 </script>
 
+
+
+<!-- M2 Lead Card Polish + Rep Mode Upgrade v1 -->
+<style>
+  .m2-flow-card{border:1px solid #30363d;background:linear-gradient(180deg,#101722,#0d1117);border-radius:16px;padding:12px;margin:12px 0;box-shadow:0 12px 34px rgba(0,0,0,.18)}
+  .m2-flow-title{font-size:12px;text-transform:uppercase;letter-spacing:.45px;color:#58a6ff;font-weight:900;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .m2-flow-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .m2-flow-tabs button{border:1px solid #30363d;background:#161b22;color:#c9d1d9;border-radius:12px;padding:10px 8px;font-weight:900;font-size:12px}
+  .m2-flow-tabs button.active{background:#1f6feb;color:white;border-color:#58a6ff;box-shadow:0 0 0 2px rgba(88,166,255,.15)}
+  .m2-lead-sections{display:grid;gap:10px;margin-top:12px}.m2-lead-sections details{border:1px solid #30363d;background:#0d1117;border-radius:15px;overflow:hidden}.m2-lead-sections summary{cursor:pointer;list-style:none;padding:13px 14px;font-weight:900;color:#f0f6fc;display:flex;align-items:center;justify-content:space-between}.m2-lead-sections summary::-webkit-details-marker{display:none}.m2-lead-sections summary:after{content:'+';color:#8b949e}.m2-lead-sections details[open] summary:after{content:'–';color:#3fb950}.m2-section-inner{padding:0 14px 14px;color:#8b949e;font-size:12px;line-height:1.45}
+  .m2-rep-fab{position:absolute;left:12px;bottom:66px;z-index:545;border:1px solid #3fb950;background:linear-gradient(135deg,#238636,#2ea043);color:#fff;border-radius:999px;padding:11px 14px;font-size:12px;font-weight:1000;box-shadow:0 10px 28px rgba(0,0,0,.35)}
+  .m2-workflow-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.m2-workflow-card{border:1px solid #30363d;background:#0d1117;border-radius:16px;padding:13px;min-height:86px}.m2-workflow-card b{display:block;color:#f0f6fc;font-size:14px}.m2-workflow-card span{display:block;color:#8b949e;font-size:12px;margin-top:4px}.m2-workflow-card .num{font-size:26px;font-weight:1000;color:#3fb950;margin-top:6px}.m2-workflow-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.m2-workflow-actions button,.m2-workflow-actions a{border:1px solid #30363d;background:#21262d;color:#fff;border-radius:13px;text-align:center;text-decoration:none;padding:11px 8px;font-weight:900}.m2-workflow-actions .green{background:#238636;border-color:#238636}.m2-workflow-actions .gold{background:#f9c74f;color:#151000;border-color:#f9c74f}.m2-workflow-actions .blue{background:#1f6feb;border-color:#1f6feb}.m2-workflow-actions .red{background:#da3633;border-color:#da3633}
+  .m2-scorecard{border:1px solid #30363d;background:linear-gradient(180deg,rgba(46,160,67,.12),rgba(13,17,23,.96));border-radius:16px;padding:14px;margin:12px 0}.m2-scorecard h3{margin:0 0 8px;font-size:14px;color:#3fb950}.m2-score-row{display:flex;justify-content:space-between;gap:8px;border-top:1px solid #30363d;padding:9px 0}.m2-score-row:first-of-type{border-top:0}.m2-score-row b{color:#f0f6fc}.m2-score-row span{color:#8b949e;font-size:12px}.m2-score-num{font-size:20px!important;color:#f9c74f!important;font-weight:1000!important}
+  .m2-onboarding-strip{border:1px solid #f9c74f66;background:linear-gradient(180deg,rgba(249,199,79,.12),rgba(13,17,23,.94));border-radius:16px;padding:14px;margin:12px 0}.m2-onboarding-strip h3{margin:0 0 8px;color:#f9c74f;font-size:14px}.m2-onboarding-strip .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.m2-onboarding-strip .step{border:1px solid #30363d;background:#0d1117;border-radius:13px;padding:10px;font-size:11px;color:#8b949e}.m2-onboarding-strip .step b{display:block;color:#fff;font-size:12px;margin-bottom:3px}
+  @media(max-width:520px){.m2-workflow-grid,.m2-workflow-actions,.m2-flow-tabs{grid-template-columns:1fr}.m2-onboarding-strip .steps{grid-template-columns:1fr}.m2-rep-fab{bottom:116px}}
+</style>
+<script>
+(function(){
+  const PATCH='lead_card_polish_rep_mode_v1';
+  const AFTER_KEY='m2_after_disposition_action';
+  function toast(msg,type){try{showToast(msg,type||'info')}catch(e){console.log(msg)}}
+  function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+  function allLeads(){try{return (typeof scopedLeadsForCurrentUser==='function')?scopedLeadsForCurrentUser(state.leads||[]):state.leads||[]}catch(e){return state.leads||[]}}
+  function visibleLeads(){try{return filterLeads(allLeads())}catch(e){return allLeads()}}
+  function nameOf(l){return (`${l.first||''} ${l.last||''}`).trim() || l.last || l.addr || 'Lead'}
+  function save(){try{saveState()}catch(e){try{save()}catch(_){}}}
+  function sun(l){try{return getLeadSunScore(l).score||0}catch(e){return +(l.sun_score||0)}}
+  function quality(l){let q=25; q+=Math.round(sun(l)*.35); if(+l.monthly_bill>=180)q+=15; if(['interested','callback','set','sat'].includes(l.status))q+=18; if(l.status==='fresh')q+=4; if(String(l.solar_status||'').includes('no'))q+=10; if(String(l.heating_type||'').toLowerCase().includes('oil')||String(l.heating_type||'').toLowerCase().includes('gas'))q+=7; if(String(l.hvac_opportunity||'').toLowerCase().includes('boiler')||String(l.hvac_opportunity||'').toLowerCase().includes('mini'))q+=8; if(['closed','not_interested','do_not_knock','not_qualified'].includes(l.status))q-=80; return Math.max(0,Math.min(100,q))}
+  function nextBest(){const arr=visibleLeads().filter(l=>l.lat&&l.lng&&!['closed','not_interested','do_not_knock','not_qualified'].includes(l.status)).sort((a,b)=>quality(b)-quality(a)||sun(b)-sun(a));return arr[0]||null}
+  function openLeadSafe(l){if(!l)return toast('No next lead found','warning');try{switchView('map'); if(l.lat&&l.lng&&window.map) map.setView([+l.lat,+l.lng],18); setTimeout(()=>openLead(l.id),160)}catch(e){try{openLead(l.id)}catch(err){toast('Could not open lead: '+err.message,'error')}}}
+  function agentName(){try{return getCurrentSession()?.name || getSettings()?.agent_name || 'Rep'}catch(e){return 'Rep'}}
+  function logActivity(lead,type,note){lead.activity_log=lead.activity_log||[];lead.activity_log.unshift({type,note:note||type,at:new Date().toISOString(),agent:agentName()});lead.updated_at=new Date().toISOString()}
+  function currentLead(){try{return state.leads.find(l=>l.id===currentLeadId)}catch(e){return null}}
+  function afterChoice(){return localStorage.getItem(AFTER_KEY)||'next'}
+  function setAfterChoice(v){localStorage.setItem(AFTER_KEY,v);document.querySelectorAll('[data-m2-after]').forEach(b=>b.classList.toggle('active',b.dataset.m2After===v));}
+  function enhanceLeadCard(){
+    const lead=currentLead(); const body=document.getElementById('sh-body'); if(!lead||!body||body.dataset.m2Polished==='1')return; body.dataset.m2Polished='1';
+    const q=quality(lead), after=afterChoice();
+    const flow=document.createElement('div'); flow.className='m2-flow-card'; flow.innerHTML=`<div class="m2-flow-title">⚡ After disposition</div><div class="m2-flow-tabs"><button data-m2-after="stay" class="${after==='stay'?'active':''}">Save & Stay</button><button data-m2-after="next" class="${after==='next'?'active':''}">Save & Next</button><button data-m2-after="close" class="${after==='close'?'active':''}">Save & Close</button></div>`;
+    const qd=body.querySelector('.quick-disp'); if(qd) qd.insertAdjacentElement('beforebegin',flow);
+    const sections=document.createElement('div'); sections.className='m2-lead-sections'; sections.innerHTML=`
+      <details><summary>👤 Customer Info</summary><div class="m2-section-inner">${esc(lead.phone||'No phone')}<br>${esc(lead.email||'No email')}<br>${esc(lead.addr||'No address')}</div></details>
+      <details open><summary>🎯 Lead Quality</summary><div class="m2-section-inner"><b style="color:#3fb950;font-size:20px">${q}/100</b><br>Score combines status, bill, sun, solar fit, HVAC opportunity and follow-up intent.</div></details>
+      <details><summary>☀️ Solar</summary><div class="m2-section-inner">Sun Score: <b>${sun(lead)}/100</b><br>Solar Status: ${esc(lead.solar_status||'unknown')}<br>Roof: ${esc(lead.roof_notes||'No roof notes yet')}</div></details>
+      <details><summary>🔥 HVAC / Clean Heat</summary><div class="m2-section-inner">Heating: ${esc(lead.heating_type||'unknown')}<br>HVAC Opportunity: ${esc(lead.hvac_opportunity||'unknown')}<br>Heating Bill: ${esc(lead.heating_bill||'')}</div></details>
+      <details><summary>📅 Follow-Up</summary><div class="m2-section-inner">Callback: ${esc(lead.callback_due||'None')}<br>Appointment: ${esc(lead.appt_time||'None')}<br>Closer: ${esc(lead.assigned_closer||'None')}</div></details>
+      <details><summary>🕒 Timeline</summary><div class="m2-section-inner">${(lead.activity_log||[]).slice(0,8).map(x=>`<div style="border-left:3px solid #58a6ff;padding:6px 0 6px 8px;margin:5px 0"><b style="color:#fff">${esc(x.note||x.type)}</b><br><span>${new Date(x.at).toLocaleString()} · ${esc(x.agent||'CRM')}</span></div>`).join('')||'No activity yet.'}</div></details>
+      <details><summary>🏠 Property Details</summary><div class="m2-section-inner">BBL: ${esc(lead.bbl||'—')}<br>Class: ${esc(lead.bldg_class||'—')}<br>Built: ${esc(lead.year_built||'—')}<br>Units: ${esc(lead.units||'—')}<br>Lot: ${esc(lead.lot_sqft||'—')}</div></details>`;
+    if(qd) qd.insertAdjacentElement('afterend',sections);
+  }
+  const oldOpen=window.openLead; if(typeof oldOpen==='function'){ window.openLead=function(id){ oldOpen.apply(this,arguments); setTimeout(enhanceLeadCard,80); }; }
+  document.addEventListener('click',function(e){
+    const after=e.target.closest('[data-m2-after]'); if(after){e.preventDefault();setAfterChoice(after.dataset.m2After);toast('After action: '+after.textContent.trim(),'success');return;}
+    const qd=e.target.closest('.quick-disp .qd-btn'); if(qd){
+      e.preventDefault(); e.stopPropagation(); if(e.stopImmediatePropagation)e.stopImmediatePropagation();
+      const lead=currentLead(); if(!lead)return; const disp=qd.dataset.disp; lead.status=disp; logActivity(lead,disp,(qd.querySelector('.qd-label')?.textContent||disp)+' saved');
+      try{refreshLeadSunScore(lead)}catch(_e){} save(); try{updateSingleMarker(lead.id);renderTopStats();renderFilterBar();renderList();}catch(_e){}
+      qd.classList.add('saved'); qd.innerHTML='<div class="qd-ico">✓</div><div class="qd-label">Saved</div>';
+      toast('✓ '+nameOf(lead)+' → '+(window.STATUS_LABELS?.[disp]||disp),'success');
+      const choice=afterChoice(); if(choice==='next'){setTimeout(()=>{try{closeSheet()}catch(_e){}; openLeadSafe(nextBest());},380);} else if(choice==='close'){setTimeout(()=>{try{closeSheet()}catch(_e){}},420);} else {setTimeout(()=>openLead(lead.id),450);} return;
+    }
+  },true);
+  function modal(){let m=document.getElementById('m2-rep-modal'); if(!m){m=document.createElement('div');m.id='m2-rep-modal';m.className='m2-modal';document.body.appendChild(m)}return m}
+  function closeModal(){document.getElementById('m2-rep-modal')?.classList.remove('open')}
+  function today(l){if(!l)return false; const d=new Date(l.callback_due||l.appt_time||''); if(isNaN(d))return false; const n=new Date(); return d.toDateString()===n.toDateString()}
+  function repMode(){const ls=allLeads(); const mine=visibleLeads(); const due=mine.filter(today); const appts=mine.filter(l=>l.appt_time&&today(l)); const hot=mine.filter(l=>['interested','callback','set','sat'].includes(l.status)); const nb=nextBest(); const m=modal(); m.innerHTML=`<div class="m2-modal-card"><div class="m2-modal-head"><div><h2>🚶 Rep Mode</h2><p>Simple field workflow: route, next lead, follow-up, update, repeat.</p></div><button class="m2-close" data-m2-rep="close">Close</button></div><div class="m2-workflow-grid"><div class="m2-workflow-card"><b>Next Best Lead</b><span>${esc(nb?nameOf(nb):'None found')}</span><div class="num">${nb?quality(nb):0}</div></div><div class="m2-workflow-card"><b>Today Follow-Ups</b><span>Callbacks + appointments</span><div class="num">${due.length}</div></div><div class="m2-workflow-card"><b>Appointments</b><span>Scheduled today</span><div class="num">${appts.length}</div></div><div class="m2-workflow-card"><b>Hot Leads</b><span>Interested / callback / set</span><div class="num">${hot.length}</div></div></div><div class="m2-workflow-actions"><button class="green" data-m2-rep="next">Open Next Best</button><button class="blue" data-m2-rep="walk">Start Walk Mode</button><button class="gold" data-m2-rep="followups">Show Follow-Ups</button><button data-m2-rep="fit">Fit Leads</button></div></div>`; m.classList.add('open');}
+  function scorecardHTML(){const ls=allLeads(); const by={}; ls.forEach(l=>{const a=(typeof leadAgent==='function'?leadAgent(l):(l.assigned_agent||'Unassigned'))||'Unassigned'; by[a]=by[a]||{knock:0,call:0,text:0,appt:0,hot:0,closed:0}; (l.activity_log||[]).forEach(x=>{const day=new Date(x.at).toDateString(),now=new Date().toDateString(); if(day===now){if(String(x.type).includes('knock'))by[a].knock++; if(String(x.type).includes('call'))by[a].call++; if(String(x.type).includes('text'))by[a].text++;}}); if(l.status==='set')by[a].appt++; if(['interested','callback','sat'].includes(l.status))by[a].hot++; if(l.status==='closed')by[a].closed++;}); return `<div class="m2-scorecard" id="m2-manager-scorecard"><h3>📊 Manager Scorecard</h3>${Object.entries(by).slice(0,8).map(([n,x])=>`<div class="m2-score-row"><div><b>${esc(n)}</b><br><span>Knocks ${x.knock} · Calls ${x.call} · Texts ${x.text} · Appts ${x.appt} · Hot ${x.hot}</span></div><span class="m2-score-num">${x.closed}</span></div>`).join('')||'<div class="m2-score-row"><span>No agent activity yet.</span></div>'}</div>`;}
+  function onboardingHTML(){return `<div class="m2-onboarding-strip" id="m2-clean-onboarding"><h3>🚀 Beta Customer Onboarding</h3><div class="steps"><div class="step"><b>1. Brand</b>Set company name and support email.</div><div class="step"><b>2. Team</b>Create agents and sync to cloud.</div><div class="step"><b>3. Leads</b>Import/load leads and tag team ID.</div><div class="step"><b>4. Assign</b>Assign filters or territory to reps.</div><div class="step"><b>5. Field</b>Use Rep Mode and dispositions.</div><div class="step"><b>6. Backup</b>Export before every major change.</div></div></div>`;}
+  function enhanceStats(){const sv=document.getElementById('stats-view')||document.querySelector('#stats, .stats-view, main'); if(!sv)return; if(!document.getElementById('m2-manager-scorecard'))sv.insertAdjacentHTML('afterbegin',scorecardHTML()+onboardingHTML());}
+  const oldStats=window.renderStats; if(typeof oldStats==='function'){window.renderStats=function(){oldStats.apply(this,arguments);setTimeout(enhanceStats,80)}}
+  function ensureRepButton(){if(document.getElementById('m2-rep-fab'))return; const btn=document.createElement('button');btn.id='m2-rep-fab';btn.className='m2-rep-fab';btn.dataset.m2Rep='open';btn.textContent='🚶 Rep Mode';document.body.appendChild(btn)}
+  document.addEventListener('click',function(e){const b=e.target.closest('[data-m2-rep]'); if(!b)return; const a=b.dataset.m2Rep; try{if(a==='open')repMode(); else if(a==='close')closeModal(); else if(a==='next'){closeModal();openLeadSafe(nextBest())} else if(a==='walk'){closeModal();try{toggleWalkMode()}catch(_e){toast('Walk Mode not available on this version','warning')}} else if(a==='fit'){closeModal();try{const arr=visibleLeads().filter(l=>l.lat&&l.lng); if(arr.length&&window.L&&window.map)map.fitBounds(L.latLngBounds(arr.map(l=>[l.lat,l.lng])).pad(.18));}catch(err){toast('Could not fit leads','error')}} else if(a==='followups'){closeModal();try{switchView('stats');setTimeout(enhanceStats,100)}catch(_e){}}}catch(err){toast('Rep Mode error: '+err.message,'error')}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+  setTimeout(()=>{ensureRepButton();enhanceStats();},900);
+  console.log('M2 CRM '+PATCH+' loaded');
+})();
+</script>
+
 </body>
 </html>
