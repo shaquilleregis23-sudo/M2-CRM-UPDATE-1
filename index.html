@@ -9324,104 +9324,513 @@ Current plan: ${a.plan} — $${a.monthlyPrice}/month, ${a.seatLimit} seats.`;
 <!-- === END M2 LEAD CLICK RELIABILITY FIX v1 === -->
 
 
-<!-- === M2 OLD SETTINGS FULL RESTORE v1 === -->
-<style id="m2-old-settings-full-restore-v1-css">
-  body.m2-old-settings-mode #stats-view,#stats-view.m2-old-settings-mode{padding:14px!important;padding-bottom:calc(94px + env(safe-area-inset-bottom,0px))!important;background:#0d1117!important;overflow-y:auto!important;overflow-x:hidden!important}
-  body.m2-old-settings-mode #m2-stats-toolbar,#stats-view.m2-old-settings-mode #m2-stats-toolbar,body.m2-old-settings-mode .m2-stats-toolbar,#stats-view.m2-old-settings-mode .m2-stats-toolbar{display:none!important}
-  body.m2-old-settings-mode #stats-view .m2-stats-hidden,#stats-view.m2-old-settings-mode .m2-stats-hidden,body.m2-old-settings-mode #stats-view [data-m2-stats-group],#stats-view.m2-old-settings-mode [data-m2-stats-group]{display:block!important}
-  body.m2-old-settings-mode #stats-view > *,#stats-view.m2-old-settings-mode > *,body.m2-old-settings-mode #stats-view div,#stats-view.m2-old-settings-mode div{max-width:100%!important}
-  body.m2-old-settings-mode #stats-view .stat-card,body.m2-old-settings-mode #stats-view .settings-card,body.m2-old-settings-mode #stats-view .phase3-card,body.m2-old-settings-mode #stats-view .phase4-card,body.m2-old-settings-mode #stats-view .cloud-card,body.m2-old-settings-mode #stats-view .access-card,body.m2-old-settings-mode #stats-view .m2-beta-card,body.m2-old-settings-mode #stats-view .m2-stability-card,body.m2-old-settings-mode #stats-view .m2-hardening-card,body.m2-old-settings-mode #stats-view .m2-manager-card,body.m2-old-settings-mode #stats-view .m2-today-card,body.m2-old-settings-mode #stats-view .m2-settings-sections-card,body.m2-old-settings-mode #stats-view .m2-onboard-card,body.m2-old-settings-mode #stats-view .m2-v2-card,body.m2-old-settings-mode #stats-view .m2-scorecard,body.m2-old-settings-mode #stats-view .m2-onboarding-strip,#stats-view.m2-old-settings-mode .stat-card,#stats-view.m2-old-settings-mode .settings-card,#stats-view.m2-old-settings-mode .phase3-card,#stats-view.m2-old-settings-mode .phase4-card,#stats-view.m2-old-settings-mode .cloud-card,#stats-view.m2-old-settings-mode .access-card,#stats-view.m2-old-settings-mode .m2-beta-card,#stats-view.m2-old-settings-mode .m2-stability-card,#stats-view.m2-old-settings-mode .m2-hardening-card,#stats-view.m2-old-settings-mode .m2-manager-card,#stats-view.m2-old-settings-mode .m2-today-card,#stats-view.m2-old-settings-mode .m2-settings-sections-card,#stats-view.m2-old-settings-mode .m2-onboard-card,#stats-view.m2-old-settings-mode .m2-v2-card,#stats-view.m2-old-settings-mode .m2-scorecard,#stats-view.m2-old-settings-mode .m2-onboarding-strip{margin:0 0 12px!important;border-radius:16px!important;width:100%!important;max-width:100%!important;overflow:hidden!important}
-  .m2-old-settings-heading{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;margin:2px 0 12px!important;padding:2px!important}
-  .m2-old-settings-heading h1{margin:0!important;color:#f0f6fc!important;font-size:22px!important;letter-spacing:-.5px!important;line-height:1.1!important}
-  .m2-old-settings-heading p{margin:4px 0 0!important;color:#8b949e!important;font-size:12px!important;line-height:1.35!important}
-  .m2-old-settings-heading button{border:1px solid #30363d!important;background:#21262d!important;color:#e6edf3!important;border-radius:999px!important;min-height:38px!important;padding:0 13px!important;font-size:12px!important;font-weight:950!important;cursor:pointer!important;white-space:nowrap!important}
-  .m2-account-center-restored{background:linear-gradient(180deg,rgba(31,111,235,.16),rgba(22,27,34,.98))!important;border:1px solid rgba(88,166,255,.45)!important;border-radius:18px!important;padding:15px!important;margin:0 0 12px!important;box-shadow:0 12px 32px rgba(0,0,0,.24)!important;color:#e6edf3!important;width:100%!important;overflow:hidden!important}
-  .m2-account-center-restored h2{margin:0 0 4px!important;font-size:20px!important;letter-spacing:-.4px!important;color:#f0f6fc!important;line-height:1.1!important}
-  .m2-account-center-restored .sub{font-size:12px!important;line-height:1.4!important;color:#8b949e!important;margin-bottom:12px!important}
-  .m2-account-mini-grid{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;margin:10px 0 12px!important}
-  .m2-account-mini{background:#0d1117!important;border:1px solid #30363d!important;border-radius:14px!important;padding:10px!important;min-height:66px!important;min-width:0!important}
-  .m2-account-mini .k{font-size:10px!important;color:#8b949e!important;text-transform:uppercase!important;font-weight:900!important;letter-spacing:.4px!important}
-  .m2-account-mini .v{margin-top:4px!important;color:#f0f6fc!important;font-size:15px!important;font-weight:1000!important;line-height:1.15!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
-  .m2-account-actions{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
-  .m2-account-actions button{border:1px solid #30363d!important;background:#21262d!important;color:#e6edf3!important;border-radius:13px!important;min-height:44px!important;padding:9px 8px!important;font-size:12px!important;font-weight:950!important;cursor:pointer!important;text-align:center!important;white-space:normal!important}
-  .m2-account-actions button.green{background:#238636!important;border-color:#238636!important;color:#fff!important}.m2-account-actions button.blue{background:#1f6feb!important;border-color:#1f6feb!important;color:#fff!important}.m2-account-actions button.gold{background:#f9c74f!important;border-color:#f9c74f!important;color:#151000!important}.m2-account-actions button.purple{background:#8957e5!important;border-color:#8957e5!important;color:#fff!important}
-  body.m2-old-settings-mode #m2-access-card,#stats-view.m2-old-settings-mode #m2-access-card,body.m2-old-settings-mode #cloud-dashboard,#stats-view.m2-old-settings-mode #cloud-dashboard,body.m2-old-settings-mode #m2-customer-accounts,#stats-view.m2-old-settings-mode #m2-customer-accounts,body.m2-old-settings-mode #m2-manual-subscriptions,#stats-view.m2-old-settings-mode #m2-manual-subscriptions,body.m2-old-settings-mode #m2-agent-login-settings-card,#stats-view.m2-old-settings-mode #m2-agent-login-settings-card{display:block!important;visibility:visible!important;opacity:1!important}
-  body.m2-old-settings-mode #stats-view .m2-stats-tabs,body.m2-old-settings-mode #stats-view .m2-settings-tabs,#stats-view.m2-old-settings-mode .m2-stats-tabs,#stats-view.m2-old-settings-mode .m2-settings-tabs{position:static!important;top:auto!important;z-index:auto!important;display:grid!important;max-width:100%!important}
-  body.m2-old-settings-mode #stats-view .m2-beta-table,#stats-view.m2-old-settings-mode .m2-beta-table,body.m2-old-settings-mode #stats-view .m2-import-preview,#stats-view.m2-old-settings-mode .m2-import-preview{display:block!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important}
-  @media(max-width:760px){.m2-account-mini-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.m2-account-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}.m2-old-settings-heading{align-items:flex-start!important;flex-direction:column!important}.m2-old-settings-heading button{width:100%!important}}
+
+
+
+<!-- === M2 CLEAN SETTINGS + STOP SAAS AUTOLOAD v2 === -->
+<style id="m2-clean-settings-stop-saas-v2-css">
+  /* Stop SaaS Launch Center from blocking the CRM unless user opens it */
+  body:not(.m2-allow-saas-modal) #saasLaunchCenter,
+  body:not(.m2-allow-saas-modal) #saas-launch-center,
+  body:not(.m2-allow-saas-modal) #m2-saas-launch-center,
+  body:not(.m2-allow-saas-modal) #m2SaasLaunchCenter,
+  body:not(.m2-allow-saas-modal) .saas-launch-center,
+  body:not(.m2-allow-saas-modal) .m2-saas-launch-center,
+  body:not(.m2-allow-saas-modal) .saas-modal,
+  body:not(.m2-allow-saas-modal) .m2-saas-modal {
+    display:none!important;
+    opacity:0!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+
+  /* Clean Settings page layout */
+  #stats-view.m2-clean-settings {
+    padding:14px!important;
+    padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    background:#0d1117!important;
+  }
+  #stats-view.m2-clean-settings #m2-stats-toolbar,
+  #stats-view.m2-clean-settings .m2-stats-toolbar {
+    display:none!important;
+  }
+  #stats-view.m2-clean-settings .m2-stats-hidden {
+    display:block!important;
+  }
+  #stats-view.m2-clean-settings [data-m2-stats-group] {
+    display:block!important;
+  }
+  #stats-view.m2-clean-settings > * {
+    max-width:100%!important;
+  }
+
+  .m2-clean-settings-header {
+    background:linear-gradient(180deg,rgba(31,111,235,.18),rgba(22,27,34,.96))!important;
+    border:1px solid rgba(88,166,255,.35)!important;
+    border-radius:18px!important;
+    padding:14px!important;
+    margin:0 0 12px!important;
+    box-shadow:0 14px 34px rgba(0,0,0,.22)!important;
+  }
+  .m2-clean-settings-header h1 {
+    font-size:22px!important;
+    line-height:1.1!important;
+    color:#f0f6fc!important;
+    margin:0 0 5px!important;
+    letter-spacing:-.5px!important;
+  }
+  .m2-clean-settings-header p {
+    color:#8b949e!important;
+    font-size:12px!important;
+    line-height:1.35!important;
+    margin:0!important;
+  }
+
+  .m2-clean-section-nav {
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:8px!important;
+    margin:12px 0 0!important;
+  }
+  .m2-clean-section-nav button {
+    border:1px solid #30363d!important;
+    background:#0d1117!important;
+    color:#e6edf3!important;
+    border-radius:13px!important;
+    min-height:42px!important;
+    font-size:12px!important;
+    font-weight:950!important;
+    cursor:pointer!important;
+    padding:8px 6px!important;
+  }
+  .m2-clean-section-nav button.active {
+    background:linear-gradient(135deg,#1f6feb,#00ffc2)!important;
+    color:#06111f!important;
+    border-color:#58a6ff!important;
+  }
+
+  .m2-clean-settings #stats-view,
+  #stats-view.m2-clean-settings div,
+  #stats-view.m2-clean-settings section {
+    max-width:100%!important;
+  }
+
+  #stats-view.m2-clean-settings .stat-card,
+  #stats-view.m2-clean-settings .settings-card,
+  #stats-view.m2-clean-settings .access-card,
+  #stats-view.m2-clean-settings .cloud-card,
+  #stats-view.m2-clean-settings .phase3-card,
+  #stats-view.m2-clean-settings .phase4-card,
+  #stats-view.m2-clean-settings .m2-beta-card,
+  #stats-view.m2-clean-settings .m2-stability-card,
+  #stats-view.m2-clean-settings .m2-hardening-card,
+  #stats-view.m2-clean-settings .m2-manager-card,
+  #stats-view.m2-clean-settings .m2-today-card,
+  #stats-view.m2-clean-settings .m2-v2-card,
+  #stats-view.m2-clean-settings .m2-scorecard,
+  #stats-view.m2-clean-settings .m2-onboarding-strip,
+  #stats-view.m2-clean-settings .m2-clean-account-card,
+  #stats-view.m2-clean-settings .m2-clean-agent-card {
+    width:100%!important;
+    max-width:100%!important;
+    margin:0 0 12px!important;
+    border-radius:16px!important;
+    overflow:hidden!important;
+  }
+
+  .m2-clean-account-card,
+  .m2-clean-agent-card {
+    background:linear-gradient(180deg,rgba(22,27,34,.98),rgba(13,17,23,.98))!important;
+    border:1px solid #30363d!important;
+    padding:14px!important;
+    color:#e6edf3!important;
+  }
+  .m2-clean-account-card h2,
+  .m2-clean-agent-card h2 {
+    color:#f0f6fc!important;
+    font-size:18px!important;
+    margin:0 0 5px!important;
+  }
+  .m2-clean-account-card .sub,
+  .m2-clean-agent-card .sub {
+    color:#8b949e!important;
+    font-size:12px!important;
+    line-height:1.4!important;
+    margin-bottom:12px!important;
+  }
+
+  .m2-clean-grid {
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:8px!important;
+    margin:10px 0 12px!important;
+  }
+  .m2-clean-tile {
+    background:#0d1117!important;
+    border:1px solid #30363d!important;
+    border-radius:14px!important;
+    padding:10px!important;
+    min-width:0!important;
+  }
+  .m2-clean-tile .k {
+    color:#8b949e!important;
+    font-size:10px!important;
+    font-weight:900!important;
+    text-transform:uppercase!important;
+    letter-spacing:.4px!important;
+  }
+  .m2-clean-tile .v {
+    color:#f0f6fc!important;
+    font-size:15px!important;
+    line-height:1.15!important;
+    font-weight:1000!important;
+    margin-top:4px!important;
+    overflow:hidden!important;
+    white-space:nowrap!important;
+    text-overflow:ellipsis!important;
+  }
+
+  .m2-clean-actions {
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    gap:8px!important;
+    margin-top:10px!important;
+  }
+  .m2-clean-actions button {
+    border:1px solid #30363d!important;
+    background:#21262d!important;
+    color:#e6edf3!important;
+    border-radius:13px!important;
+    min-height:44px!important;
+    padding:9px 8px!important;
+    font-size:12px!important;
+    font-weight:950!important;
+    cursor:pointer!important;
+  }
+  .m2-clean-actions .blue{background:#1f6feb!important;border-color:#1f6feb!important;color:#fff!important}
+  .m2-clean-actions .green{background:#238636!important;border-color:#238636!important;color:#fff!important}
+  .m2-clean-actions .purple{background:#8957e5!important;border-color:#8957e5!important;color:#fff!important}
+  .m2-clean-actions .gold{background:#f9c74f!important;border-color:#f9c74f!important;color:#151000!important}
+
+  .m2-clean-agent-form {
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:8px!important;
+    margin-top:10px!important;
+  }
+  .m2-clean-agent-form label {
+    color:#8b949e!important;
+    font-size:11px!important;
+    text-transform:uppercase!important;
+    font-weight:900!important;
+  }
+  .m2-clean-agent-form input {
+    width:100%!important;
+    margin-top:4px!important;
+    background:#0d1117!important;
+    border:1px solid #30363d!important;
+    color:#e6edf3!important;
+    border-radius:11px!important;
+    min-height:42px!important;
+    padding:9px 10px!important;
+    font-size:14px!important;
+  }
+  .m2-clean-agent-row {
+    display:grid!important;
+    grid-template-columns:1fr auto!important;
+    gap:8px!important;
+    align-items:center!important;
+    background:#0d1117!important;
+    border:1px solid #30363d!important;
+    border-radius:13px!important;
+    padding:10px!important;
+    margin-top:8px!important;
+  }
+  .m2-clean-agent-row .nm {font-size:13px!important;font-weight:950!important;color:#f0f6fc!important}
+  .m2-clean-agent-row .meta {font-size:11px!important;color:#8b949e!important;margin-top:3px!important}
+  .m2-clean-agent-row button {
+    border:1px solid #30363d!important;
+    background:#21262d!important;
+    color:#e6edf3!important;
+    border-radius:10px!important;
+    padding:8px 10px!important;
+    font-size:11px!important;
+    font-weight:900!important;
+    cursor:pointer!important;
+  }
+
+  #stats-view.m2-clean-settings .m2-beta-table,
+  #stats-view.m2-clean-settings .m2-import-preview,
+  #stats-view.m2-clean-settings table {
+    display:block!important;
+    overflow-x:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+
+  #stats-view.m2-clean-settings[data-clean-section="account"] > *:not(.m2-clean-settings-header):not(#m2-clean-account-card):not(#m2-clean-agent-card):not(#m2-access-card):not(#cloud-dashboard):not(#m2-customer-accounts):not(#m2-manual-subscriptions) {
+    display:none!important;
+  }
+  #stats-view.m2-clean-settings[data-clean-section="manager"] > *:not(.m2-clean-settings-header):not(#m2-performance-daily):not(#m2-performance-dashboard):not(#m2-team-dashboard):not(#phase3-dashboard):not(#m2-followup-board-pro):not(#m2-followup-board):not(#m2-manager-daily-card) {
+    display:none!important;
+  }
+  #stats-view.m2-clean-settings[data-clean-section="system"] > *:not(.m2-clean-settings-header):not(#m2-sync-health):not(#cloud-dashboard):not(#m2-crm-health-check):not(#m2-safe-import-panel):not(#m2-stability-wrap):not(#m2-security-center):not(.stat-card) {
+    display:none!important;
+  }
+
+  @media(max-width:760px){
+    .m2-clean-section-nav{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+    .m2-clean-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+    .m2-clean-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+    .m2-clean-agent-form{grid-template-columns:1fr!important}
+    .m2-clean-agent-row{grid-template-columns:1fr!important}
+  }
 </style>
-<script id="m2-old-settings-full-restore-v1-js">
+
+<script id="m2-clean-settings-stop-saas-v2-js">
 (function(){
-  const PATCH='m2_old_settings_full_restore_v1';
-  function esc(v){try{if(typeof escapeHtml==='function')return escapeHtml(v)}catch(e){}return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  const PATCH='m2_clean_settings_stop_saas_v2';
+  const SECTION_KEY='m2_clean_settings_section_v2';
+
   function toast(msg,type){try{if(typeof showToast==='function')return showToast(msg,type||'info')}catch(e){}console.log(msg)}
+  function esc(v){try{if(typeof escapeHtml==='function')return escapeHtml(v)}catch(e){}return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function acc(){try{if(typeof getAccountAccess==='function')return getAccountAccess()||{}}catch(e){}try{return JSON.parse(localStorage.getItem('m2_account_access_v1')||'{}')}catch(e){return{}}}
+  function saveAcc(data){try{if(typeof saveAccountAccess==='function')return saveAccountAccess(data)}catch(e){}try{localStorage.setItem('m2_account_access_v1',JSON.stringify(data||{}))}catch(e){}}
   function sess(){try{if(typeof getCurrentSession==='function')return getCurrentSession()||{}}catch(e){}try{return JSON.parse(localStorage.getItem('m2_current_session_v1')||'{}')}catch(e){return{}}}
+  function saveSess(data){try{if(typeof saveCurrentSession==='function')return saveCurrentSession(data)}catch(e){}try{localStorage.setItem('m2_current_session_v1',JSON.stringify(data||{}))}catch(e){}}
   function settings(){try{if(typeof getSettings==='function')return getSettings()||{}}catch(e){}try{return JSON.parse(localStorage.getItem('nyc_solar_settings_v1')||'{}')}catch(e){return{}}}
   function leads(){try{return Array.isArray(state.leads)?state.leads:[]}catch(e){return[]}}
-  function agents(){const a=acc();return Array.isArray(a.agents)?a.agents:[]}
+  function agents(){const a=acc(); return Array.isArray(a.agents)?a.agents:[]}
   function health(){try{return JSON.parse(localStorage.getItem('m2_crm_sync_health_v1')||'{}')}catch(e){return{}}}
   function short(v){if(!v)return'Not yet';try{return new Date(v).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}catch(e){return String(v)}}
 
-  function renderAgentList(){
-    const box=document.getElementById('m2-restored-agent-list'); if(!box)return;
-    const list=agents();
-    if(!list.length){box.innerHTML='<div class="access-sub">No agent logins created yet.</div>';return}
-    box.innerHTML=list.map(function(a){return '<div class="agent-row"><div><div class="nm">'+esc(a.name||'Agent')+' <span class="role-pill">Agent</span></div><div class="meta">'+esc(a.email||'')+' · '+esc(a.territory||'No territory')+' · PIN: '+esc(a.pin||'')+'</div></div><div style="display:grid;gap:6px;min-width:110px;"><button class="phase4-mini-btn" data-m2-restored-agent-login="'+esc(a.id)+'">Login View</button><button class="phase4-mini-btn" data-m2-restored-agent-delete="'+esc(a.id)+'">Delete</button></div></div>'}).join('')
-  }
-
-  function ensureAgentCard(){
-    const stats=document.getElementById('stats-view'); if(!stats||document.getElementById('m2-agent-login-settings-card'))return;
-    const card=document.createElement('div'); card.id='m2-agent-login-settings-card'; card.className='access-card';
-    card.innerHTML='<h3>👥 Agent Login Settings</h3><div class="access-sub">Create and manage rep logins the old way. This stays visible in Settings.</div><details class="daily-fold" open><summary>Create / update agent login</summary><div class="fold-inner"><div class="form-grid-2"><div class="form-row"><label>Agent name</label><input type="text" id="m2-restored-agent-name" placeholder="Rep name"></div><div class="form-row"><label>Territory</label><input type="text" id="m2-restored-agent-territory" placeholder="Queens"></div></div><div class="form-grid-2"><div class="form-row"><label>Email / username</label><input type="text" id="m2-restored-agent-email" placeholder="agent@email.com"></div><div class="form-row"><label>PIN / password</label><input type="text" id="m2-restored-agent-pin" placeholder="1234"></div></div><button class="save-btn" id="m2-restored-save-agent" style="background:#1f6feb;">Save Agent Login</button></div></details><div id="m2-restored-agent-list" style="margin-top:10px;"></div><div class="daily-action-row" style="margin-top:10px;"><button class="daily-btn secondary" id="m2-restored-open-login">Open Login</button><button class="daily-btn secondary" id="m2-restored-sync-agents">Sync Agents</button><button class="daily-btn secondary" id="m2-restored-load-agents">Load Cloud Agents</button></div>';
-    const access=document.getElementById('m2-access-card'); if(access&&access.parentNode)access.insertAdjacentElement('afterend',card); else stats.insertBefore(card,stats.children[2]||stats.firstChild);
-    card.addEventListener('click',function(e){
-      if(e.target&&e.target.id==='m2-restored-save-agent'){
-        const name=document.getElementById('m2-restored-agent-name').value.trim(), email=document.getElementById('m2-restored-agent-email').value.trim().toLowerCase(), pin=document.getElementById('m2-restored-agent-pin').value.trim(), territory=document.getElementById('m2-restored-agent-territory').value.trim();
-        if(!name||!email||!pin){alert('Agent name, email/username, and PIN are required.');return}
-        const data=acc(); data.agents=Array.isArray(data.agents)?data.agents:[]; const existing=data.agents.find(a=>String(a.email||'').toLowerCase()===email);
-        if(existing){existing.name=name;existing.email=email;existing.pin=pin;existing.territory=territory;existing.updated_at=new Date().toISOString()} else data.agents.push({id:'a_'+Date.now(),name,email,pin,territory,created_at:new Date().toISOString()});
-        try{if(typeof saveAccountAccess==='function')saveAccountAccess(data);else localStorage.setItem('m2_account_access_v1',JSON.stringify(data))}catch(err){localStorage.setItem('m2_account_access_v1',JSON.stringify(data))}
-        toast(existing?'✓ Agent updated':'✓ Agent created','success'); renderAgentList()
+  function killSaasAuto(){
+    if(document.body.classList.contains('m2-allow-saas-modal')) return;
+    const all = Array.from(document.querySelectorAll('div,section,aside'));
+    all.forEach(function(el){
+      const text=(el.textContent||'').slice(0,300);
+      const id=(el.id||'').toLowerCase();
+      const cls=(el.className||'').toString().toLowerCase();
+      const isSaas = id.includes('saas') || cls.includes('saas') || text.includes('SaaS Launch Center');
+      if(isSaas && (el.classList.contains('open') || getComputedStyle(el).position==='fixed' || text.includes('SaaS Launch Center'))){
+        el.classList.remove('open','show','active');
+        el.style.display='none';
+        el.style.opacity='0';
+        el.style.visibility='hidden';
+        el.style.pointerEvents='none';
       }
-      if(e.target&&e.target.id==='m2-restored-open-login'){try{if(typeof openLoginOverlay==='function')openLoginOverlay()}catch(err){toast('Login screen not available','warn')}}
-      if(e.target&&e.target.id==='m2-restored-sync-agents'){try{if(typeof syncAgentAccountsToCloud==='function')syncAgentAccountsToCloud();else toast('Cloud agent sync not available yet.','warn')}catch(err){toast('Sync error: '+err.message,'error')}}
-      if(e.target&&e.target.id==='m2-restored-load-agents'){try{if(typeof loadAgentAccountsFromCloud==='function')loadAgentAccountsFromCloud();else toast('Cloud agent load not available yet.','warn')}catch(err){toast('Load error: '+err.message,'error')}}
-      const loginBtn=e.target.closest&&e.target.closest('[data-m2-restored-agent-login]'); if(loginBtn){const id=loginBtn.dataset.m2RestoredAgentLogin; const a=agents().find(x=>String(x.id)===String(id)); if(!a)return; try{if(typeof saveCurrentSession==='function')saveCurrentSession({role:'agent',name:a.name,email:a.email,territory:a.territory||'',id:a.id})}catch(err){localStorage.setItem('m2_current_session_v1',JSON.stringify({role:'agent',name:a.name,email:a.email,territory:a.territory||'',id:a.id}))} toast('✓ Using agent account','success'); try{if(typeof renderStats==='function')renderStats()}catch(err){}}
-      const delBtn=e.target.closest&&e.target.closest('[data-m2-restored-agent-delete]'); if(delBtn){const id=delBtn.dataset.m2RestoredAgentDelete; const data=acc(); data.agents=(data.agents||[]).filter(a=>String(a.id)!==String(id)); try{if(typeof saveAccountAccess==='function')saveAccountAccess(data);else localStorage.setItem('m2_account_access_v1',JSON.stringify(data))}catch(err){localStorage.setItem('m2_account_access_v1',JSON.stringify(data))} toast('Agent removed','success'); renderAgentList()}
     });
-    renderAgentList()
   }
 
-  function ensureAccountCenter(){
-    const stats=document.getElementById('stats-view'); if(!stats)return;
-    let heading=document.getElementById('m2-old-settings-heading');
-    if(!heading){heading=document.createElement('div'); heading.id='m2-old-settings-heading'; heading.className='m2-old-settings-heading'; heading.innerHTML='<div class="left"><h1>Settings</h1><p>Old-style full command center. Everything stays visible in one clean scroll.</p></div><button id="m2-old-settings-refresh">Refresh Settings</button>'; stats.insertBefore(heading,stats.firstChild); heading.addEventListener('click',function(e){if(e.target&&e.target.id==='m2-old-settings-refresh'){try{if(typeof renderStats==='function')renderStats()}catch(err){}toast('Settings refreshed','success')}})}
-    let card=document.getElementById('m2-account-center-restored'); if(!card){card=document.createElement('div'); card.id='m2-account-center-restored'; card.className='m2-account-center-restored'; heading.insertAdjacentElement('afterend',card)}
-    const a=acc(), se=sess(), st=settings(), h=health(); const plan=a.plan_type||st.plan||st.plan_tier||'Trial'; const company=a.company_name||a.crm_name||st.company_name||st.businessName||'M2 Energy CRM'; const role=se.role||'master';
-    card.innerHTML='<h2>👑 Account Center</h2><div class="sub">Master account, agent logins, cloud sync, customer accounts, backups, and manager tools are all below — not hidden behind tabs.</div><div class="m2-account-mini-grid"><div class="m2-account-mini"><div class="k">Company</div><div class="v">'+esc(company)+'</div></div><div class="m2-account-mini"><div class="k">Session</div><div class="v">'+esc(role)+'</div></div><div class="m2-account-mini"><div class="k">Plan</div><div class="v">'+esc(plan)+'</div></div><div class="m2-account-mini"><div class="k">Leads</div><div class="v">'+leads().length+'</div></div><div class="m2-account-mini"><div class="k">Agents</div><div class="v">'+agents().length+'</div></div><div class="m2-account-mini"><div class="k">Master</div><div class="v">'+esc(a.master_name||se.name||'Not set')+'</div></div><div class="m2-account-mini"><div class="k">Cloud Sync</div><div class="v">'+esc(short(h.lastLeadSync||h.lastAgentSync||h.lastMasterSync))+'</div></div><div class="m2-account-mini"><div class="k">Backup</div><div class="v">'+esc(short(h.lastManualBackup||h.lastAutoBackup))+'</div></div></div><div class="m2-account-actions"><button class="blue" data-m2-account-action="login">Open Login</button><button class="green" data-m2-account-action="sync-agents">Sync Agents</button><button class="purple" data-m2-account-action="sync-master">Sync Master</button><button class="gold" data-m2-account-action="backup">Export Backup</button></div>';
-    card.onclick=function(e){const btn=e.target.closest&&e.target.closest('[data-m2-account-action]'); if(!btn)return; const action=btn.dataset.m2AccountAction; if(action==='login'){try{if(typeof openLoginOverlay==='function')openLoginOverlay()}catch(err){toast('Login not available','warn')}} if(action==='sync-agents'){try{if(typeof syncAgentAccountsToCloud==='function')syncAgentAccountsToCloud();else toast('Agent sync not available','warn')}catch(err){toast('Agent sync error','error')}} if(action==='sync-master'){try{if(typeof syncMasterAccountToCloud==='function')syncMasterAccountToCloud();else toast('Master sync not available','warn')}catch(err){toast('Master sync error','error')}} if(action==='backup'){try{if(typeof exportM2FullBackup==='function')exportM2FullBackup();else document.getElementById('export-btn')?.click()}catch(err){toast('Backup error','error')}}}
+  function allowSaas(){
+    document.body.classList.add('m2-allow-saas-modal');
+    document.querySelectorAll('[style*="display: none"]').forEach(function(el){
+      const text=(el.textContent||'').slice(0,250);
+      const id=(el.id||'').toLowerCase();
+      const cls=(el.className||'').toString().toLowerCase();
+      if(id.includes('saas') || cls.includes('saas') || text.includes('SaaS Launch Center')){
+        el.style.display=''; el.style.opacity=''; el.style.visibility=''; el.style.pointerEvents='';
+      }
+    });
   }
 
-  function enableOldSettings(){
-    const stats=document.getElementById('stats-view'); if(!stats)return;
-    document.body.classList.add('m2-old-settings-mode'); stats.classList.add('m2-old-settings-mode');
+  document.addEventListener('click',function(e){
+    const node=e.target.closest('button,a,[role="button"]');
+    if(!node) return;
+    const text=(node.textContent||'').toLowerCase();
+    const id=(node.id||'').toLowerCase();
+    if(text.includes('saas') || text.includes('launch center') || id.includes('saas')) allowSaas();
+  },true);
+
+  function section(){return localStorage.getItem(SECTION_KEY)||'all'}
+  function setSection(s){localStorage.setItem(SECTION_KEY,s||'all'); applyCleanSettings()}
+
+  function ensureHeader(stats){
+    let header=document.getElementById('m2-clean-settings-header');
+    if(!header){
+      header=document.createElement('div');
+      header.id='m2-clean-settings-header';
+      header.className='m2-clean-settings-header';
+      stats.insertBefore(header,stats.firstChild);
+    }
+    const sec=section();
+    header.innerHTML='<h1>Settings & Account Center</h1><p>Cleaned up, no pop-up blocking the map. Everything important is still here.</p><div class="m2-clean-section-nav"><button data-clean-settings-section="all" class="'+(sec==='all'?'active':'')+'">All</button><button data-clean-settings-section="account" class="'+(sec==='account'?'active':'')+'">Account</button><button data-clean-settings-section="manager" class="'+(sec==='manager'?'active':'')+'">Manager</button><button data-clean-settings-section="system" class="'+(sec==='system'?'active':'')+'">System</button></div>';
+  }
+
+  function ensureAccountCard(stats){
+    let card=document.getElementById('m2-clean-account-card');
+    if(!card){
+      card=document.createElement('div');
+      card.id='m2-clean-account-card';
+      card.className='m2-clean-account-card';
+      const header=document.getElementById('m2-clean-settings-header');
+      if(header) header.insertAdjacentElement('afterend',card); else stats.insertBefore(card,stats.firstChild);
+    }
+    const a=acc(), se=sess(), st=settings(), h=health();
+    const company=a.company_name||a.crm_name||st.company_name||st.businessName||'M2 Energy CRM';
+    const plan=a.plan_type||st.plan||st.plan_tier||'Trial';
+    const role=se.role||'master';
+    card.innerHTML='<h2>👑 Account Center</h2><div class="sub">Master, agents, cloud sync, backups, customer accounts, and team controls in one clean area.</div><div class="m2-clean-grid"><div class="m2-clean-tile"><div class="k">Company</div><div class="v">'+esc(company)+'</div></div><div class="m2-clean-tile"><div class="k">Role</div><div class="v">'+esc(role)+'</div></div><div class="m2-clean-tile"><div class="k">Plan</div><div class="v">'+esc(plan)+'</div></div><div class="m2-clean-tile"><div class="k">Leads</div><div class="v">'+leads().length+'</div></div><div class="m2-clean-tile"><div class="k">Agents</div><div class="v">'+agents().length+'</div></div><div class="m2-clean-tile"><div class="k">Master</div><div class="v">'+esc(a.master_name||se.name||'Not set')+'</div></div><div class="m2-clean-tile"><div class="k">Cloud</div><div class="v">'+esc(short(h.lastLeadSync||h.lastAgentSync||h.lastMasterSync))+'</div></div><div class="m2-clean-tile"><div class="k">Backup</div><div class="v">'+esc(short(h.lastManualBackup||h.lastAutoBackup))+'</div></div></div><div class="m2-clean-actions"><button class="blue" data-clean-action="login">Open Login</button><button class="green" data-clean-action="sync-agents">Sync Agents</button><button class="purple" data-clean-action="sync-master">Sync Master</button><button class="gold" data-clean-action="backup">Export Backup</button></div>';
+  }
+
+  function renderAgentList(){
+    const box=document.getElementById('m2-clean-agent-list'); if(!box)return;
+    const list=agents();
+    if(!list.length){box.innerHTML='<div class="sub">No agent logins created yet. Add one above.</div>';return}
+    box.innerHTML=list.map(function(a){
+      return '<div class="m2-clean-agent-row"><div><div class="nm">'+esc(a.name||'Agent')+'</div><div class="meta">'+esc(a.email||'')+' · '+esc(a.territory||'No territory')+' · PIN: '+esc(a.pin||'')+'</div></div><div><button data-clean-agent-login="'+esc(a.id)+'">Login View</button> <button data-clean-agent-delete="'+esc(a.id)+'">Delete</button></div></div>'
+    }).join('');
+  }
+
+  function ensureAgentCard(stats){
+    let card=document.getElementById('m2-clean-agent-card');
+    if(!card){
+      card=document.createElement('div');
+      card.id='m2-clean-agent-card';
+      card.className='m2-clean-agent-card';
+      const account=document.getElementById('m2-clean-account-card');
+      if(account) account.insertAdjacentElement('afterend',card); else stats.insertBefore(card,stats.children[1]||stats.firstChild);
+      card.innerHTML='<h2>👥 Agent Login Settings</h2><div class="sub">Create/update rep logins. This stays visible in Settings.</div><div class="m2-clean-agent-form"><label>Agent Name<input id="m2-clean-agent-name" placeholder="Rep name"></label><label>Territory<input id="m2-clean-agent-territory" placeholder="Queens"></label><label>Email / Username<input id="m2-clean-agent-email" placeholder="agent@email.com"></label><label>PIN / Password<input id="m2-clean-agent-pin" placeholder="1234"></label></div><div class="m2-clean-actions"><button class="blue" id="m2-clean-save-agent">Save Agent</button><button id="m2-clean-open-login">Open Login</button><button id="m2-clean-load-agents">Load Cloud Agents</button><button class="green" id="m2-clean-sync-agents">Sync Agents</button></div><div id="m2-clean-agent-list" style="margin-top:10px;"></div>';
+    }
+    renderAgentList();
+  }
+
+  function orderImportant(stats){
+    const order=['m2-clean-settings-header','m2-clean-account-card','m2-clean-agent-card','m2-access-card','cloud-dashboard','m2-customer-accounts','m2-manual-subscriptions','m2-sync-health','m2-crm-health-check','m2-performance-daily','m2-followup-board-pro'];
+    let after=null;
+    order.forEach(function(id){
+      const el=document.getElementById(id); if(!el||!el.parentNode) return;
+      if(!after) stats.insertBefore(el,stats.firstChild);
+      else after.insertAdjacentElement('afterend',el);
+      after=el;
+    });
+  }
+
+  function applyCleanSettings(){
+    const stats=document.getElementById('stats-view'); if(!stats) return;
+    stats.classList.add('m2-clean-settings');
+    stats.dataset.cleanSection=section();
     try{localStorage.setItem('m2_stats_clean_view_v1','all')}catch(e){}
-    ensureAccountCenter(); ensureAgentCard();
-    const order=['m2-old-settings-heading','m2-account-center-restored','m2-access-card','m2-agent-login-settings-card','cloud-dashboard','m2-customer-accounts','m2-manual-subscriptions','m2-sync-health','m2-crm-health-check','m2-beta-customer-setup'];
-    let after=null; order.forEach(function(id){const el=document.getElementById(id); if(!el||!el.parentNode)return; if(!after)stats.insertBefore(el,stats.firstChild); else after.insertAdjacentElement('afterend',el); after=el});
-    try{document.querySelectorAll('#stats-view .m2-stats-hidden').forEach(el=>el.classList.remove('m2-stats-hidden'))}catch(e){}
+    ensureHeader(stats);
+    ensureAccountCard(stats);
+    ensureAgentCard(stats);
+    orderImportant(stats);
+    document.querySelectorAll('#stats-view .m2-stats-hidden').forEach(function(el){el.classList.remove('m2-stats-hidden')});
   }
-  function patchSwitchView(){try{if(typeof switchView!=='function'||switchView.__m2OldSettingsRestore)return; const old=switchView; window.switchView=function(view){const r=old.apply(this,arguments); if(view==='stats'){setTimeout(enableOldSettings,90);setTimeout(enableOldSettings,350)} return r}; window.switchView.__m2OldSettingsRestore=true; try{switchView=window.switchView}catch(e){}}catch(e){}}
-  function patchRenderStats(){try{if(typeof renderStats!=='function'||renderStats.__m2OldSettingsRestore)return; const old=renderStats; window.renderStats=function(){const r=old.apply(this,arguments); setTimeout(enableOldSettings,90); setTimeout(renderAgentList,140); return r}; window.renderStats.__m2OldSettingsRestore=true; try{renderStats=window.renderStats}catch(e){}}catch(e){}}
-  function boot(){patchSwitchView(); patchRenderStats(); const stats=document.getElementById('stats-view'); if(stats&&stats.classList.contains('open'))enableOldSettings()}
-  document.addEventListener('click',function(e){const nav=e.target.closest&&e.target.closest('.nav-btn[data-view="stats"]'); if(nav){setTimeout(enableOldSettings,120);setTimeout(enableOldSettings,420)}},true);
-  window.addEventListener('load',function(){setTimeout(boot,900)}); if(document.readyState!=='loading')setTimeout(boot,900);
-  setInterval(function(){const stats=document.getElementById('stats-view'); if(stats&&stats.classList.contains('open'))enableOldSettings()},1800);
-  console.log('M2 old settings full restore loaded:',PATCH);
+
+  document.addEventListener('click',function(e){
+    const sec=e.target.closest('[data-clean-settings-section]');
+    if(sec){e.preventDefault(); e.stopPropagation(); setSection(sec.dataset.cleanSettingsSection); return}
+
+    const action=e.target.closest('[data-clean-action]');
+    if(action){
+      e.preventDefault(); e.stopPropagation();
+      const a=action.dataset.cleanAction;
+      if(a==='login'){try{if(typeof openLoginOverlay==='function')openLoginOverlay();else toast('Login not available','warn')}catch(err){toast('Login error','error')}}
+      if(a==='sync-agents'){try{if(typeof syncAgentAccountsToCloud==='function')syncAgentAccountsToCloud();else toast('Agent sync not available yet','warn')}catch(err){toast('Agent sync error','error')}}
+      if(a==='sync-master'){try{if(typeof syncMasterAccountToCloud==='function')syncMasterAccountToCloud();else toast('Master sync not available yet','warn')}catch(err){toast('Master sync error','error')}}
+      if(a==='backup'){try{if(typeof exportM2FullBackup==='function')exportM2FullBackup();else document.getElementById('export-btn')?.click()}catch(err){toast('Backup error','error')}}
+      return;
+    }
+
+    if(e.target && e.target.id==='m2-clean-save-agent'){
+      e.preventDefault(); e.stopPropagation();
+      const name=document.getElementById('m2-clean-agent-name').value.trim();
+      const territory=document.getElementById('m2-clean-agent-territory').value.trim();
+      const email=document.getElementById('m2-clean-agent-email').value.trim().toLowerCase();
+      const pin=document.getElementById('m2-clean-agent-pin').value.trim();
+      if(!name||!email||!pin){alert('Agent name, email/username, and PIN are required.');return}
+      const data=acc(); data.agents=Array.isArray(data.agents)?data.agents:[];
+      const existing=data.agents.find(x=>String(x.email||'').toLowerCase()===email);
+      if(existing){existing.name=name; existing.email=email; existing.pin=pin; existing.territory=territory; existing.updated_at=new Date().toISOString()}
+      else data.agents.push({id:'a_'+Date.now(),name,email,pin,territory,created_at:new Date().toISOString()});
+      saveAcc(data);
+      document.getElementById('m2-clean-agent-name').value='';
+      document.getElementById('m2-clean-agent-territory').value='';
+      document.getElementById('m2-clean-agent-email').value='';
+      document.getElementById('m2-clean-agent-pin').value='';
+      toast(existing?'✓ Agent updated':'✓ Agent created','success');
+      renderAgentList(); ensureAccountCard(document.getElementById('stats-view'));
+      return;
+    }
+
+    if(e.target && e.target.id==='m2-clean-open-login'){e.preventDefault(); try{if(typeof openLoginOverlay==='function')openLoginOverlay()}catch(err){}}
+    if(e.target && e.target.id==='m2-clean-load-agents'){e.preventDefault(); try{if(typeof loadAgentAccountsFromCloud==='function')loadAgentAccountsFromCloud();else toast('Cloud load not available yet','warn')}catch(err){toast('Load agents error','error')}}
+    if(e.target && e.target.id==='m2-clean-sync-agents'){e.preventDefault(); try{if(typeof syncAgentAccountsToCloud==='function')syncAgentAccountsToCloud();else toast('Cloud sync not available yet','warn')}catch(err){toast('Sync agents error','error')}}
+
+    const login=e.target.closest && e.target.closest('[data-clean-agent-login]');
+    if(login){
+      const id=login.dataset.cleanAgentLogin; const a=agents().find(x=>String(x.id)===String(id)); if(!a)return;
+      saveSess({role:'agent',name:a.name,email:a.email,territory:a.territory||'',id:a.id,team_id:a.team_id||''});
+      toast('✓ Using agent account','success');
+      try{if(typeof renderStats==='function')renderStats()}catch(err){}
+      return;
+    }
+    const del=e.target.closest && e.target.closest('[data-clean-agent-delete]');
+    if(del){
+      const id=del.dataset.cleanAgentDelete;
+      const data=acc(); data.agents=(data.agents||[]).filter(x=>String(x.id)!==String(id));
+      saveAcc(data); toast('Agent removed','success'); renderAgentList(); ensureAccountCard(document.getElementById('stats-view'));
+      return;
+    }
+
+    const statsNav=e.target.closest && e.target.closest('.nav-btn[data-view="stats"]');
+    if(statsNav){setTimeout(applyCleanSettings,120); setTimeout(applyCleanSettings,420)}
+  },true);
+
+  function patchSwitchView(){
+    try{
+      if(typeof switchView!=='function'||switchView.__m2CleanSettingsV2) return;
+      const old=switchView;
+      window.switchView=function(view){
+        const r=old.apply(this,arguments);
+        if(view==='stats'){setTimeout(applyCleanSettings,100); setTimeout(applyCleanSettings,420)}
+        return r;
+      };
+      window.switchView.__m2CleanSettingsV2=true;
+      try{switchView=window.switchView}catch(e){}
+    }catch(e){}
+  }
+
+  function patchRenderStats(){
+    try{
+      if(typeof renderStats!=='function'||renderStats.__m2CleanSettingsV2) return;
+      const old=renderStats;
+      window.renderStats=function(){
+        const r=old.apply(this,arguments);
+        setTimeout(function(){
+          const stats=document.getElementById('stats-view');
+          if(stats && stats.classList.contains('open')) applyCleanSettings();
+        },120);
+        return r;
+      };
+      window.renderStats.__m2CleanSettingsV2=true;
+      try{renderStats=window.renderStats}catch(e){}
+    }catch(e){}
+  }
+
+  function boot(){
+    document.body.classList.remove('m2-allow-saas-modal');
+    killSaasAuto();
+    patchSwitchView();
+    patchRenderStats();
+    const stats=document.getElementById('stats-view');
+    if(stats && stats.classList.contains('open')) applyCleanSettings();
+  }
+
+  window.addEventListener('load',function(){setTimeout(boot,400);setTimeout(boot,1200);setTimeout(killSaasAuto,2500)});
+  if(document.readyState!=='loading'){setTimeout(boot,400);setTimeout(boot,1200)}
+  setInterval(function(){
+    killSaasAuto();
+    const stats=document.getElementById('stats-view');
+    if(stats && stats.classList.contains('open')) applyCleanSettings();
+  },1500);
+
+  console.log('M2 clean settings + stop SaaS loaded:',PATCH);
 })();
 </script>
-<!-- === END M2 OLD SETTINGS FULL RESTORE v1 === -->
+<!-- === END M2 CLEAN SETTINGS + STOP SAAS AUTOLOAD v2 === -->
 
 </body>
 </html>
