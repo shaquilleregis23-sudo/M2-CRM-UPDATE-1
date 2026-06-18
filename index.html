@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#0d1117" />
+<title>NYC Solar D2D — Queens + Brooklyn</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d; --text: #e6edf3;
+    --muted: #8b949e; --green: #3fb950; --blue: #58a6ff; --yellow: #d29922;
+    --red: #f85149; --accent: #1f6feb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+  .app { display: grid; grid-template-rows: auto 1fr auto; height: 100vh; height: 100dvh; }
+  .topbar { background: var(--panel); border-bottom: 1px solid var(--border); padding: 10px 14px; display: flex; align-items: center; gap: 10px; padding-top: max(10px, env(safe-area-inset-top)); }
+  .topbar .title { font-size: 14px; font-weight: 700; flex: 1; }
+  .topbar .stats { display: flex; gap: 14px; font-size: 11px; }
+  .topbar .stats span { color: var(--muted); }
+  .topbar .stats span b { color: var(--green); font-weight: 700; }
+  .main { position: relative; overflow: hidden; }
+  #map { width: 100%; height: 100%; background: #1c2128; }
+  .fab-row { position: absolute; top: 12px; right: 12px; z-index: 500; display: flex; flex-direction: column; gap: 8px; }
+  .fab { width: 40px; height: 40px; border-radius: 20px; background: var(--panel); border: 1px solid var(--border); color: var(--text); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+  .fab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .fab.loading { background: var(--yellow); border-color: var(--yellow); color: #fff; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+  .filter-bar { position: absolute; top: 12px; left: 12px; z-index: 500; display: flex; gap: 6px; flex-wrap: wrap; max-width: calc(100% - 70px); }
+  .chip { font-size: 11px; padding: 5px 10px; border-radius: 12px; background: var(--panel); border: 1px solid var(--border); cursor: pointer; color: var(--text); white-space: nowrap; }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .chip .count { opacity: 0.6; margin-left: 4px; }
+  .sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--panel); border-top: 1px solid var(--border); border-radius: 16px 16px 0 0; transform: translateY(100%); transition: transform 0.25s ease; z-index: 600; max-height: 80vh; max-height: 80dvh; overflow-y: auto; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+  .sheet.open { transform: translateY(0); }
+  .sheet-handle { width: 40px; height: 4px; background: #444c56; border-radius: 2px; margin: 8px auto 4px; }
+  .sheet-header { padding: 8px 16px 12px; display: flex; align-items: flex-start; gap: 8px; border-bottom: 1px solid var(--border); }
+  .sheet-header .info { flex: 1; min-width: 0; }
+  .sheet-header h2 { font-size: 17px; font-weight: 700; }
+  .sheet-header .addr { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .sheet-close { background: transparent; border: none; color: var(--muted); font-size: 22px; cursor: pointer; line-height: 1; padding: 4px 8px; }
+  .sheet-body { padding: 14px 16px; }
+  .section-title { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin: 14px 0 6px; font-weight: 600; }
+  .section-title:first-child { margin-top: 0; }
+  .field { display: grid; grid-template-columns: 120px 1fr; font-size: 13px; padding: 5px 0; border-bottom: 1px solid #21262d; }
+  .field .k { color: var(--muted); }
+  .field .v { color: var(--text); font-weight: 500; }
+  .form-row { margin-top: 8px; }
+  .form-row label { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 4px; }
+  .form-row input, .form-row textarea, .form-row select {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 9px 11px; border-radius: 8px; font-size: 15px; font-family: inherit; -webkit-appearance: none;
+  }
+  .form-row textarea { resize: vertical; min-height: 70px; }
+  .disp-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .disp-btn { padding: 11px 8px; font-size: 11px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--text); text-transform: uppercase; font-weight: 700; transition: all 0.12s; text-align: center; }
+  .disp-btn[data-disp="knocked"].selected { background: #3fb95022; border-color: var(--green); color: var(--green); }
+  .disp-btn[data-disp="not_home"].selected { background: #8b949e22; border-color: var(--muted); color: var(--muted); }
+  .disp-btn[data-disp="callback"].selected { background: #d2992222; border-color: var(--yellow); color: var(--yellow); }
+  .disp-btn[data-disp="set"].selected { background: #1f6feb22; border-color: var(--accent); color: var(--blue); }
+  .disp-btn[data-disp="not_interested"].selected { background: #f8514922; border-color: var(--red); color: var(--red); }
+  .save-btn { width: 100%; margin-top: 14px; padding: 12px; background: #238636; color: #fff; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 15px; }
+  .save-btn:active { background: #1a6e2a; }
+  .viability { display: inline-block; padding: 3px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+  .v-high { background: #3fb95022; color: var(--green); }
+  .v-med { background: #d2992222; color: var(--yellow); }
+  .v-low { background: #f8514922; color: var(--red); }
+  .bottom-nav { background: var(--panel); border-top: 1px solid var(--border); display: flex; padding-bottom: max(0px, env(safe-area-inset-bottom)); }
+  .nav-btn { flex: 1; padding: 11px; text-align: center; background: transparent; border: none; color: var(--muted); font-size: 11px; font-weight: 600; cursor: pointer; }
+  .nav-btn.active { color: var(--blue); }
+  .nav-btn .ico { display: block; font-size: 18px; margin-bottom: 2px; }
+  .list-view { position: absolute; inset: 0; background: var(--bg); overflow-y: auto; transform: translateX(100%); transition: transform 0.2s ease; z-index: 400; }
+  .list-view.open { transform: translateX(0); }
+  .lead-item { padding: 12px 14px; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .lead-item:active { background: var(--panel); }
+  .lead-item .nm { font-size: 14px; font-weight: 600; }
+  .lead-item .ad { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .lead-item .row { display: flex; gap: 8px; margin-top: 6px; align-items: center; font-size: 11px; }
+  .badge { padding: 2px 8px; border-radius: 10px; font-weight: 700; text-transform: uppercase; font-size: 9px; }
+  .b-set { background: #1f6feb22; color: var(--blue); }
+  .b-callback { background: #d2992222; color: var(--yellow); }
+  .b-knock { background: #3fb95022; color: var(--green); }
+  .b-not-home { background: #8b949e22; color: var(--muted); }
+  .b-no { background: #f8514922; color: var(--red); }
+  .b-fresh { background: #21262d; color: var(--muted); }
+  .stats-view { position: absolute; inset: 0; background: var(--bg); overflow-y: auto; transform: translateX(100%); transition: transform 0.2s ease; z-index: 400; padding: 20px; }
+  .stats-view.open { transform: translateX(0); }
+  .stat-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  .stat-card h3 { font-size: 12px; color: var(--muted); text-transform: uppercase; font-weight: 600; margin-bottom: 8px; }
+  .stat-card .big { font-size: 28px; font-weight: 700; color: var(--green); }
+  .stat-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+  .stat-row .l { color: var(--muted); }
+  .leaflet-popup-content-wrapper { background: var(--panel); color: var(--text); border-radius: 8px; }
+  .leaflet-popup-content { margin: 10px 12px; font-size: 12px; }
+  .leaflet-popup-tip { background: var(--panel); }
+  .leaflet-control-attribution { background: rgba(13,17,23,0.7) !important; color: var(--muted) !important; font-size: 9px; }
+  .leaflet-control-attribution a { color: var(--blue) !important; }
+  .info-tag { position: absolute; bottom: 60px; left: 12px; z-index: 500; background: rgba(31, 111, 235, 0.15); border: 1px solid var(--accent); color: var(--blue); font-size: 10px; padding: 4px 8px; border-radius: 8px; font-weight: 600; max-width: calc(100% - 24px); }
+  .info-tag.warn { background: rgba(210, 153, 34, 0.15); border-color: var(--yellow); color: var(--yellow); }
+  .info-tag.err { background: rgba(248, 81, 73, 0.15); border-color: var(--red); color: var(--red); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="title">Solar D2D · Queens + Brooklyn</div>
+    <div class="stats">
+      <span>Knocks <b id="s-knock">0</b></span>
+      <span>Sets <b id="s-set">0</b></span>
+    </div>
+  </header>
+  <main class="main">
+    <div id="map"></div>
+    <div class="filter-bar" id="filter-bar"></div>
+    <div class="fab-row">
+      <button class="fab" id="fab-gps" title="Center on me">📍</button>
+      <button class="fab" id="fab-route" title="Toggle route">🥾</button>
+      <button class="fab" id="fab-satellite" title="Toggle satellite">🛰️</button>
+      <button class="fab" id="fab-load" title="Load PLUTO here" style="background:#238636;border-color:#238636;color:#fff;">⬇</button>
+    </div>
+    <div class="info-tag" id="info-tag">Zoom in and tap ⬇ to load real PLUTO homes for this area</div>
+    <div class="list-view" id="list-view"><div id="list-container"></div></div>
+    <div class="stats-view" id="stats-view">
+      <div class="stat-card">
+        <h3>Today</h3>
+        <div class="big" id="ts-knock">0</div>
+        <div class="stat-row"><span class="l">Doors knocked</span><span id="ts-knock2">0</span></div>
+        <div class="stat-row"><span class="l">Appts set</span><span id="ts-set">0</span></div>
+        <div class="stat-row"><span class="l">Callbacks scheduled</span><span id="ts-cb">0</span></div>
+        <div class="stat-row"><span class="l">Conversion (knock → set)</span><span id="ts-conv">0%</span></div>
+      </div>
+      <div class="stat-card">
+        <h3>All-Time</h3>
+        <div class="stat-row"><span class="l">Total doors knocked</span><span id="ts-all-knock">0</span></div>
+        <div class="stat-row"><span class="l">Total appts set</span><span id="ts-all-set">0</span></div>
+        <div class="stat-row"><span class="l">Solar-viable doors loaded</span><span id="ts-viable">0</span></div>
+        <div class="stat-row"><span class="l">Total leads stored</span><span id="ts-total">0</span></div>
+      </div>
+      <div class="stat-card">
+        <h3>Data</h3>
+        <div class="stat-row"><span class="l">Storage used</span><span id="ts-storage">—</span></div>
+        <button class="save-btn" id="export-btn" style="background:#1f6feb;">Export leads to CSV</button>
+        <button class="save-btn" id="reset-btn" style="background:#21262d;border:1px solid var(--border);color:var(--muted);margin-top:8px;">Reset all data</button>
+      </div>
+    </div>
+  </main>
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-view="map"><span class="ico">🗺️</span>Map</button>
+    <button class="nav-btn" data-view="list"><span class="ico">📋</span>Leads</button>
+    <button class="nav-btn" data-view="stats"><span class="ico">📊</span>Stats</button>
+  </nav>
+</div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <div class="info">
+      <h2 id="sh-name">—</h2>
+      <div class="addr" id="sh-addr">—</div>
+    </div>
+    <button class="sheet-close" id="sh-close">×</button>
+  </div>
+  <div class="sheet-body" id="sh-body"></div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const STORAGE_KEY = 'nyc_solar_crm_v2';
+let state = loadState();
+function loadState() {
+  try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) return JSON.parse(raw); } catch(e) {}
+  return { leads: [], filter: 'all', show_route: true, satellite: false };
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch (e) { showInfo('Storage full — export to CSV and reset.', 'err'); }
+}
+const map = L.map('map', { zoomControl: false }).setView([40.6815, -73.9301], 12);
+const darkTiles = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '© OpenStreetMap © CARTO', maxZoom: 19, subdomains: 'abcd' });
+const satelliteTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: '© Esri', maxZoom: 19 });
+const satelliteLabels = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', { attribution: '', maxZoom: 19, subdomains: 'abcd', opacity: 0.9 });
+if (state.satellite) { satelliteTiles.addTo(map); satelliteLabels.addTo(map); } else { darkTiles.addTo(map); }
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+const COLORS = { fresh: '#444c56', knocked: '#3fb950', not_home: '#8b949e', callback: '#d29922', set: '#1f6feb', not_interested: '#f85149' };
+const STATUS_LABELS = { fresh: 'Fresh', knocked: 'Knocked', not_home: 'Not Home', callback: 'Callback', set: 'Set', not_interested: 'Not Int.' };
+const STATUS_BADGE = { fresh: 'b-fresh', knocked: 'b-knock', not_home: 'b-not-home', callback: 'b-callback', set: 'b-set', not_interested: 'b-no' };
+const markers = {};
+function renderMarkers() {
+  Object.values(markers).forEach(m => map.removeLayer(m));
+  Object.keys(markers).forEach(k => delete markers[k]);
+  const filtered = filterLeads(state.leads);
+  filtered.forEach(lead => {
+    const color = COLORS[lead.status] || COLORS.fresh;
+    const ring = lead.viability === 'high' ? `box-shadow:0 0 0 2px ${color}33, 0 2px 6px rgba(0,0,0,0.5);` : `box-shadow:0 2px 6px rgba(0,0,0,0.5);`;
+    const size = state.satellite ? 14 : 16;
+    const icon = L.divIcon({ className: '', html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2px solid #fff;${ring}"></div>`, iconSize: [size, size], iconAnchor: [size/2, size/2] });
+    const m = L.marker([lead.lat, lead.lng], { icon }).addTo(map);
+    m.on('click', () => openLead(lead.id));
+    markers[lead.id] = m;
+  });
+}
+function filterLeads(leads) {
+  if (state.filter === 'all') return leads;
+  if (state.filter === 'high_viability') return leads.filter(l => l.viability === 'high');
+  return leads.filter(l => l.status === state.filter);
+}
+function renderFilterBar() {
+  const bar = document.getElementById('filter-bar');
+  const counts = state.leads.reduce((acc, l) => { acc.all++; acc[l.status] = (acc[l.status] || 0) + 1; if (l.viability === 'high') acc.high_viability++; return acc; }, { all: 0, high_viability: 0 });
+  const filters = [{ key: 'all', label: 'All' }, { key: 'high_viability', label: '⭐ High-V' }, { key: 'fresh', label: 'Fresh' }, { key: 'knocked', label: 'Knocked' }, { key: 'callback', label: 'CB' }, { key: 'set', label: 'Set' }];
+  bar.innerHTML = filters.map(f => `<div class="chip ${state.filter === f.key ? 'active' : ''}" data-filter="${f.key}">${f.label}<span class="count">${counts[f.key] || 0}</span></div>`).join('');
+  bar.querySelectorAll('.chip').forEach(c => { c.addEventListener('click', () => { state.filter = c.dataset.filter; saveState(); renderFilterBar(); renderMarkers(); renderList(); }); });
+}
+let currentLeadId = null;
+function openLead(id) {
+  const lead = state.leads.find(l => l.id === id);
+  if (!lead) return;
+  currentLeadId = id;
+  document.getElementById('sh-name').textContent = `${lead.first} ${lead.last}`;
+  document.getElementById('sh-addr').textContent = `${lead.addr}, ${lead.city || lead.boro} ${lead.zip || ''}`;
+  const vClass = lead.viability === 'high' ? 'v-high' : lead.viability === 'med' ? 'v-med' : 'v-low';
+  const vLabel = lead.viability === 'high' ? 'High viability' : lead.viability === 'med' ? 'Medium' : 'Low — flat/historic';
+  const bldgLabel = lead.bldg_class && lead.bldg_class.startsWith('A') ? `1-family (${lead.bldg_class})` : lead.bldg_class && lead.bldg_class.startsWith('B') ? `2-family (${lead.bldg_class})` : lead.bldg_class || '—';
+  document.getElementById('sh-body').innerHTML = `
+    <div style="margin-bottom:10px;"><span class="viability ${vClass}">${vLabel}</span>${lead.source==='pluto' ? ' <span style="font-size:10px;color:var(--muted);margin-left:6px;">via PLUTO 25v4</span>' : ''}</div>
+    <div class="section-title">Property</div>
+    <div class="field"><div class="k">Building</div><div class="v">${bldgLabel}${lead.units ? ' · ' + lead.units + ' unit' + (lead.units > 1 ? 's' : '') : ''}</div></div>
+    ${lead.year_built ? `<div class="field"><div class="k">Year built</div><div class="v">${lead.year_built}</div></div>` : ''}
+    ${lead.lot_sqft ? `<div class="field"><div class="k">Lot size</div><div class="v">${lead.lot_sqft.toLocaleString()} sqft</div></div>` : ''}
+    ${lead.est_value ? `<div class="field"><div class="k">Assessed value</div><div class="v">$${lead.est_value.toLocaleString()}</div></div>` : ''}
+    ${lead.bbl ? `<div class="field"><div class="k">BBL</div><div class="v" style="font-family:monospace;font-size:11px;">${lead.bbl}</div></div>` : ''}
+    <div class="section-title">Qualification</div>
+    <div class="form-row"><label>Monthly Con Ed bill</label><input type="number" id="f-bill" inputmode="numeric" placeholder="$" value="${lead.monthly_bill || ''}" /></div>
+    <div class="form-row"><label>Credit score range</label><select id="f-credit"><option value="unknown" ${lead.credit==='unknown'?'selected':''}>Unknown</option><option value="720+" ${lead.credit==='720+'?'selected':''}>720+</option><option value="680-720" ${lead.credit==='680-720'?'selected':''}>680-720</option><option value="640-680" ${lead.credit==='640-680'?'selected':''}>640-680</option><option value="below 640" ${lead.credit==='below 640'?'selected':''}>Below 640</option></select></div>
+    <div class="form-row"><label>Phone</label><input type="tel" id="f-phone" placeholder="(xxx) xxx-xxxx" value="${lead.phone || ''}" /></div>
+    <div class="form-row"><label>Roof notes</label><input type="text" id="f-roof" placeholder="orientation, condition, shading" value="${lead.roof_notes || ''}" /></div>
+    <div class="section-title">Disposition</div>
+    <div class="disp-grid">
+      <button class="disp-btn ${lead.status==='knocked'?'selected':''}" data-disp="knocked">Knocked</button>
+      <button class="disp-btn ${lead.status==='not_home'?'selected':''}" data-disp="not_home">Not Home</button>
+      <button class="disp-btn ${lead.status==='callback'?'selected':''}" data-disp="callback">Callback</button>
+      <button class="disp-btn ${lead.status==='set'?'selected':''}" data-disp="set">Appt Set</button>
+      <button class="disp-btn ${lead.status==='not_interested'?'selected':''}" data-disp="not_interested" style="grid-column:span 2;">Not Interested</button>
+    </div>
+    <div class="section-title">Notes</div>
+    <div class="form-row"><textarea id="f-notes" placeholder="What did they say? Best time to come back?">${lead.notes || ''}</textarea></div>
+    <button class="save-btn" id="save-lead">Save Lead</button>`;
+  document.querySelectorAll('.disp-btn').forEach(btn => { btn.addEventListener('click', () => { document.querySelectorAll('.disp-btn').forEach(b => b.classList.remove('selected')); btn.classList.add('selected'); }); });
+  document.getElementById('save-lead').addEventListener('click', saveLead);
+  document.getElementById('sheet').classList.add('open');
+}
+function closeSheet() { document.getElementById('sheet').classList.remove('open'); currentLeadId = null; }
+function saveLead() {
+  if (!currentLeadId) return;
+  const lead = state.leads.find(l => l.id === currentLeadId);
+  if (!lead) return;
+  const selectedDisp = document.querySelector('.disp-btn.selected');
+  lead.status = selectedDisp ? selectedDisp.dataset.disp : lead.status;
+  lead.monthly_bill = document.getElementById('f-bill').value;
+  lead.credit = document.getElementById('f-credit').value;
+  lead.phone = document.getElementById('f-phone').value;
+  lead.roof_notes = document.getElementById('f-roof').value;
+  lead.notes = document.getElementById('f-notes').value;
+  lead.updated_at = new Date().toISOString();
+  saveState(); closeSheet(); renderMarkers(); renderList(); renderFilterBar(); renderTopStats(); renderStats();
+}
+document.getElementById('sh-close').addEventListener('click', closeSheet);
+function renderList() {
+  const container = document.getElementById('list-container');
+  const filtered = filterLeads(state.leads).slice().sort((a, b) => { const order = { set: 0, callback: 1, knocked: 2, not_home: 3, fresh: 4, not_interested: 5 }; return (order[a.status] ?? 9) - (order[b.status] ?? 9); });
+  if (filtered.length === 0) { container.innerHTML = '<div style="padding:40px;text-align:center;color:var(--muted);">No leads loaded. Tap ⬇ on the map to load PLUTO data for the visible area.</div>'; return; }
+  const display = filtered.slice(0, 500);
+  let html = display.map(l => `<div class="lead-item" data-id="${l.id}"><div class="nm">${l.first} ${l.last}</div><div class="ad">${l.addr}${l.city ? ' · ' + l.city : ''}</div><div class="row"><span class="badge ${STATUS_BADGE[l.status]}">${STATUS_LABELS[l.status]}</span>${l.viability === 'high' ? '<span style="color:var(--green);font-size:10px;">⭐ High-V</span>' : ''}${l.monthly_bill ? `<span style="color:var(--muted);">$${l.monthly_bill}/mo</span>` : ''}</div></div>`).join('');
+  if (filtered.length > 500) html += `<div style="padding:14px;text-align:center;color:var(--muted);font-size:11px;">Showing 500 of ${filtered.length} — filter to narrow.</div>`;
+  container.innerHTML = html;
+  container.querySelectorAll('.lead-item').forEach(item => { item.addEventListener('click', () => { const lead = state.leads.find(l => l.id === item.dataset.id); if (!lead) return; switchView('map'); map.setView([lead.lat, lead.lng], 18); setTimeout(() => openLead(lead.id), 250); }); });
+}
+function renderTopStats() {
+  const today = todayLeads();
+  document.getElementById('s-knock').textContent = today.filter(l => ['knocked','not_home','callback','set','not_interested'].includes(l.status)).length;
+  document.getElementById('s-set').textContent = today.filter(l => l.status === 'set').length;
+}
+function todayLeads() { const today = new Date().toDateString(); return state.leads.filter(l => l.updated_at && new Date(l.updated_at).toDateString() === today); }
+function renderStats() {
+  const today = todayLeads();
+  const knocks = today.filter(l => ['knocked','not_home','callback','set','not_interested'].includes(l.status)).length;
+  const sets = today.filter(l => l.status === 'set').length;
+  const cbs = today.filter(l => l.status === 'callback').length;
+  document.getElementById('ts-knock').textContent = knocks; document.getElementById('ts-knock2').textContent = knocks;
+  document.getElementById('ts-set').textContent = sets; document.getElementById('ts-cb').textContent = cbs;
+  document.getElementById('ts-conv').textContent = knocks ? `${Math.round(sets/knocks*100)}%` : '0%';
+  document.getElementById('ts-all-knock').textContent = state.leads.filter(l => ['knocked','not_home','callback','set','not_interested'].includes(l.status)).length;
+  document.getElementById('ts-all-set').textContent = state.leads.filter(l => l.status === 'set').length;
+  document.getElementById('ts-viable').textContent = state.leads.filter(l => l.viability === 'high').length;
+  document.getElementById('ts-total').textContent = state.leads.length;
+  const bytes = new Blob([JSON.stringify(state)]).size;
+  document.getElementById('ts-storage').textContent = `${(bytes/1024).toFixed(1)} KB`;
+}
+document.getElementById('export-btn').addEventListener('click', () => {
+  const headers = ['first','last','addr','city','boro','zip','bbl','status','monthly_bill','credit','phone','roof_notes','notes','viability','est_value','year_built','bldg_class','source','updated_at'];
+  const rows = state.leads.map(l => headers.map(h => { const v = l[h] ?? ''; return `"${String(v).replace(/"/g,'""')}"`; }).join(','));
+  const csv = headers.join(',') + '\n' + rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = `solar-leads-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  URL.revokeObjectURL(url);
+});
+document.getElementById('reset-btn').addEventListener('click', () => { if (confirm('Wipe ALL leads? Cannot be undone.')) { localStorage.removeItem(STORAGE_KEY); location.reload(); } });
+let myLocationMarker = null;
+let routePolyline = null;
+let routePoints = JSON.parse(localStorage.getItem('nyc_solar_route_' + new Date().toDateString()) || '[]');
+function updateRoute() {
+  if (routePolyline) map.removeLayer(routePolyline);
+  if (state.show_route && routePoints.length > 1) routePolyline = L.polyline(routePoints, { color: '#3fb950', weight: 3, opacity: 0.7, dashArray: '4,6' }).addTo(map);
+}
+document.getElementById('fab-gps').addEventListener('click', () => {
+  if (!navigator.geolocation) { alert('GPS not available.'); return; }
+  navigator.geolocation.getCurrentPosition(pos => {
+    const { latitude, longitude } = pos.coords;
+    map.setView([latitude, longitude], 18); placeMyLocation(latitude, longitude);
+    routePoints.push([latitude, longitude]); localStorage.setItem('nyc_solar_route_' + new Date().toDateString(), JSON.stringify(routePoints)); updateRoute();
+  }, err => alert('GPS error: ' + err.message), { enableHighAccuracy: true, timeout: 10000 });
+});
+function placeMyLocation(lat, lng) {
+  if (myLocationMarker) map.removeLayer(myLocationMarker);
+  myLocationMarker = L.marker([lat, lng], { icon: L.divIcon({ className: '', html: `<div style="width:16px;height:16px;border-radius:50%;background:#58a6ff;border:3px solid #fff;box-shadow:0 0 0 6px rgba(88,166,255,0.3);"></div>`, iconSize: [16,16], iconAnchor: [8,8] }) }).addTo(map);
+}
+document.getElementById('fab-route').addEventListener('click', () => { state.show_route = !state.show_route; saveState(); document.getElementById('fab-route').classList.toggle('active', state.show_route); updateRoute(); });
+if (state.show_route) document.getElementById('fab-route').classList.add('active');
+if (navigator.geolocation) {
+  navigator.geolocation.watchPosition(pos => {
+    const { latitude, longitude } = pos.coords;
+    if (myLocationMarker) myLocationMarker.setLatLng([latitude, longitude]); else placeMyLocation(latitude, longitude);
+    const last = routePoints[routePoints.length - 1];
+    if (!last || Math.hypot(last[0]-latitude, last[1]-longitude) > 0.0001) {
+      routePoints.push([latitude, longitude]);
+      if (routePoints.length > 500) routePoints.shift();
+      localStorage.setItem('nyc_solar_route_' + new Date().toDateString(), JSON.stringify(routePoints));
+      updateRoute();
+    }
+  }, () => {}, { enableHighAccuracy: true, maximumAge: 15000 });
+}
+document.getElementById('fab-satellite').addEventListener('click', () => {
+  state.satellite = !state.satellite; saveState();
+  if (state.satellite) { map.removeLayer(darkTiles); satelliteTiles.addTo(map); satelliteLabels.addTo(map); document.getElementById('fab-satellite').classList.add('active'); }
+  else { map.removeLayer(satelliteTiles); map.removeLayer(satelliteLabels); darkTiles.addTo(map); document.getElementById('fab-satellite').classList.remove('active'); }
+  renderMarkers();
+});
+if (state.satellite) document.getElementById('fab-satellite').classList.add('active');
+const PLUTO_ENDPOINT = 'https://data.cityofnewyork.us/resource/64uk-42ks.json';
+function showInfo(msg, kind) { const el = document.getElementById('info-tag'); el.textContent = msg; el.className = 'info-tag' + (kind ? ' ' + kind : ''); el.style.display = 'block'; }
+function hideInfo() { document.getElementById('info-tag').style.display = 'none'; }
+function parseOwnerName(raw) {
+  if (!raw) return null;
+  const upper = raw.toUpperCase().trim();
+  const skip = ['LLC','L.L.C','CORP','INC',' CO ','TRUST','ESTATE','REALTY','HOUSING','AUTHORITY','NYC','CITY OF','BANK','NATIONAL','PROPERTIES','ASSOCIATES','LTD','LP ','PARTNERS','GROUP','INVESTORS','HOLDINGS','MANAGEMENT','DEPT','BOARD','TENANTS','OWNERS','CO-OP','COOP','CONDO'];
+  if (skip.some(t => upper.includes(t))) return null;
+  let clean = upper.split('&')[0].trim();
+  clean = clean.replace(/\b(JR|SR|II|III|IV|MD|PHD|ESQ)\.?$/g, '').trim();
+  const parts = clean.split(/\s+/).filter(p => p.length > 0);
+  if (parts.length < 2) return null;
+  const last = titleCase(parts[0]); const first = titleCase(parts[1]);
+  if (!/^[A-Za-z\-' ]+$/.test(last) || !/^[A-Za-z\-' ]+$/.test(first)) return null;
+  if (last.length < 2 || first.length < 2) return null;
+  return { first, last };
+}
+function titleCase(s) { return s.split(/[\s-]/).map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' '); }
+function viabilityFromPluto(p) {
+  const yb = parseInt(p.yearbuilt) || 0; const bc = p.bldgclass || '';
+  if (bc.startsWith('A') && yb >= 1945) return 'high';
+  if (bc.startsWith('A') || bc.startsWith('B')) return 'med';
+  return 'low';
+}
+document.getElementById('fab-load').addEventListener('click', async () => {
+  const bounds = map.getBounds(); const zoom = map.getZoom();
+  if (zoom < 14) { showInfo('Zoom in closer (neighborhood-level) before loading PLUTO.', 'warn'); return; }
+  const btn = document.getElementById('fab-load');
+  btn.classList.add('loading'); btn.textContent = '…';
+  showInfo('Loading PLUTO for this area…');
+  const where = [`latitude > ${bounds.getSouth()}`, `latitude < ${bounds.getNorth()}`, `longitude > ${bounds.getWest()}`, `longitude < ${bounds.getEast()}`, `(borough='BK' OR borough='QN')`, `(starts_with(bldgclass, 'A') OR starts_with(bldgclass, 'B'))`, `ownername IS NOT NULL`].join(' AND ');
+  const url = `${PLUTO_ENDPOINT}?$where=${encodeURIComponent(where)}&$limit=2000&$select=bbl,address,borough,bldgclass,ownername,yearbuilt,lotarea,assesstot,unitsres,zipcode,latitude,longitude`;
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    let added = 0, skipped = 0;
+    const existingBbls = new Set(state.leads.filter(l => l.bbl).map(l => l.bbl));
+    data.forEach(p => {
+      if (!p.latitude || !p.longitude || !p.address || !p.ownername) { skipped++; return; }
+      if (p.bbl && existingBbls.has(p.bbl)) { skipped++; return; }
+      const parsed = parseOwnerName(p.ownername);
+      if (!parsed) { skipped++; return; }
+      const lead = {
+        id: 'p_' + (p.bbl || (p.latitude + '_' + p.longitude)),
+        bbl: p.bbl || null, first: parsed.first, last: parsed.last,
+        addr: titleCase(p.address || ''), city: '',
+        boro: p.borough === 'BK' ? 'Brooklyn' : p.borough === 'QN' ? 'Queens' : p.borough,
+        zip: p.zipcode || '', lat: parseFloat(p.latitude), lng: parseFloat(p.longitude),
+        bldg_class: p.bldgclass || '', units: parseInt(p.unitsres) || 1,
+        year_built: parseInt(p.yearbuilt) || null, lot_sqft: parseInt(p.lotarea) || null,
+        est_value: parseInt(p.assesstot) || null, viability: viabilityFromPluto(p),
+        owner_at_property: true, source: 'pluto', status: 'fresh',
+        monthly_bill: '', credit: 'unknown', phone: '', roof_notes: '', notes: '', updated_at: null
+      };
+      state.leads.push(lead); added++;
+    });
+    saveState(); renderMarkers(); renderFilterBar(); renderTopStats(); renderStats();
+    if (added === 0) showInfo(`No new homes in this view. ${skipped} skipped (LLCs/trusts/dupes).`, 'warn');
+    else { showInfo(`✓ Loaded ${added} homes (${skipped} skipped). Tap pins to work them.`); setTimeout(hideInfo, 5000); }
+  } catch (err) {
+    showInfo(`PLUTO load failed: ${err.message}. Check connection.`, 'err');
+  } finally {
+    btn.classList.remove('loading'); btn.textContent = '⬇';
+  }
+});
+function switchView(view) {
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  document.getElementById('list-view').classList.toggle('open', view === 'list');
+  document.getElementById('stats-view').classList.toggle('open', view === 'stats');
+  if (view === 'list') renderList(); if (view === 'stats') renderStats();
+}
+document.querySelectorAll('.nav-btn').forEach(btn => { btn.addEventListener('click', () => switchView(btn.dataset.view)); });
+renderFilterBar(); renderMarkers(); renderTopStats(); updateRoute();
+if (state.leads.length === 0) showInfo('Welcome — zoom into your neighborhood and tap ⬇ to load real PLUTO homes.');
+</script>
+</body>
+</html>
